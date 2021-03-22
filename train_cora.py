@@ -18,6 +18,7 @@ def main():
 
     env = gcn_env(dataset=dataset, max_layer=5)
     env.seed(0)
+    # print(env.observation_space.shape)
     agent = DQNAgent(scope='dqn',
                     action_num = env.action_num,
                     replay_memory_size=int(1e4),
@@ -35,7 +36,7 @@ def main():
         loss, reward, (val_acc, reward) = agent.learn(env, max_timesteps) # debug = (val_acc, reward)
         if val_acc > last_val: # check whether gain improvement on validation set
             best_policy = deepcopy(agent) # save the best policy
-        last_val = val_acc 
+        last_val = val_acc
         print("Training Meta-policy:", i_episode, "Val_Acc:", val_acc, "Avg_reward:", reward)
 
     # Testing: Apply meta-policy to train a new GNN

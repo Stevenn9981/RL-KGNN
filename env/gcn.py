@@ -27,6 +27,7 @@ class Net(torch.nn.Module):
 
     def forward(self, action, data):
         x, edge_index = data.x, data.edge_index
+        # print(data)
         x = F.relu(self.conv1(x, edge_index))
         for i in range(action-2):
             x = F.relu(self.hidden[i](x, edge_index))
@@ -39,8 +40,9 @@ class gcn_env(object):
         device = 'cpu'
         dataset = dataset
         path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', dataset)
-        dataset = Planetoid(path, dataset, T.NormalizeFeatures())
+        dataset = Planetoid(path, dataset, pre_transform=T.NormalizeFeatures())
         data = dataset[0]
+
 
         adj = to_dense_adj(data.edge_index).numpy()[0]
         norm = np.array([np.sum(row) for row in adj])
@@ -100,34 +102,34 @@ class gcn_env(object):
         high = np.full(observation.shape, float('inf'))
         self.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
 
-    def step(self, action):
-        self.model.train()
-        self.optimizer.zero_grad()
-        if self.random == True:
-            action = random.randint(1,5)
-        # train one step
-        index = self.train_indexes[self.i]
-        pred = self.model(action, self.data)[index]
-        pred = pred.unsqueeze(0)
-        y = self.data.y[index]
-        y = y.unsqueeze(0)
-        F.nll_loss(pred, y).backward()
-        self.optimizer.step()
-        
-        # get reward from validation set
-        val_acc = self.eval_batch()
-
-        # get next state
-        self.i += 1
-        self.i = self.i % len(self.train_indexes)
-        next_index = self.train_indexes[self.i]
-        #next_state = self.data.x[next_index].to('cpu').numpy()
-        next_state = self.data.x[next_index].numpy()
-        if self.i == 0:
-            done = True
-        else:
-            done = False
-        return next_state, val_acc, done, "debug"
+    # def step(self, action):
+    #     self.model.train()
+    #     self.optimizer.zero_grad()
+    #     if self.random == True:
+    #         action = random.randint(1,5)
+    #     # train one step
+    #     index = self.train_indexes[self.i]
+    #     pred = self.model(action, self.data)[index]
+    #     pred = pred.unsqueeze(0)
+    #     y = self.data.y[index]
+    #     y = y.unsqueeze(0)
+    #     F.nll_loss(pred, y).backward()
+    #     self.optimizer.step()
+    #
+    #     # get reward from validation set
+    #     val_acc = self.eval_batch()
+    #
+    #     # get next state
+    #     self.i += 1
+    #     self.i = self.i % len(self.train_indexes)
+    #     next_index = self.train_indexes[self.i]
+    #     #next_state = self.data.x[next_index].to('cpu').numpy()
+    #     next_state = self.data.x[next_index].numpy()
+    #     if self.i == 0:
+    #         done = True
+    #     else:
+    #         done = False
+    #     return next_state, val_acc, done, "debug"
 
     def reset2(self):
         start = self.i
@@ -135,9 +137,9 @@ class gcn_env(object):
         index = self.train_indexes[start:end]
         state = self.data.x[index].to('cpu').numpy()
         self.optimizer.zero_grad()
-        return state
+        return index, state
 
-    def step2(self, actions):
+    def step2(self, indices, actions):
         self.model.train()
         self.optimizer.zero_grad()
         start = self.i
@@ -155,6 +157,7 @@ class gcn_env(object):
         if self.gcn == True or self.enable_skh == False:
             ### Random ###
             self.i += min((self.i + self.batch_size) % self.batch_size, self.batch_size)
+            # print("i: ", self.i)
             start = self.i
             end = (self.i + self.batch_size) % len(self.train_indexes)
             index = self.train_indexes[start:end]

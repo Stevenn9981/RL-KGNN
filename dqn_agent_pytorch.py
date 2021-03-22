@@ -174,13 +174,14 @@ class DQNAgent(object):
 
     def learn(self, env, total_timesteps):
         done = [False]
-        next_state_batch = env.reset2()
+        index, next_state_batch = env.reset2()
+        # print(next_state_batch.shape)
         trajectories = []
         for t in range(total_timesteps):
             A = self.predict_batch(next_state_batch)
             best_actions = np.random.choice(np.arange(len(A)), p=A, size=next_state_batch.shape[0])
             state_batch = next_state_batch
-            next_state_batch, reward_batch, done_batch, debug = env.step2(best_actions) # debug = (val_acc, test_acc)
+            next_state_batch, reward_batch, done_batch, debug = env.step2(index, best_actions) # debug = (val_acc, test_acc)
             trajectories = zip(state_batch, best_actions, reward_batch, next_state_batch, done_batch)
             for each in trajectories:
                 self.feed(each)
@@ -204,7 +205,7 @@ class DQNAgent(object):
         self.total_t += 1
 
     def step(self, state):
-        ''' Predict the action for genrating training data but
+        ''' Predict the action for generating training data but
             have the predictions disconnected from the computation graph
 
         Args:

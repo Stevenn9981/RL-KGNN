@@ -23,7 +23,7 @@ def parse_args():
     parser.add_argument('--data_dir', nargs='?', default='data/',
                         help='Input data path.')
 
-    parser.add_argument('--use_pretrain', type=int, default=1,
+    parser.add_argument('--use_pretrain', type=int, default=0,
                         help='0: No pretrain, 1: Pretrain with the learned embeddings, 2: Pretrain with stored model.')
     parser.add_argument('--pretrain_embedding_dir', nargs='?', default='datasets/pretrain/',
                         help='Path of learned embeddings.')
@@ -34,6 +34,8 @@ def parse_args():
                         help='CF batch size.')
     parser.add_argument('--kg_batch_size', type=int, default=2048,
                         help='KG batch size.')
+    parser.add_argument('--nd_batch_size', type=int, default=256,
+                        help='node sampling batch size.')
     parser.add_argument('--test_batch_size', type=int, default=10000,
                         help='Test batch size (the user number to test every batch).')
 
@@ -82,16 +84,19 @@ def parse_args():
 
 class DataLoaderHGNN(object):
 
-    def __init__(self, args):
+    def __init__(self, args, dataset):
         self.args = args
-        self.data_name = args.data_name
+        self.data_name = dataset
         self.use_pretrain = args.use_pretrain
         self.pretrain_embedding_dir = args.pretrain_embedding_dir
 
         self.cf_batch_size = args.cf_batch_size
         self.kg_batch_size = args.kg_batch_size
 
-        data_dir = os.path.join(args.data_dir, args.data_name)
+        self.entity_dim = args.entity_dim
+        self.relation_dim = args.relation_dim
+
+        data_dir = os.path.join(args.data_dir, self.data_name)
         train_file = os.path.join(data_dir, 'train.txt')
         test_file = os.path.join(data_dir, 'test.txt')
         kg_file = os.path.join(data_dir, "kg_final.txt")
@@ -158,8 +163,8 @@ class DataLoaderHGNN(object):
         kg_data = pd.concat([kg_data, reverse_kg_data], axis=0, ignore_index=True, sort=False)
 
         # re-map user id
-        kg_data['r'] += 2
-        self.n_relations = max(kg_data['r']) + 1
+        kg_data['r'] += 3
+        self.n_relations = max(kg_data['r'])
         self.n_entities = max(max(kg_data['h']), max(kg_data['t'])) + 1
         self.n_users_entities = self.n_users + self.n_entities
 
@@ -170,7 +175,7 @@ class DataLoaderHGNN(object):
         self.test_user_dict = {k + self.n_entities: np.unique(v).astype(np.int32) for k, v in self.test_user_dict.items()}
 
         # add interactions to kg data
-        cf2kg_train_data = pd.DataFrame(np.zeros((self.n_cf_train, 3), dtype=np.int32), columns=['h', 'r', 't'])
+        cf2kg_train_data = pd.DataFrame(np.full((self.n_cf_train, 3), 2, dtype=np.int32), columns=['h', 'r', 't'])
         cf2kg_train_data['h'] = self.cf_train_data[0]
         cf2kg_train_data['t'] = self.cf_train_data[1]
 
@@ -178,7 +183,7 @@ class DataLoaderHGNN(object):
         reverse_cf2kg_train_data['h'] = self.cf_train_data[1]
         reverse_cf2kg_train_data['t'] = self.cf_train_data[0]
 
-        cf2kg_test_data = pd.DataFrame(np.zeros((self.n_cf_test, 3), dtype=np.int32), columns=['h', 'r', 't'])
+        cf2kg_test_data = pd.DataFrame(np.full((self.n_cf_test, 3), 2, dtype=np.int32), columns=['h', 'r', 't'])
         cf2kg_test_data['h'] = self.cf_test_data[0]
         cf2kg_test_data['t'] = self.cf_test_data[1]
 
@@ -195,6 +200,7 @@ class DataLoaderHGNN(object):
         # construct kg dict
         self.train_kg_dict = collections.defaultdict(list)
         self.train_relation_dict = collections.defaultdict(list)
+        print(len(self.kg_train_data))
         for row in self.kg_train_data.iterrows():
             h, r, t = row[1]
             self.train_kg_dict[h].append((t, r))
@@ -223,10 +229,12 @@ class DataLoaderHGNN(object):
 
 
     def create_graph(self, kg_data, n_nodes):
-        x = torch.arange(n_nodes, dtype=torch.long)
+        x = torch.nn.Embedding(n_nodes, self.entity_dim)
         edge_index = torch.tensor([kg_data['t'],kg_data['h']],dtype=torch.long)
-        edge_attr = torch.LongTensor(kg_data['r'])
+        edge_attr = torch.tensor(kg_data['r'])
         data = Data(x=x, edge_index=edge_index, edge_attr=edge_attr)
+        data.relation_embed = torch.nn.Embedding(self.n_relations, self.relation_dim)
+        data.node_idx = torch.arange(n_nodes, dtype=torch.long)
         return data
         # g = dgl.DGLGraph()
         # g.add_nodes(n_nodes)
@@ -268,7 +276,7 @@ class DataLoaderHGNN(object):
 
 
     def generate_cf_batch(self, user_dict):
-        exist_users = user_dict.keys()
+        exist_users = list(user_dict.keys())
         if self.cf_batch_size <= len(exist_users):
             batch_user = random.sample(exist_users, self.cf_batch_size)
         else:
@@ -319,7 +327,7 @@ class DataLoaderHGNN(object):
 
 
     def generate_kg_batch(self, kg_dict):
-        exist_heads = kg_dict.keys()
+        exist_heads = list(kg_dict.keys())
         if self.kg_batch_size <= len(exist_heads):
             batch_head = random.sample(exist_heads, self.kg_batch_size)
         else:

@@ -101,7 +101,7 @@ class hgnn_env(object):
         self.meta_path_instances_dict = collections.defaultdict(list)
         nodes = range(self.train_data.x.weight.shape[0])
         index = random.sample(nodes, min(self.batch_size,len(nodes)))
-        state = self.train_data.x(torch.tensor(index)).to(self.device).detach().numpy()
+        state = F.normalize(self.train_data.x(torch.tensor(index)).to(self.device)).detach().numpy()
         self.optimizer.zero_grad()
         return index, state
 

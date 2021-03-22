@@ -12,7 +12,7 @@ from env.hgnn import hgnn_env
 def main():
     torch.backends.cudnn.deterministic=True
     max_timesteps = 4
-    dataset = 'test-demo'
+    dataset = 'lat-fm'
     max_episodes = 325
 
     env = hgnn_env(dataset=dataset)
@@ -21,8 +21,8 @@ def main():
                     action_num = env.action_num,
                     replay_memory_size=int(1e4),
                     replay_memory_init_size=500,
-                    norm_step=2,
-                    batch_size=24,
+                    norm_step=100,
+                    batch_size=128,
                     state_shape = env.observation_space.shape,
                     mlp_layers=[32, 64, 128, 64, 32],
                     device=torch.device('cpu')

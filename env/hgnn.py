@@ -78,6 +78,7 @@ class hgnn_env(object):
 
         self.meta_path_dict = collections.defaultdict(list)
         self.meta_path_instances_dict = collections.defaultdict(list)
+        print('Data initialization done')
 
     def _set_action_space(self, _max):
         self.action_num = _max
@@ -103,7 +104,7 @@ class hgnn_env(object):
         self.meta_path_instances_dict = collections.defaultdict(list)
         nodes = range(self.train_data.x.weight.shape[0])
         index = random.sample(nodes, min(self.batch_size,len(nodes)))
-        state = F.normalize(self.train_data.x(torch.tensor(index)).to(self.device)).detach().numpy()
+        state = F.normalize(self.train_data.x(torch.tensor(index)).to('cpu')).detach().numpy()
         self.optimizer.zero_grad()
         return index, state
 
@@ -152,13 +153,15 @@ class hgnn_env(object):
                             self.meta_path_instances_dict[idx].pop(i)
             if len(self.meta_path_instances_dict) > 0:
                 self.train()
-            next_state = F.normalize(self.train_data.x(torch.tensor(index)).to(self.device)).detach().numpy()
+            state = F.normalize(self.train_data.x(torch.tensor([idx])).to('cpu')).detach().numpy()
+            next_state.append(state)
             val_precision = self.eval_batch()
             val_acc.append(val_precision)
             self.past_performance.append(val_precision)
             baseline = np.mean(np.array(self.past_performance[-self.baseline_experience:]))
             rew = 100 * (val_precision - baseline) # FIXME: Reward Engineering
             reward.append(rew)
+            print("Val acc: ", val_precision, " Reward: ", rew)
         r = np.mean(np.array(reward))
         val_acc = np.mean(val_acc)
 

@@ -70,7 +70,7 @@ def parse_args():
     parser.add_argument('--evaluate_every', type=int, default=1,
                         help='Epoch interval of evaluating CF.')
 
-    parser.add_argument('--K', type=int, default=20,
+    parser.add_argument('--K', type=int, default=2,
                         help='Calculate metric@K when evaluating.')
 
     args = parser.parse_args()

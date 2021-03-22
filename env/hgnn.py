@@ -59,6 +59,8 @@ class hgnn_env(object):
         self.model, self.train_data = Net(3, dataset).to(self.device), data.train_graph.to(self.device)
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr, weight_decay=weight_decay)
 
+        self.data.test_graph = self.data.test_graph.to(self.device)
+
         self._set_action_space(self.train_data.relation_embed.num_embeddings + 1)
         obs = self.reset()
         self._set_observation_space(obs)
@@ -66,13 +68,13 @@ class hgnn_env(object):
         self.batch_size = args.nd_batch_size
         self.cf_l2loss_lambda = args.cf_l2loss_lambda
         self.baseline_experience = 50
-        print(adj_dist)
+        # print(adj_dist)
         # print(data.train_graph.x[random.sample(range(data.train_graph.x.shape[0]), 5)])
 
         # buffers for updating
         # self.buffers = {i: [] for i in range(max_layer)}
         self.buffers = collections.defaultdict(list)
-        self.past_performance = [0]
+        self.past_performance = []
 
         self.meta_path_dict = collections.defaultdict(list)
         self.meta_path_instances_dict = collections.defaultdict(list)
@@ -153,8 +155,8 @@ class hgnn_env(object):
             next_state = F.normalize(self.train_data.x(torch.tensor(index)).to(self.device)).detach().numpy()
             val_precision = self.eval_batch()
             val_acc.append(val_precision)
-            baseline = np.mean(np.array(self.past_performance[-self.baseline_experience:]))
             self.past_performance.append(val_precision)
+            baseline = np.mean(np.array(self.past_performance[-self.baseline_experience:]))
             rew = 100 * (val_precision - baseline) # FIXME: Reward Engineering
             reward.append(rew)
         r = np.mean(np.array(reward))

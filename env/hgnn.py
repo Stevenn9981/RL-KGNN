@@ -36,7 +36,7 @@ class Net(torch.nn.Module):
 
 class hgnn_env(object):
     def __init__(self, dataset='last-fm', lr=0.01, weight_decay=5e-4, batch_size=128, policy=None):
-        self.device = 'cuda'
+        self.device = 'cpu'
         # dataset = dataset
         # path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', dataset)
         args = parse_args()
@@ -78,6 +78,7 @@ class hgnn_env(object):
 
         self.meta_path_dict = collections.defaultdict(list)
         self.meta_path_instances_dict = collections.defaultdict(list)
+        print('Data initialization done')
 
     def _set_action_space(self, _max):
         self.action_num = _max
@@ -103,7 +104,7 @@ class hgnn_env(object):
         self.meta_path_instances_dict = collections.defaultdict(list)
         nodes = range(self.train_data.x.weight.shape[0])
         index = random.sample(nodes, min(self.batch_size,len(nodes)))
-        state = F.normalize(self.train_data.x(torch.tensor(index)).to(self.device)).detach().numpy()
+        state = F.normalize(self.train_data.x(torch.tensor(index)).cpu()).detach().numpy()
         self.optimizer.zero_grad()
         return index, state
 
@@ -123,7 +124,6 @@ class hgnn_env(object):
         #         done = True
         #     index = self.stochastic_k_hop(actions, index)
 
-        current_state_batch = F.normalize(self.train_data.x(torch.tensor(index)).to(self.device)).detach().numpy()
         next_state, reward, val_acc= [], [], []
         for act, idx in zip(actions, index):
             if idx not in self.meta_path_instances_dict:
@@ -150,15 +150,19 @@ class hgnn_env(object):
                                 path_instance.append((end_node, target_node))
                         else:
                             self.meta_path_instances_dict[idx].pop(i)
+                            if len(self.meta_path_instances_dict[idx]) == 0:
+                                del self.meta_path_instances_dict[idx]
             if len(self.meta_path_instances_dict) > 0:
                 self.train()
-            next_state = F.normalize(self.train_data.x(torch.tensor(index)).to(self.device)).detach().numpy()
+            state = F.normalize(self.train_data.x(torch.tensor([idx])).cpu()).detach().numpy()
+            next_state.append(state)
             val_precision = self.eval_batch()
             val_acc.append(val_precision)
             self.past_performance.append(val_precision)
             baseline = np.mean(np.array(self.past_performance[-self.baseline_experience:]))
             rew = 100 * (val_precision - baseline) # FIXME: Reward Engineering
             reward.append(rew)
+            print("Val acc: ", val_precision, " reward: ", rew)
         r = np.mean(np.array(reward))
         val_acc = np.mean(val_acc)
 

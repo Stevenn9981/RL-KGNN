@@ -21,20 +21,16 @@ def _L2_loss_mean(x):
 
 
 class Net(torch.nn.Module):
-    def __init__(self, layer, dataset='Cora'):
-        self.hidden = []
-        self.layer = layer
+    def __init__(self, dataset='Cora'):
         super(Net, self).__init__()
         self.conv1 = GATConv(64, 8, heads=8, dropout=0.5)
-        for i in range(layer - 2):
-            self.hidden.append(GATConv(64, 8, heads=8, dropout=0.5))
+        self.conv3 = GATConv(64, 8, heads=8, dropout=0.5)
         self.conv2 = GATConv(64, 8, heads=8, dropout=0.5)
 
     def forward(self, x, edge_index):
 
         x = F.relu(self.conv1(x, edge_index))
-        for i in range(self.layer - 2):
-            x = F.relu(self.hidden[i](x, edge_index))
+        x = F.relu(self.conv3(x, edge_index))
         self.embedding = self.conv2(x, edge_index)
         return self.embedding
 
@@ -46,14 +42,11 @@ class hgnn_env(object):
         # path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', dataset)
         args = parse_args()
         self.args = args
-        # pos = torch.tensor([0.4, 0.5])
-        # neg = torch.tensor([[0.4], [0.2], [0.3], [0.6]])
-        # print(self.metrics(pos, neg))
         # args.data_dir = path
         # print(args.data_dir)
         self.data = DataLoaderHGNN(args, dataset)
         data = self.data
-        print(data.train_graph)
+        # print(data.train_graph)
         # data.train_graph.adj = to_dense_adj(data.train_graph.edge_index, edge_attr=data.train_graph.edge_attr)
         adj_dist = dict()
         for i, attr in enumerate(data.train_graph.edge_attr):
@@ -65,7 +58,7 @@ class hgnn_env(object):
                 data.train_graph.edge_index[1][i].item())
         data.train_graph.adj_dist = adj_dist
         # print(data.train_graph.adj)
-        self.model, self.train_data = Net(3, dataset).to(self.device), data.train_graph.to(self.device)
+        self.model, self.train_data = Net(dataset).to(self.device), data.train_graph.to(self.device)
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr, weight_decay=weight_decay)
 
         self.data.test_graph = self.data.test_graph.to(self.device)
@@ -112,8 +105,8 @@ class hgnn_env(object):
         self.meta_path_dict = collections.defaultdict(list)
         self.meta_path_instances_dict = collections.defaultdict(list)
         nodes = range(self.train_data.x.weight.shape[0])
-        index = random.sample(nodes, min(self.batch_size, len(nodes)))
-        state = F.normalize(self.train_data.x(torch.tensor(index)).to('cpu')).detach().numpy()
+        index = random.sample(nodes, min(self.batch_size,len(nodes)))
+        state = F.normalize(self.train_data.x(torch.tensor(index).to(self.train_data.x.weight.device))).cpu().detach().numpy()
         self.optimizer.zero_grad()
         return index, state
 
@@ -159,6 +152,8 @@ class hgnn_env(object):
                                 path_instance.append((end_node, target_node))
                         else:
                             self.meta_path_instances_dict[idx].pop(i)
+                            if len(self.meta_path_instances_dict[idx]) == 0:
+                                del self.meta_path_instances_dict[idx]
             if len(self.meta_path_instances_dict) > 0:
                 self.train()
             val_precision = self.eval_batch()
@@ -167,12 +162,11 @@ class hgnn_env(object):
             baseline = np.mean(np.array(self.past_performance[-self.baseline_experience:]))
             rew = 100 * (val_precision - baseline)  # FIXME: Reward Engineering
             reward.append(rew)
-            # print("Val acc: ", val_precision, " Reward: ", rew)
-        next_state = F.normalize(self.train_data.x(torch.tensor(index).to(self.train_data.x.weight.device))).to(
-            'cpu').detach().numpy()
+            print("Val acc: ", val_precision, " reward: ", rew)
+        next_state = F.normalize(self.train_data.x(torch.tensor(index).to(self.train_data.x.weight.device)).cpu()).detach().numpy()
         r = np.mean(np.array(reward))
         val_acc = np.mean(val_acc)
-
+        next_state = np.array(next_state)
         return next_state, reward, np.array(done_list)[index].tolist(), (val_acc, r)
 
     def train(self):
@@ -189,9 +183,10 @@ class hgnn_env(object):
 
         if edge_index == [[], []]:
             return
-        edge_index = torch.tensor(edge_index)
+        self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))
+        edge_index = torch.tensor(edge_index).to(self.device)
         # print(self.data.x.weight.shape)
-        pred = self.model(self.train_data.x.weight, edge_index)
+        pred = self.model(self.train_data.x(self.train_data.node_idx), edge_index).to(self.device)
         # self.train_data.x = nn.Embedding.from_pretrained(pred, freeze=False)
         self.train_data.x.weight = nn.Parameter(pred)
         cf_batch_user, cf_batch_pos_item, cf_batch_neg_item = self.data.generate_cf_batch(self.data.train_user_dict)
@@ -206,13 +201,13 @@ class hgnn_env(object):
         item_pos_ids:   (cf_batch_size)
         item_neg_ids:   (cf_batch_size)
         """
-        all_embed = g.x(g.node_idx)  # (n_users + n_entities, cf_concat_dim)
-        user_embed = all_embed[user_ids]  # (cf_batch_size, cf_concat_dim)
-        item_pos_embed = all_embed[item_pos_ids]  # (cf_batch_size, cf_concat_dim)
-        item_neg_embed = all_embed[item_neg_ids]  # (cf_batch_size, cf_concat_dim)
+        all_embed = g.x(g.node_idx)                        # (n_users + n_entities, cf_concat_dim)
+        user_embed = all_embed[user_ids]                            # (cf_batch_size, cf_concat_dim)
+        item_pos_embed = all_embed[item_pos_ids]                    # (cf_batch_size, cf_concat_dim)
+        item_neg_embed = all_embed[item_neg_ids]                    # (cf_batch_size, cf_concat_dim)
 
-        pos_score = torch.sum(user_embed * item_pos_embed, dim=1)  # (cf_batch_size)
-        neg_score = torch.sum(user_embed * item_neg_embed, dim=1)  # (cf_batch_size)
+        pos_score = torch.sum(user_embed * item_pos_embed, dim=1)   # (cf_batch_size)
+        neg_score = torch.sum(user_embed * item_neg_embed, dim=1)   # (cf_batch_size)
 
         cf_loss = (-1.0) * F.logsigmoid(pos_score - neg_score)
         cf_loss = torch.mean(cf_loss)
@@ -335,10 +330,11 @@ class hgnn_env(object):
         user_ids:   number of users to evaluate   (n_eval_users)
         item_ids:   number of items to evaluate   (n_eval_items)
         """
-
-        all_embed = g.x(g.node_idx)  # (n_users + n_entities, cf_concat_dim)
-        user_embed = all_embed[user_ids]  # (n_eval_users, cf_concat_dim)
-        item_embed = all_embed[item_ids]  # (n_eval_items, cf_concat_dim)
+        g.x.weight = nn.Parameter(g.x.weight.to(self.device))
+        g = g.to(self.device)
+        all_embed = g.x(g.node_idx)           # (n_users + n_entities, cf_concat_dim)
+        user_embed = all_embed[user_ids]                # (n_eval_users, cf_concat_dim)
+        item_embed = all_embed[item_ids]                # (n_eval_items, cf_concat_dim)
 
         # Equation (12)
         cf_score = torch.matmul(user_embed, item_embed.transpose(0, 1))  # (n_eval_users, n_eval_items)

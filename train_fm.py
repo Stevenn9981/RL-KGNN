@@ -8,6 +8,7 @@ from copy import deepcopy
 
 from env.hgnn import hgnn_env
 
+os.environ['CUDA_VISIBLE_DEVICES'] = '1,2'
 
 def main():
     torch.backends.cudnn.deterministic=True
@@ -25,7 +26,7 @@ def main():
                     batch_size=24,
                     state_shape = env.observation_space.shape,
                     mlp_layers=[32, 64, 128, 64, 32],
-                    device=torch.device('cpu')
+                    device=torch.device('cuda')
             )
     env.policy = agent
 

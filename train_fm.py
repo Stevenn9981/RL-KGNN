@@ -13,7 +13,7 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '1,2'
 def main():
     torch.backends.cudnn.deterministic=True
     max_timesteps = 3
-    dataset = 'yelp_data'
+    dataset = 'test-demo'
     max_episodes = 10
 
     env = hgnn_env(dataset=dataset)
@@ -26,7 +26,7 @@ def main():
                     batch_size=24,
                     state_shape = env.observation_space.shape,
                     mlp_layers=[32, 64, 128, 64, 32],
-                    device=torch.device('cuda')
+                    device=torch.device('cpu')
             )
     env.policy = agent
 

@@ -249,7 +249,7 @@ class hgnn_env(object):
         # # print(precision)
 
         user_ids = list(self.data.train_user_dict.keys())
-        user_ids_batch = random.sample(user_ids, self.args.test_batch_size)
+        user_ids_batch = random.sample(user_ids, 2)
         neg_list = [self.data.sample_neg_items_for_u(self.data.train_user_dict, u, NEG_SIZE_TRAIN) for u in user_ids_batch]
         all_embed = self.train_data.x(self.train_data.node_idx)
 
@@ -272,7 +272,7 @@ class hgnn_env(object):
 
     def test_batch(self):
         user_ids = list(self.data.train_user_dict.keys())
-        user_ids_batch = user_ids
+        user_ids_batch = random.sample(user_ids, self.args.test_batch_size)
         neg_list = [self.data.sample_neg_items_for_u(self.data.train_user_dict, u, NEG_SIZE_RANKING) for u in user_ids_batch]
         all_embed = self.train_data.x(self.train_data.node_idx)
 
@@ -289,7 +289,7 @@ class hgnn_env(object):
             pos_logits = torch.cat([pos_logits, cf_score_pos])
             neg_logits = torch.cat([neg_logits, torch.unsqueeze(cf_score_neg, 1)])
 
-            HR1, HR3, HR20, HR50, MRR10, MRR20, MRR50, NDCG10, NDCG20, NDCG50 = self.metrics(pos_logits, neg_logits)
+            HR1, HR3, HR20, HR50, MRR10, MRR20, MRR50, NDCG10, NDCG20, NDCG50 = self.metrics(pos_logits, neg_logits, training=False)
             print(HR1, HR3, HR20, HR50, MRR10, MRR20, MRR50, NDCG10, NDCG20, NDCG50)
 
         return NDCG10

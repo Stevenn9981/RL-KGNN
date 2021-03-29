@@ -158,7 +158,7 @@ class DataLoaderHGNN(object):
 
     def construct_data(self, kg_data):
         # plus inverse kg data
-        n_relations = max(kg_data['r'])
+        n_relations = max(kg_data['r']) + 1
         reverse_kg_data = kg_data.copy()
         reverse_kg_data = reverse_kg_data.rename({'h': 't', 't': 'h'}, axis='columns')
         reverse_kg_data['r'] += n_relations

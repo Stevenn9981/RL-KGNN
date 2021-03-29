@@ -13,7 +13,7 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '1,2'
 def main():
     torch.backends.cudnn.deterministic=True
     max_timesteps = 3
-    dataset = 'test-demo'
+    dataset = 'yelp_data'
     max_episodes = 10
 
     env = hgnn_env(dataset=dataset)

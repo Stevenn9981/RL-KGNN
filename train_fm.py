@@ -14,7 +14,7 @@ def main():
     torch.backends.cudnn.deterministic=True
     max_timesteps = 3
     dataset = 'yelp_data'
-    max_episodes = 10
+    max_episodes = 325
 
     env = hgnn_env(dataset=dataset)
     env.seed(0)
@@ -31,6 +31,7 @@ def main():
     env.policy = agent
 
     best_val = 0.0
+    best_i = 0
     # Training: Learning meta-policy
     print("Training Meta-policy on Validation Set")
     for i_episode in range(1, max_episodes+1):
@@ -38,6 +39,9 @@ def main():
         if val_acc > best_val: # check whether gain improvement on validation set
             best_policy = deepcopy(agent) # save the best policy
             best_val = val_acc
+            best_i = i_episode
+        if i_episode - best_i > 4:
+            break
         print("Training Meta-policy:", i_episode, "Val_Acc:", val_acc, "Avg_reward:", reward, "; Best_Acc:", best_val)
 
     # last_val = 0.0

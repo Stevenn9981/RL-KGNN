@@ -7,6 +7,7 @@ import torch.nn.functional as F
 import collections
 import numpy as np
 from metrics import *
+import time
 
 from KGDataLoader import *
 
@@ -157,12 +158,12 @@ class hgnn_env(object):
             if len(self.meta_path_instances_dict) > 0:
                 self.train()
             val_precision = self.eval_batch()
-            val_acc.append(val_precision)
+            val_acc.append(val_precision.item())
             self.past_performance.append(val_precision)
             baseline = np.mean(np.array(self.past_performance[-self.baseline_experience:]))
             rew = 100 * (val_precision - baseline)  # FIXME: Reward Engineering
-            reward.append(rew)
-            print("Val acc: ", val_precision, " reward: ", rew)
+            reward.append(rew.item())
+            print("Val acc: ", val_precision.item(), " reward: ", rew.item())
         next_state = F.normalize(self.train_data.x(torch.tensor(index).to(self.train_data.x.weight.device)).cpu()).detach().numpy()
         r = np.mean(np.array(reward))
         val_acc = np.mean(val_acc)
@@ -266,7 +267,6 @@ class hgnn_env(object):
             pos_logits = torch.cat([pos_logits, cf_score_pos])
             neg_logits = torch.cat([neg_logits, torch.unsqueeze(cf_score_neg, 1)])
 
-        HR1, HR3, HR20, HR50, MRR10, MRR20, MRR50, NDCG10, NDCG20, NDCG50 = self.metrics(pos_logits, neg_logits)
 
         return NDCG10
 

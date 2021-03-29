@@ -11,9 +11,9 @@ from env.hgnn import hgnn_env
 
 def main():
     torch.backends.cudnn.deterministic=True
-    max_timesteps = 4
-    dataset = 'lat-fm'
-    max_episodes = 325
+    max_timesteps = 3
+    dataset = 'yelp_data'
+    max_episodes = 10
 
     env = hgnn_env(dataset=dataset)
     env.seed(0)
@@ -21,35 +21,49 @@ def main():
                     action_num = env.action_num,
                     replay_memory_size=int(1e4),
                     replay_memory_init_size=500,
-                    norm_step=100,
-                    batch_size=128,
+                    norm_step=2,
+                    batch_size=24,
                     state_shape = env.observation_space.shape,
                     mlp_layers=[32, 64, 128, 64, 32],
                     device=torch.device('cpu')
             )
     env.policy = agent
 
-    # best_val = 0.0
-    # # Training: Learning meta-policy
-    # print("Training Meta-policy on Validation Set")
-    # for i_episode in range(1, max_episodes+1):
-    #     loss, reward, (val_acc, reward) = agent.learn(env, max_timesteps) # debug = (val_acc, reward)
-    #     if val_acc > best_val: # check whether gain improvement on validation set
-    #         best_policy = deepcopy(agent) # save the best policy
-    #         best_val = val_acc
-    #     print("Training Meta-policy:", i_episode, "Val_Acc:", val_acc, "Avg_reward:", reward)
-
-    last_val = 0.0
+    best_val = 0.0
     # Training: Learning meta-policy
     print("Training Meta-policy on Validation Set")
     for i_episode in range(1, max_episodes+1):
         loss, reward, (val_acc, reward) = agent.learn(env, max_timesteps) # debug = (val_acc, reward)
-        if val_acc > last_val: # check whether gain improvement on validation set
+        if val_acc > best_val: # check whether gain improvement on validation set
             best_policy = deepcopy(agent) # save the best policy
-        last_val = val_acc
-        print("Training Meta-policy:", i_episode, "Val_Acc:", val_acc, "Avg_reward:", reward)
+            best_val = val_acc
+        print("Training Meta-policy:", i_episode, "Val_Acc:", val_acc, "Avg_reward:", reward, "; Best_Acc:", best_val)
+
+    # last_val = 0.0
+    # # Training: Learning meta-policy
+    # print("Training Meta-policy on Validation Set")
+    # for i_episode in range(1, max_episodes+1):
+    #     loss, reward, (val_acc, reward) = agent.learn(env, max_timesteps) # debug = (val_acc, reward)
+    #     if val_acc > last_val: # check whether gain improvement on validation set
+    #         best_policy = deepcopy(agent) # save the best policy
+    #     last_val = val_acc
+    #     print("Training Meta-policy:", i_episode, "Val_Acc:", val_acc, "Avg_reward:", reward)
 
 
+    # Testing: Apply meta-policy to train a new GNN
+    best_acc = 0.0
+    print("Training GNNs with learned meta-policy")
+    new_env = hgnn_env(dataset=dataset)
+    new_env.seed(0)
+    new_env.policy = best_policy
+    index, state = new_env.reset2()
+    for i_episode in range(1, 10):
+        action = best_policy.eval_step(state)
+        state, reward, done, (val_acc, reward) = new_env.step2(index, action)
+        test_acc = new_env.test_batch()
+        if test_acc > best_acc:
+            best_acc = test_acc
+        print("Training GNN", i_episode, "; Val_Acc:", val_acc, "; Test_Acc:", test_acc, "; Best_Acc:", best_acc)
 
 if __name__ == '__main__':
     main()

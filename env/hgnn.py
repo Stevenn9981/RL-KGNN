@@ -12,8 +12,13 @@ from KGDataLoader import *
 
 STOP = 0
 
+NEG_SIZE_TRAIN = 4
+NEG_SIZE_RANKING = 100
+
+
 def _L2_loss_mean(x):
     return torch.mean(torch.sum(torch.pow(x, 2), dim=1, keepdim=False) / 2.)
+
 
 class Net(torch.nn.Module):
     def __init__(self, layer, dataset='Cora'):
@@ -36,16 +41,19 @@ class Net(torch.nn.Module):
 
 class hgnn_env(object):
     def __init__(self, dataset='last-fm', lr=0.01, weight_decay=5e-4, batch_size=128, policy=None):
-        self.device = 'cuda'
+        self.device = 'cpu'
         # dataset = dataset
         # path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', dataset)
         args = parse_args()
         self.args = args
+        # pos = torch.tensor([0.4, 0.5])
+        # neg = torch.tensor([[0.4], [0.2], [0.3], [0.6]])
+        # print(self.metrics(pos, neg))
         # args.data_dir = path
         # print(args.data_dir)
         self.data = DataLoaderHGNN(args, dataset)
         data = self.data
-        # print(data.train_graph)
+        print(data.train_graph)
         # data.train_graph.adj = to_dense_adj(data.train_graph.edge_index, edge_attr=data.train_graph.edge_attr)
         adj_dist = dict()
         for i, attr in enumerate(data.train_graph.edge_attr):
@@ -53,7 +61,8 @@ class hgnn_env(object):
                 adj_dist[data.train_graph.edge_index[0][i].item()] = dict()
             if attr.item() not in adj_dist[data.train_graph.edge_index[0][i].item()]:
                 adj_dist[data.train_graph.edge_index[0][i].item()][attr.item()] = list()
-            adj_dist[data.train_graph.edge_index[0][i].item()][attr.item()].append(data.train_graph.edge_index[1][i].item())
+            adj_dist[data.train_graph.edge_index[0][i].item()][attr.item()].append(
+                data.train_graph.edge_index[1][i].item())
         data.train_graph.adj_dist = adj_dist
         # print(data.train_graph.adj)
         self.model, self.train_data = Net(3, dataset).to(self.device), data.train_graph.to(self.device)
@@ -103,11 +112,10 @@ class hgnn_env(object):
         self.meta_path_dict = collections.defaultdict(list)
         self.meta_path_instances_dict = collections.defaultdict(list)
         nodes = range(self.train_data.x.weight.shape[0])
-        index = random.sample(nodes, min(self.batch_size,len(nodes)))
+        index = random.sample(nodes, min(self.batch_size, len(nodes)))
         state = F.normalize(self.train_data.x(torch.tensor(index)).to('cpu')).detach().numpy()
         self.optimizer.zero_grad()
         return index, state
-
 
     def step2(self, index, actions):
         self.model.train()
@@ -125,7 +133,7 @@ class hgnn_env(object):
         #     index = self.stochastic_k_hop(actions, index)
 
         current_state_batch = F.normalize(self.train_data.x(torch.tensor(index)).to(self.device)).detach().numpy()
-        next_state, reward, val_acc= [], [], []
+        next_state, reward, val_acc = [], [], []
         for act, idx in zip(actions, index):
             if idx not in self.meta_path_instances_dict:
                 if act == STOP:
@@ -153,20 +161,19 @@ class hgnn_env(object):
                             self.meta_path_instances_dict[idx].pop(i)
             if len(self.meta_path_instances_dict) > 0:
                 self.train()
-            state = F.normalize(self.train_data.x(torch.tensor([idx])).to('cpu')).detach().numpy()
-            next_state.append(state)
             val_precision = self.eval_batch()
             val_acc.append(val_precision)
             self.past_performance.append(val_precision)
             baseline = np.mean(np.array(self.past_performance[-self.baseline_experience:]))
-            rew = 100 * (val_precision - baseline) # FIXME: Reward Engineering
+            rew = 100 * (val_precision - baseline)  # FIXME: Reward Engineering
             reward.append(rew)
-            print("Val acc: ", val_precision, " Reward: ", rew)
+            # print("Val acc: ", val_precision, " Reward: ", rew)
+        next_state = F.normalize(self.train_data.x(torch.tensor(index).to(self.train_data.x.weight.device))).to(
+            'cpu').detach().numpy()
         r = np.mean(np.array(reward))
         val_acc = np.mean(val_acc)
 
         return next_state, reward, np.array(done_list)[index].tolist(), (val_acc, r)
-
 
     def train(self):
         self.model.train()
@@ -199,13 +206,13 @@ class hgnn_env(object):
         item_pos_ids:   (cf_batch_size)
         item_neg_ids:   (cf_batch_size)
         """
-        all_embed = g.x(g.node_idx)                        # (n_users + n_entities, cf_concat_dim)
-        user_embed = all_embed[user_ids]                            # (cf_batch_size, cf_concat_dim)
-        item_pos_embed = all_embed[item_pos_ids]                    # (cf_batch_size, cf_concat_dim)
-        item_neg_embed = all_embed[item_neg_ids]                    # (cf_batch_size, cf_concat_dim)
+        all_embed = g.x(g.node_idx)  # (n_users + n_entities, cf_concat_dim)
+        user_embed = all_embed[user_ids]  # (cf_batch_size, cf_concat_dim)
+        item_pos_embed = all_embed[item_pos_ids]  # (cf_batch_size, cf_concat_dim)
+        item_neg_embed = all_embed[item_neg_ids]  # (cf_batch_size, cf_concat_dim)
 
-        pos_score = torch.sum(user_embed * item_pos_embed, dim=1)   # (cf_batch_size)
-        neg_score = torch.sum(user_embed * item_neg_embed, dim=1)   # (cf_batch_size)
+        pos_score = torch.sum(user_embed * item_pos_embed, dim=1)  # (cf_batch_size)
+        neg_score = torch.sum(user_embed * item_neg_embed, dim=1)  # (cf_batch_size)
 
         cf_loss = (-1.0) * F.logsigmoid(pos_score - neg_score)
         cf_loss = torch.mean(cf_loss)
@@ -235,15 +242,62 @@ class hgnn_env(object):
         #     acc[a] = pred.eq(self.data.y[idx]).sum().item() / len(idx)
         # #acc = acc / len(batch_dict.keys())
         # return acc
-        user_ids = list(self.data.test_user_dict.keys())
-        user_ids_batches = [user_ids[i: i + self.args.test_batch_size] for i in
-                            range(0, len(user_ids), self.args.test_batch_size)]
-        user_ids_batches = [torch.LongTensor(d) for d in user_ids_batches]
-        item_ids = torch.arange(self.data.n_items, dtype=torch.long)
-        _, precision, recall = self.evaluate(self.model, self.train_data, self.data.train_user_dict, self.data.test_user_dict,
-                                              user_ids_batches, item_ids, self.args.K)
-        # print(precision)
-        return precision
+
+        # user_ids = list(self.data.test_user_dict.keys())
+        # user_ids_batches = [user_ids[i: i + self.args.test_batch_size] for i in
+        #                     range(0, len(user_ids), self.args.test_batch_size)]
+        # user_ids_batches = [torch.LongTensor(d) for d in user_ids_batches]
+        # item_ids = torch.arange(self.data.n_items, dtype=torch.long)
+        # _, precision, recall = self.evaluate(self.model, self.train_data, self.data.train_user_dict,
+        #                                      self.data.test_user_dict,
+        #                                      user_ids_batches, item_ids, self.args.K)
+        # # print(precision)
+
+        user_ids = list(self.data.train_user_dict.keys())
+        user_ids_batch = random.sample(user_ids, self.args.test_batch_size)
+        neg_list = [self.data.sample_neg_items_for_u(self.data.train_user_dict, u, NEG_SIZE_TRAIN) for u in user_ids_batch]
+        all_embed = self.train_data.x(self.train_data.node_idx)
+
+        pos_logits = torch.tensor([])
+        neg_logits = torch.tensor([])
+
+        for idx, u in enumerate(user_ids_batch):
+            user_embedding = all_embed[u]
+            pos_item_embeddings = all_embed[self.data.train_user_dict[u]]
+            cf_score_pos = torch.matmul(user_embedding, pos_item_embeddings.transpose(0, 1))
+            neg_item_embeddings = all_embed[neg_list[idx]]
+            cf_score_neg = torch.matmul(user_embedding, neg_item_embeddings.transpose(0, 1))\
+                .repeat(len(self.data.train_user_dict[u]))
+            pos_logits = torch.cat([pos_logits, cf_score_pos])
+            neg_logits = torch.cat([neg_logits, torch.unsqueeze(cf_score_neg, 1)])
+
+            HR1, HR3, HR20, HR50, MRR10, MRR20, MRR50, NDCG10, NDCG20, NDCG50 = self.metrics(pos_logits, neg_logits)
+
+        return NDCG10
+
+    def test_batch(self):
+        user_ids = list(self.data.train_user_dict.keys())
+        user_ids_batch = user_ids
+        neg_list = [self.data.sample_neg_items_for_u(self.data.train_user_dict, u, NEG_SIZE_RANKING) for u in user_ids_batch]
+        all_embed = self.train_data.x(self.train_data.node_idx)
+
+        pos_logits = torch.tensor([])
+        neg_logits = torch.tensor([])
+
+        for idx, u in enumerate(user_ids_batch):
+            user_embedding = all_embed[u]
+            pos_item_embeddings = all_embed[self.data.train_user_dict[u]]
+            cf_score_pos = torch.matmul(user_embedding, pos_item_embeddings.transpose(0, 1))
+            neg_item_embeddings = all_embed[neg_list[idx]]
+            cf_score_neg = torch.matmul(user_embedding, neg_item_embeddings.transpose(0, 1))\
+                .repeat(len(self.data.train_user_dict[u]))
+            pos_logits = torch.cat([pos_logits, cf_score_pos])
+            neg_logits = torch.cat([neg_logits, torch.unsqueeze(cf_score_neg, 1)])
+
+            HR1, HR3, HR20, HR50, MRR10, MRR20, MRR50, NDCG10, NDCG20, NDCG50 = self.metrics(pos_logits, neg_logits)
+            print(HR1, HR3, HR20, HR50, MRR10, MRR20, MRR50, NDCG10, NDCG20, NDCG50)
+
+        return NDCG10
 
     def evaluate(self, model, train_graph, train_user_dict, test_user_dict, user_ids_batches, item_ids, K):
         model.eval()
@@ -262,8 +316,8 @@ class hgnn_env(object):
                 cf_scores_batch = cf_scores_batch.cpu()
                 user_ids_batch = user_ids_batch.cpu().numpy()
                 precision_batch, recall_batch = calc_metrics_at_k(cf_scores_batch, train_user_dict,
-                                                                              test_user_dict, user_ids_batch,
-                                                                              item_ids_batch, K)
+                                                                  test_user_dict, user_ids_batch,
+                                                                  item_ids_batch, K)
 
                 cf_scores.append(cf_scores_batch.numpy())
                 precision.append(precision_batch)
@@ -274,17 +328,60 @@ class hgnn_env(object):
         precision_k = sum(np.concatenate(precision)) / n_users
         recall_k = sum(np.concatenate(recall)) / n_users
         # ndcg_k = sum(np.concatenate(ndcg)) / n_users
-        return cf_scores, precision_k, recall_k #, ndcg_k
+        return cf_scores, precision_k, recall_k  # , ndcg_k
 
     def cf_score(self, g, user_ids, item_ids):
         """
         user_ids:   number of users to evaluate   (n_eval_users)
         item_ids:   number of items to evaluate   (n_eval_items)
         """
-        all_embed = g.x(g.node_idx)           # (n_users + n_entities, cf_concat_dim)
-        user_embed = all_embed[user_ids]                # (n_eval_users, cf_concat_dim)
-        item_embed = all_embed[item_ids]                # (n_eval_items, cf_concat_dim)
+
+        all_embed = g.x(g.node_idx)  # (n_users + n_entities, cf_concat_dim)
+        user_embed = all_embed[user_ids]  # (n_eval_users, cf_concat_dim)
+        item_embed = all_embed[item_ids]  # (n_eval_items, cf_concat_dim)
 
         # Equation (12)
-        cf_score = torch.matmul(user_embed, item_embed.transpose(0, 1))    # (n_eval_users, n_eval_items)
+        cf_score = torch.matmul(user_embed, item_embed.transpose(0, 1))  # (n_eval_users, n_eval_items)
         return cf_score
+
+    def metrics(self, batch_pos, batch_nega, training=True):
+        hit_num1 = 0.0
+        hit_num3 = 0.0
+        hit_num20 = 0.0
+        hit_num50 = 0.0
+        mrr_accu10 = 0.0
+        mrr_accu20 = 0.0
+        mrr_accu50 = 0.0
+        ndcg_accu10 = 0.0
+        ndcg_accu20 = 0.0
+        ndcg_accu50 = 0.0
+
+        if training:
+            batch_neg_of_user = torch.split(batch_nega, NEG_SIZE_TRAIN, dim=0)
+        else:
+            batch_neg_of_user = torch.split(batch_nega, NEG_SIZE_RANKING, dim=0)
+        for i in range(batch_pos.shape[0]):
+            pre_rank_tensor = torch.cat((batch_pos[i].view(1, 1), batch_neg_of_user[i]), dim=0)
+            _, indices = torch.topk(pre_rank_tensor, k=pre_rank_tensor.shape[0], dim=0)
+            rank = torch.squeeze((indices == 0).nonzero().to('cpu'))
+            rank = rank[0]
+            if rank < 50:
+                ndcg_accu50 = ndcg_accu50 + torch.log(torch.tensor([2.0])) / torch.log((rank + 2).type(torch.float32))
+                mrr_accu50 = mrr_accu50 + 1 / (rank + 1).type(torch.float32)
+                hit_num50 = hit_num50 + 1
+            if rank < 20:
+                ndcg_accu20 = ndcg_accu20 + torch.log(torch.tensor([2.0])) / torch.log((rank + 2).type(torch.float32))
+                mrr_accu20 = mrr_accu20 + 1 / (rank + 1).type(torch.float32)
+                hit_num20 = hit_num20 + 1
+            if rank < 10:
+                ndcg_accu10 = ndcg_accu10 + torch.log(torch.tensor([2.0])) / torch.log((rank + 2).type(torch.float32))
+            if rank < 10:
+                mrr_accu10 = mrr_accu10 + 1 / (rank + 1).type(torch.float32)
+            if rank < 3:
+                hit_num3 = hit_num3 + 1
+            if rank < 1:
+                hit_num1 = hit_num1 + 1
+        return hit_num1 / batch_pos.shape[0], hit_num3 / batch_pos.shape[0], hit_num20 / batch_pos.shape[0], hit_num50 / \
+               batch_pos.shape[0], mrr_accu10 / batch_pos.shape[0], mrr_accu20 / batch_pos.shape[0], mrr_accu50 / \
+               batch_pos.shape[0], \
+               ndcg_accu10 / batch_pos.shape[0], ndcg_accu20 / batch_pos.shape[0], ndcg_accu50 / batch_pos.shape[0]

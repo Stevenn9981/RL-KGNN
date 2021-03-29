@@ -70,7 +70,7 @@ def parse_args():
     parser.add_argument('--evaluate_every', type=int, default=1,
                         help='Epoch interval of evaluating CF.')
 
-    parser.add_argument('--K', type=int, default=2,
+    parser.add_argument('--K', type=int, default=20,
                         help='Calculate metric@K when evaluating.')
 
     args = parser.parse_args()
@@ -108,6 +108,8 @@ class DataLoaderHGNN(object):
         kg_data = self.load_kg(kg_file)
         self.construct_data(kg_data)
 
+        print("Constructed KG finished.")
+        logging.basicConfig()
         self.print_info(logging)
         self.train_graph = self.create_graph(self.kg_train_data, self.n_users_entities)
         self.test_graph = self.create_graph(self.kg_test_data, self.n_users_entities)
@@ -141,11 +143,11 @@ class DataLoaderHGNN(object):
 
 
     def statistic_cf(self):
-        self.n_users = max(max(self.cf_train_data[0]), max(self.cf_test_data[0])) + 1
+        self.n_users = max(max(self.cf_train_data[0]), max(self.cf_test_data[0])) - min(min(self.cf_train_data[0]), min(self.cf_test_data[0])) + 1
         self.n_items = max(max(self.cf_train_data[1]), max(self.cf_test_data[1])) + 1
         self.n_cf_train = len(self.cf_train_data[0])
         self.n_cf_test = len(self.cf_test_data[0])
-        print(self.n_users, self.n_items, self.n_cf_train, self.n_cf_test)
+        # print(self.n_users, self.n_items, self.n_cf_train, self.n_cf_test)
 
 
     def load_kg(self, filename):
@@ -156,7 +158,7 @@ class DataLoaderHGNN(object):
 
     def construct_data(self, kg_data):
         # plus inverse kg data
-        n_relations = max(kg_data['r']) + 1
+        n_relations = max(kg_data['r'])
         reverse_kg_data = kg_data.copy()
         reverse_kg_data = reverse_kg_data.rename({'h': 't', 't': 'h'}, axis='columns')
         reverse_kg_data['r'] += n_relations
@@ -165,14 +167,14 @@ class DataLoaderHGNN(object):
         # re-map user id
         kg_data['r'] += 3
         self.n_relations = max(kg_data['r'])
-        self.n_entities = max(max(kg_data['h']), max(kg_data['t'])) + 1
-        self.n_users_entities = self.n_users + self.n_entities
+        self.n_users_entities = max(max(self.cf_train_data[0]), max(self.cf_test_data[0])) + 1
+        self.n_entities = self.n_users_entities - self.n_users
 
-        self.cf_train_data = (np.array(list(map(lambda d: d + self.n_entities, self.cf_train_data[0]))).astype(np.int32), self.cf_train_data[1].astype(np.int32))
-        self.cf_test_data = (np.array(list(map(lambda d: d + self.n_entities, self.cf_test_data[0]))).astype(np.int32), self.cf_test_data[1].astype(np.int32))
+        self.cf_train_data = (np.array(list(self.cf_train_data[0])).astype(np.int32), self.cf_train_data[1].astype(np.int32))
+        self.cf_test_data = (np.array(list(self.cf_test_data[0])).astype(np.int32), self.cf_test_data[1].astype(np.int32))
 
-        self.train_user_dict = {k + self.n_entities: np.unique(v).astype(np.int32) for k, v in self.train_user_dict.items()}
-        self.test_user_dict = {k + self.n_entities: np.unique(v).astype(np.int32) for k, v in self.test_user_dict.items()}
+        self.train_user_dict = {k: np.unique(v).astype(np.int32) for k, v in self.train_user_dict.items()}
+        self.test_user_dict = {k: np.unique(v).astype(np.int32) for k, v in self.test_user_dict.items()}
 
         # add interactions to kg data
         cf2kg_train_data = pd.DataFrame(np.full((self.n_cf_train, 3), 2, dtype=np.int32), columns=['h', 'r', 't'])
@@ -200,7 +202,8 @@ class DataLoaderHGNN(object):
         # construct kg dict
         self.train_kg_dict = collections.defaultdict(list)
         self.train_relation_dict = collections.defaultdict(list)
-        print(len(self.kg_train_data))
+        # print("#Entites: ", self.n_users_entities)
+        # print(len(self.kg_train_data))
         for row in self.kg_train_data.iterrows():
             h, r, t = row[1]
             self.train_kg_dict[h].append((t, r))
@@ -215,17 +218,17 @@ class DataLoaderHGNN(object):
 
 
     def print_info(self, logging):
-        logging.info('n_users:            %d' % self.n_users)
-        logging.info('n_items:            %d' % self.n_items)
-        logging.info('n_entities:         %d' % self.n_entities)
-        logging.info('n_users_entities:   %d' % self.n_users_entities)
-        logging.info('n_relations:        %d' % self.n_relations)
+        print('n_users:            %d' % self.n_users)
+        print('n_items:            %d' % self.n_items)
+        print('n_entities:         %d' % self.n_entities)
+        print('n_users_entities:   %d' % self.n_users_entities)
+        print('n_relations:        %d' % self.n_relations)
 
-        logging.info('n_cf_train:         %d' % self.n_cf_train)
-        logging.info('n_cf_test:          %d' % self.n_cf_test)
+        print('n_cf_train:         %d' % self.n_cf_train)
+        print('n_cf_test:          %d' % self.n_cf_test)
 
-        logging.info('n_kg_train:         %d' % self.n_kg_train)
-        logging.info('n_kg_test:          %d' % self.n_kg_test)
+        print('n_kg_train:         %d' % self.n_kg_train)
+        print('n_kg_test:          %d' % self.n_kg_test)
 
 
     def create_graph(self, kg_data, n_nodes):

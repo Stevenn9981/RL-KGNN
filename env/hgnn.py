@@ -157,6 +157,7 @@ class hgnn_env(object):
                                 del self.meta_path_instances_dict[idx]
             if len(self.meta_path_instances_dict) > 0:
                 self.train()
+
             val_precision = self.eval_batch()
             val_acc.append(val_precision.item())
             self.past_performance.append(val_precision)
@@ -248,7 +249,7 @@ class hgnn_env(object):
         #                                      self.data.test_user_dict,
         #                                      user_ids_batches, item_ids, self.args.K)
         # # print(precision)
-
+        time1 = time.time()
         user_ids = list(self.data.train_user_dict.keys())
         user_ids_batch = random.sample(user_ids, self.args.test_batch_size)
         neg_list = [self.data.sample_neg_items_for_u(self.data.train_user_dict, u, NEG_SIZE_TRAIN) for u in user_ids_batch]
@@ -257,6 +258,7 @@ class hgnn_env(object):
         pos_logits = torch.tensor([])
         neg_logits = torch.tensor([])
 
+        time2 = time.time()
         for idx, u in enumerate(user_ids_batch):
             user_embedding = all_embed[u]
             pos_item_embeddings = all_embed[self.data.train_user_dict[u]]
@@ -267,8 +269,13 @@ class hgnn_env(object):
             pos_logits = torch.cat([pos_logits, cf_score_pos])
             neg_logits = torch.cat([neg_logits, torch.unsqueeze(cf_score_neg, 1)])
 
-        HR1, HR3, HR20, HR50, MRR10, MRR20, MRR50, NDCG10, NDCG20, NDCG50 = self.metrics(pos_logits, neg_logits)
-
+        time3 = time.time()
+        NDCG10 = self.metrics(pos_logits, neg_logits)
+        time4 = time.time()
+        # print("ALL time: ", time4 - time1)
+        # print("Metrics time: ", time4 - time3)
+        # print("Cat time: ", time3 - time2)
+        # print("Data time: ", time2 - time1)
         return NDCG10
 
     def test_batch(self):
@@ -358,28 +365,38 @@ class hgnn_env(object):
             batch_neg_of_user = torch.split(batch_nega, NEG_SIZE_TRAIN, dim=0)
         else:
             batch_neg_of_user = torch.split(batch_nega, NEG_SIZE_RANKING, dim=0)
-        for i in range(batch_pos.shape[0]):
-            pre_rank_tensor = torch.cat((batch_pos[i].view(1, 1), batch_neg_of_user[i]), dim=0)
-            _, indices = torch.topk(pre_rank_tensor, k=pre_rank_tensor.shape[0], dim=0)
-            rank = torch.squeeze((indices == 0).nonzero().to('cpu'))
-            rank = rank[0]
-            if rank < 50:
-                ndcg_accu50 = ndcg_accu50 + torch.log(torch.tensor([2.0])) / torch.log((rank + 2).type(torch.float32))
-                mrr_accu50 = mrr_accu50 + 1 / (rank + 1).type(torch.float32)
-                hit_num50 = hit_num50 + 1
-            if rank < 20:
-                ndcg_accu20 = ndcg_accu20 + torch.log(torch.tensor([2.0])) / torch.log((rank + 2).type(torch.float32))
-                mrr_accu20 = mrr_accu20 + 1 / (rank + 1).type(torch.float32)
-                hit_num20 = hit_num20 + 1
-            if rank < 10:
-                ndcg_accu10 = ndcg_accu10 + torch.log(torch.tensor([2.0])) / torch.log((rank + 2).type(torch.float32))
-            if rank < 10:
-                mrr_accu10 = mrr_accu10 + 1 / (rank + 1).type(torch.float32)
-            if rank < 3:
-                hit_num3 = hit_num3 + 1
-            if rank < 1:
-                hit_num1 = hit_num1 + 1
-        return hit_num1 / batch_pos.shape[0], hit_num3 / batch_pos.shape[0], hit_num20 / batch_pos.shape[0], hit_num50 / \
-               batch_pos.shape[0], mrr_accu10 / batch_pos.shape[0], mrr_accu20 / batch_pos.shape[0], mrr_accu50 / \
-               batch_pos.shape[0], \
-               ndcg_accu10 / batch_pos.shape[0], ndcg_accu20 / batch_pos.shape[0], ndcg_accu50 / batch_pos.shape[0]
+        if training:
+            for i in range(batch_pos.shape[0]):
+                pre_rank_tensor = torch.cat((batch_pos[i].view(1, 1), batch_neg_of_user[i]), dim=0)
+                _, indices = torch.topk(pre_rank_tensor, k=pre_rank_tensor.shape[0], dim=0)
+                rank = torch.squeeze((indices == 0).nonzero().to(self.device))
+                rank = rank[0]
+                if rank < 10:
+                    ndcg_accu10 = ndcg_accu10 + torch.log(torch.tensor([2.0])) / torch.log((rank + 2).type(torch.float32))
+            return ndcg_accu10 / batch_pos.shape[0]
+        else:
+            for i in range(batch_pos.shape[0]):
+                pre_rank_tensor = torch.cat((batch_pos[i].view(1, 1), batch_neg_of_user[i]), dim=0)
+                _, indices = torch.topk(pre_rank_tensor, k=pre_rank_tensor.shape[0], dim=0)
+                rank = torch.squeeze((indices == 0).nonzero().to(self.device))
+                rank = rank[0]
+                if rank < 50:
+                    ndcg_accu50 = ndcg_accu50 + torch.log(torch.tensor([2.0])) / torch.log((rank + 2).type(torch.float32))
+                    mrr_accu50 = mrr_accu50 + 1 / (rank + 1).type(torch.float32)
+                    hit_num50 = hit_num50 + 1
+                if rank < 20:
+                    ndcg_accu20 = ndcg_accu20 + torch.log(torch.tensor([2.0])) / torch.log((rank + 2).type(torch.float32))
+                    mrr_accu20 = mrr_accu20 + 1 / (rank + 1).type(torch.float32)
+                    hit_num20 = hit_num20 + 1
+                if rank < 10:
+                    ndcg_accu10 = ndcg_accu10 + torch.log(torch.tensor([2.0])) / torch.log((rank + 2).type(torch.float32))
+                if rank < 10:
+                    mrr_accu10 = mrr_accu10 + 1 / (rank + 1).type(torch.float32)
+                if rank < 3:
+                    hit_num3 = hit_num3 + 1
+                if rank < 1:
+                    hit_num1 = hit_num1 + 1
+            return hit_num1 / batch_pos.shape[0], hit_num3 / batch_pos.shape[0], hit_num20 / batch_pos.shape[0], hit_num50 / \
+                   batch_pos.shape[0], mrr_accu10 / batch_pos.shape[0], mrr_accu20 / batch_pos.shape[0], mrr_accu50 / \
+                   batch_pos.shape[0], \
+                   ndcg_accu10 / batch_pos.shape[0], ndcg_accu20 / batch_pos.shape[0], ndcg_accu50 / batch_pos.shape[0]

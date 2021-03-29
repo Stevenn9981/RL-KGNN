@@ -249,7 +249,7 @@ class hgnn_env(object):
         # # print(precision)
 
         user_ids = list(self.data.train_user_dict.keys())
-        user_ids_batch = random.sample(user_ids, 2)
+        user_ids_batch = random.sample(user_ids, self.args.test_batch_size)
         neg_list = [self.data.sample_neg_items_for_u(self.data.train_user_dict, u, NEG_SIZE_TRAIN) for u in user_ids_batch]
         all_embed = self.train_data.x(self.train_data.node_idx)
 

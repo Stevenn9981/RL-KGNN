@@ -1,6 +1,5 @@
 import torch
 from dqn_agent_pytorch import DQNAgent
-from env.gcn import gcn_env
 import numpy as np
 import os
 import random

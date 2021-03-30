@@ -270,6 +270,7 @@ class hgnn_env(object):
         for u in user_ids_batch:
             for _ in self.data.train_user_dict[u]:
                 neg_list.append(self.data.sample_neg_items_for_u(self.data.train_user_dict, u, NEG_SIZE_TRAIN))
+        self.train_data.x.weight = self.train_data.x.weight.to(self.device)
         all_embed = self.train_data.x(self.train_data.node_idx).to(self.device)
 
         pos_logits = torch.tensor([]).to(self.device)

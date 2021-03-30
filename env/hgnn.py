@@ -172,6 +172,7 @@ class hgnn_env(object):
         torch.save({'state_dict': self.model.state_dict(),
                     'optimizer': self.optimizer.state_dict(),
                     'Val': val_acc,
+                    'Embedding': self.train_data.x.weight,
                     'Reward': r},
                    'model/epochpoints/m-' + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + '.pth.tar')
 
@@ -298,7 +299,7 @@ class hgnn_env(object):
     def test_batch(self):
         self.model.eval()
         user_ids = list(self.data.test_user_dict.keys())
-        user_ids_batch = user_ids
+        user_ids_batch = random.sample(user_ids, 5000)
         neg_list = []
         for u in user_ids_batch:
             for _ in self.data.test_user_dict[u]:

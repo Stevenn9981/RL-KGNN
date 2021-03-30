@@ -326,7 +326,7 @@ class hgnn_env(object):
         HR1, HR3, HR20, HR50, MRR10, MRR20, MRR50, NDCG10, NDCG20, NDCG50 = self.metrics(pos_logits, neg_logits, training=False)
         print(HR1, HR3, HR20, HR50, MRR10.item(), MRR20.item(), MRR50.item(), NDCG10.item(), NDCG20.item(), NDCG50.item())
 
-        return NDCG10.item()
+        return NDCG10.cpu().item()
 
     def evaluate(self, model, train_graph, train_user_dict, test_user_dict, user_ids_batches, item_ids, K):
         model.eval()

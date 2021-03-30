@@ -12,12 +12,13 @@ def main():
     dataset = 'yelp_data'
 
     agentCheckpoint = torch.load("model/agentpoints/m-1.02021-03-30 20:11:36.pth.tar")
+    epochCheckpoint = torch.load("model/epochpoints/m-2021-03-30 23:06:48.pth.tar")
 
     best_acc = 0.0
     print("Training GNNs with learned meta-policy")
     new_env = hgnn_env(dataset=dataset)
     new_env.seed(0)
-
+    new_env.model.load_state_dict(epochCheckpoint['state_dict'])
     best_policy = DQNAgent(scope='dqn',
                            action_num=new_env.action_num,
                            replay_memory_size=int(1e4),

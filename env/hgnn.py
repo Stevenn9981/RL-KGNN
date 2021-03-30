@@ -322,7 +322,7 @@ class hgnn_env(object):
             neg_logits = torch.cat([neg_logits, torch.unsqueeze(cf_score_neg, 1)])
 
         HR1, HR3, HR20, HR50, MRR10, MRR20, MRR50, NDCG10, NDCG20, NDCG50 = self.metrics(pos_logits, neg_logits, training=False)
-        print(HR1.item(), HR3.item(), HR20.item(), HR50.item(), MRR10.item(), MRR20.item(), MRR50.item(), NDCG10.item(), NDCG20.item(), NDCG50.item())
+        print(HR1, HR3, HR20, HR50, MRR10.item(), MRR20.item(), MRR50.item(), NDCG10.item(), NDCG20.item(), NDCG50.item())
 
         return NDCG10.item()
 

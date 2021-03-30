@@ -47,7 +47,7 @@ def main():
                     'target_estimator_qnet_state_dict': agent.target_estimator.qnet.state_dict(),
                     'Val': val_acc,
                     'Reward': reward},
-                    'model/agentpoints/m-' + str(val_acc) + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + '.pth.tar')
+                    'model/agentpoints/m-' + str(val_acc) + '-' + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + '.pth.tar')
 
     # last_val = 0.0
     # # Training: Learning meta-policy

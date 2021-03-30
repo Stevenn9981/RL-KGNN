@@ -21,8 +21,8 @@ def main():
                     action_num = env.action_num,
                     replay_memory_size=int(1e4),
                     replay_memory_init_size=500,
-                    norm_step=2,
-                    batch_size=24,
+                    norm_step=10,
+                    batch_size=128,
                     state_shape = env.observation_space.shape,
                     mlp_layers=[32, 64, 128, 64, 32],
                     device=torch.device('cpu')
@@ -34,6 +34,8 @@ def main():
     # Training: Learning meta-policy
     print("Training Meta-policy on Validation Set")
     for i_episode in range(1, max_episodes+1):
+        print(agent.batch_size)
+        print(agent.memory.batch_size)
         loss, reward, (val_acc, reward) = agent.learn(env, max_timesteps) # debug = (val_acc, reward)
         if val_acc > best_val: # check whether gain improvement on validation set
             best_policy = deepcopy(agent) # save the best policy

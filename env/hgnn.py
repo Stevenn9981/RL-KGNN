@@ -37,7 +37,7 @@ class Net(torch.nn.Module):
 
 
 class hgnn_env(object):
-    def __init__(self, dataset='last-fm', lr=0.01, weight_decay=5e-4, batch_size=128, policy=None):
+    def __init__(self, dataset='last-fm', lr=0.01, weight_decay=5e-4, policy=None):
         self.device = 'cpu'
         # dataset = dataset
         # path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', dataset)

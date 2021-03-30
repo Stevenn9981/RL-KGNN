@@ -280,7 +280,8 @@ class DataLoaderHGNN(object):
         return sample_neg_items
 
     def sample_neg_items_for_u_test(self, user_dict, test_dict, user_id, n_sample_neg_items):
-        pos_items = user_dict[user_id].extend(test_dict[user_id])
+        pos_items = user_dict[user_id]
+        pos_items_2 = test_dict[user_id]
 
         sample_neg_items = []
         while True:
@@ -288,7 +289,7 @@ class DataLoaderHGNN(object):
                 break
 
             neg_item_id = np.random.randint(low=0, high=self.n_items, size=1)[0]
-            if neg_item_id not in pos_items and neg_item_id not in sample_neg_items:
+            if neg_item_id not in pos_items and neg_item_id not in pos_items_2 and neg_item_id not in sample_neg_items:
                 sample_neg_items.append(neg_item_id)
         return sample_neg_items
 

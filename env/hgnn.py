@@ -308,8 +308,8 @@ class hgnn_env(object):
         neg_list = [self.data.sample_neg_items_for_u(self.data.train_user_dict, u, NEG_SIZE_RANKING) for u in user_ids_batch]
         self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))
         all_embed = self.train_data.x(self.train_data.node_idx)
-        pos_logits = torch.tensor([])
-        neg_logits = torch.tensor([])
+        pos_logits = torch.tensor([]).to(self.device)
+        neg_logits = torch.tensor([]).to(self.device)
 
         for idx, u in enumerate(user_ids_batch):
             user_embedding = all_embed[u]

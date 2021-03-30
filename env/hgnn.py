@@ -395,7 +395,7 @@ class hgnn_env(object):
                 rank = torch.squeeze((indices == 0).nonzero().to(self.device))
                 rank = rank[0]
                 if rank < 10:
-                    ndcg_accu10 = ndcg_accu10 + torch.log(torch.tensor([2.0])) / torch.log((rank + 2).type(torch.float32))
+                    ndcg_accu10 = ndcg_accu10 + torch.log(torch.tensor([2.0]).to(self.device)) / torch.log((rank + 2).type(torch.float32))
             return ndcg_accu10 / batch_pos.shape[0]
         else:
             for i in range(batch_pos.shape[0]):
@@ -404,15 +404,15 @@ class hgnn_env(object):
                 rank = torch.squeeze((indices == 0).nonzero().to(self.device))
                 rank = rank[0]
                 if rank < 50:
-                    ndcg_accu50 = ndcg_accu50 + torch.log(torch.tensor([2.0])) / torch.log((rank + 2).type(torch.float32))
+                    ndcg_accu50 = ndcg_accu50 + torch.log(torch.tensor([2.0]).to(self.device)) / torch.log((rank + 2).type(torch.float32))
                     mrr_accu50 = mrr_accu50 + 1 / (rank + 1).type(torch.float32)
                     hit_num50 = hit_num50 + 1
                 if rank < 20:
-                    ndcg_accu20 = ndcg_accu20 + torch.log(torch.tensor([2.0])) / torch.log((rank + 2).type(torch.float32))
+                    ndcg_accu20 = ndcg_accu20 + torch.log(torch.tensor([2.0]).to(self.device)) / torch.log((rank + 2).type(torch.float32))
                     mrr_accu20 = mrr_accu20 + 1 / (rank + 1).type(torch.float32)
                     hit_num20 = hit_num20 + 1
                 if rank < 10:
-                    ndcg_accu10 = ndcg_accu10 + torch.log(torch.tensor([2.0])) / torch.log((rank + 2).type(torch.float32))
+                    ndcg_accu10 = ndcg_accu10 + torch.log(torch.tensor([2.0]).to(self.device)) / torch.log((rank + 2).type(torch.float32))
                 if rank < 10:
                     mrr_accu10 = mrr_accu10 + 1 / (rank + 1).type(torch.float32)
                 if rank < 3:

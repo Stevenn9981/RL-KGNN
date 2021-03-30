@@ -26,7 +26,7 @@ def main():
                     batch_size=32,
                     state_shape = env.observation_space.shape,
                     mlp_layers=[32, 64, 128, 64, 32],
-                    device=torch.device('cuda')
+                    device=torch.device('cpu')
             )
     env.policy = agent
 

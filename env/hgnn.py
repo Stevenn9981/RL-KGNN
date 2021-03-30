@@ -13,8 +13,8 @@ from KGDataLoader import *
 
 STOP = 0
 
-NEG_SIZE_TRAIN = 4
-NEG_SIZE_RANKING = 100
+NEG_SIZE_TRAIN = 2
+NEG_SIZE_RANKING = 2
 
 
 def _L2_loss_mean(x):
@@ -38,7 +38,7 @@ class Net(torch.nn.Module):
 
 class hgnn_env(object):
     def __init__(self, dataset='last-fm', lr=0.01, weight_decay=5e-4, policy=None):
-        self.device = 'cpu'
+        self.device = 'cuda'
         # dataset = dataset
         # path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', dataset)
         args = parse_args()
@@ -61,7 +61,7 @@ class hgnn_env(object):
         # print(data.train_graph.adj)
         self.model, self.train_data = Net(dataset).to(self.device), data.train_graph.to(self.device)
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr, weight_decay=weight_decay)
-
+        self.train_data.node_idx = self.train_data.node_idx.to(self.device)
         self.data.test_graph = self.data.test_graph.to(self.device)
 
         self._set_action_space(self.train_data.relation_embed.num_embeddings + 1)
@@ -126,7 +126,6 @@ class hgnn_env(object):
         #         done = True
         #     index = self.stochastic_k_hop(actions, index)
 
-        current_state_batch = F.normalize(self.train_data.x(torch.tensor(index)).to(self.device)).detach().numpy()
         next_state, reward, val_acc = [], [], []
         for act, idx in zip(actions, index):
             if idx not in self.meta_path_instances_dict:
@@ -266,7 +265,7 @@ class hgnn_env(object):
         # # print(precision)
         time1 = time.time()
         user_ids = list(self.data.train_user_dict.keys())
-        user_ids_batch = random.sample(user_ids, self.args.test_batch_size)
+        user_ids_batch = random.sample(user_ids, min(2, self.args.test_batch_size))
         neg_list = []
         for u in user_ids_batch:
             for _ in self.data.train_user_dict[u]:
@@ -306,8 +305,8 @@ class hgnn_env(object):
         user_ids = list(self.data.train_user_dict.keys())
         user_ids_batch = random.sample(user_ids, self.args.test_batch_size)
         neg_list = [self.data.sample_neg_items_for_u(self.data.train_user_dict, u, NEG_SIZE_RANKING) for u in user_ids_batch]
+        self.train_data.x.weight = self.train_data.x.weight.to(self.device)
         all_embed = self.train_data.x(self.train_data.node_idx)
-
         pos_logits = torch.tensor([])
         neg_logits = torch.tensor([])
 

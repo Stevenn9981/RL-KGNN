@@ -3,6 +3,7 @@ from dqn_agent_pytorch import DQNAgent
 import numpy as np
 import os
 import random
+import time
 from copy import deepcopy
 
 from env.hgnn import hgnn_env
@@ -34,8 +35,6 @@ def main():
     # Training: Learning meta-policy
     print("Training Meta-policy on Validation Set")
     for i_episode in range(1, max_episodes+1):
-        print(agent.batch_size)
-        print(agent.memory.batch_size)
         loss, reward, (val_acc, reward) = agent.learn(env, max_timesteps) # debug = (val_acc, reward)
         if val_acc > best_val: # check whether gain improvement on validation set
             best_policy = deepcopy(agent) # save the best policy
@@ -44,6 +43,10 @@ def main():
         if i_episode - best_i > 4:
             break
         print("Training Meta-policy:", i_episode, "Val_Acc:", val_acc, "Avg_reward:", reward, "; Best_Acc:", best_val)
+        torch.save({'state_dict': agent.state_dict(),
+                    'Val': val_acc,
+                    'Reward': reward},
+                   'model/agentpoints/m-' + str(val_acc) + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + '.pth.tar')
 
     # last_val = 0.0
     # # Training: Learning meta-policy

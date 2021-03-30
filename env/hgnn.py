@@ -165,10 +165,25 @@ class hgnn_env(object):
             rew = 100 * (val_precision - baseline)  # FIXME: Reward Engineering
             reward.append(rew.item())
             print("Val acc: ", val_precision.item(), " reward: ", rew.item())
+
+            torch.save({'state_dict': self.model.state_dict(),
+                        'optimizer': self.optimizer.state_dict(),
+                        'Val': val_precision.item(),
+                        'Reward': rew.item()},
+                        'model/checkpoints/m-' + str(val_precision.item()) + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + '.pth.tar')
+
+
         next_state = F.normalize(self.train_data.x(torch.tensor(index).to(self.train_data.x.weight.device)).cpu()).detach().numpy()
         r = np.mean(np.array(reward))
         val_acc = np.mean(val_acc)
         next_state = np.array(next_state)
+
+        torch.save({'state_dict': self.model.state_dict(),
+                    'optimizer': self.optimizer.state_dict(),
+                    'Val': val_acc,
+                    'Reward': r},
+                   'model/epochpoints/m-' + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + '.pth.tar')
+
         return next_state, reward, np.array(done_list)[index].tolist(), (val_acc, r)
 
     def train(self):
@@ -256,10 +271,10 @@ class hgnn_env(object):
         for u in user_ids_batch:
             for _ in self.data.train_user_dict[u]:
                 neg_list.append(self.data.sample_neg_items_for_u(self.data.train_user_dict, u, NEG_SIZE_TRAIN))
-        all_embed = self.train_data.x(self.train_data.node_idx)
+        all_embed = self.train_data.x(self.train_data.node_idx).to(self.device)
 
-        pos_logits = torch.tensor([])
-        neg_logits = torch.tensor([])
+        pos_logits = torch.tensor([]).to(self.device)
+        neg_logits = torch.tensor([]).to(self.device)
 
         time2 = time.time()
         idx = 0

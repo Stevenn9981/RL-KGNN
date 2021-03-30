@@ -297,12 +297,13 @@ class hgnn_env(object):
 
     def test_batch(self):
         self.model.eval()
-        user_ids = list(self.data.train_user_dict.keys())
+        user_ids = list(self.data.test_user_dict.keys())
         user_ids_batch = user_ids
         neg_list = []
         for u in user_ids_batch:
-            for _ in self.data.train_user_dict[u]:
-                neg_list.append(self.data.sample_neg_items_for_u(self.data.train_user_dict, u, NEG_SIZE_RANKING))
+            for _ in self.data.test_user_dict[u]:
+                neg_list.append(self.data.sample_neg_items_for_u_test(self.data.train_user_dict,
+                                                                      self.data.test_user_dict, u, NEG_SIZE_RANKING))
         self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))
         all_embed = self.train_data.x(self.train_data.node_idx)
         pos_logits = torch.tensor([]).to(self.device)
@@ -311,13 +312,13 @@ class hgnn_env(object):
         idx = 0
         for u in user_ids_batch:
             user_embedding = all_embed[u]
-            pos_item_embeddings = all_embed[self.data.train_user_dict[u]]
+            pos_item_embeddings = all_embed[self.data.test_user_dict[u]]
             cf_score_pos = torch.matmul(user_embedding, pos_item_embeddings.transpose(0, 1))
             neg_pos_list = []
-            for i in range(idx, idx + len(self.data.train_user_dict[u])):
+            for i in range(idx, idx + len(self.data.test_user_dict[u])):
                 neg_pos_list.extend(neg_list[i])
             neg_item_embeddings = all_embed[neg_pos_list]
-            idx += len(self.data.train_user_dict[u])
+            idx += len(self.data.test_user_dict[u])
             cf_score_neg = torch.matmul(user_embedding, neg_item_embeddings.transpose(0, 1))
             pos_logits = torch.cat([pos_logits, cf_score_pos])
             neg_logits = torch.cat([neg_logits, torch.unsqueeze(cf_score_neg, 1)])

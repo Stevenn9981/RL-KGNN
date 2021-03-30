@@ -279,6 +279,18 @@ class DataLoaderHGNN(object):
                 sample_neg_items.append(neg_item_id)
         return sample_neg_items
 
+    def sample_neg_items_for_u_test(self, user_dict, test_dict, user_id, n_sample_neg_items):
+        pos_items = user_dict[user_id].extend(test_dict[user_id])
+
+        sample_neg_items = []
+        while True:
+            if len(sample_neg_items) == n_sample_neg_items:
+                break
+
+            neg_item_id = np.random.randint(low=0, high=self.n_items, size=1)[0]
+            if neg_item_id not in pos_items and neg_item_id not in sample_neg_items:
+                sample_neg_items.append(neg_item_id)
+        return sample_neg_items
 
     def generate_cf_batch(self, user_dict):
         exist_users = list(user_dict.keys())

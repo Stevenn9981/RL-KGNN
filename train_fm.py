@@ -43,7 +43,8 @@ def main():
         if i_episode - best_i > 4:
             break
         print("Training Meta-policy:", i_episode, "Val_Acc:", val_acc, "Avg_reward:", reward, "; Best_Acc:", best_val)
-        torch.save({'state_dict': agent.state_dict(),
+        torch.save({'q_estimator_state_dict': agent.q_estimator.state_dict(),
+                    'target_estimator_state_dict': agent.target_estimator.state_dict(),
                     'Val': val_acc,
                     'Reward': reward},
                    'model/agentpoints/m-' + str(val_acc) + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + '.pth.tar')

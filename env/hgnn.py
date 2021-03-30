@@ -163,14 +163,6 @@ class hgnn_env(object):
             baseline = np.mean(np.array(self.past_performance[-self.baseline_experience:]))
             rew = 100 * (val_precision - baseline)  # FIXME: Reward Engineering
             reward.append(rew.item())
-            print("Val acc: ", val_precision.item(), " reward: ", rew.item())
-
-            torch.save({'state_dict': self.model.state_dict(),
-                        'optimizer': self.optimizer.state_dict(),
-                        'Val': val_precision.item(),
-                        'Reward': rew.item()},
-                        'model/checkpoints/m-' + str(val_precision.item()) + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + '.pth.tar')
-
 
         next_state = F.normalize(self.train_data.x(torch.tensor(index).to(self.train_data.x.weight.device)).cpu()).detach().numpy()
         r = np.mean(np.array(reward))
@@ -182,6 +174,8 @@ class hgnn_env(object):
                     'Val': val_acc,
                     'Reward': r},
                    'model/epochpoints/m-' + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + '.pth.tar')
+
+        print("Val acc: ", val_acc, " reward: ", r)
 
         return next_state, reward, np.array(done_list)[index].tolist(), (val_acc, r)
 
@@ -304,7 +298,7 @@ class hgnn_env(object):
     def test_batch(self):
         self.model.eval()
         user_ids = list(self.data.train_user_dict.keys())
-        user_ids_batch = random.sample(user_ids, self.args.test_batch_size)
+        user_ids_batch = user_ids
         neg_list = []
         for u in user_ids_batch:
             for _ in self.data.train_user_dict[u]:

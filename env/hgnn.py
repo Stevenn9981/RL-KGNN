@@ -304,7 +304,7 @@ class hgnn_env(object):
     def test_batch(self):
         self.model.eval()
         user_ids = list(self.data.train_user_dict.keys())
-        user_ids_batch = random.sample(user_ids, self.args.test_batch_size)
+        user_ids_batch = random.sample(user_ids, min(2,self.args.test_batch_size))
         neg_list = [self.data.sample_neg_items_for_u(self.data.train_user_dict, u, NEG_SIZE_RANKING) for u in user_ids_batch]
         self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))
         all_embed = self.train_data.x(self.train_data.node_idx)

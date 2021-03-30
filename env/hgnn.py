@@ -293,7 +293,7 @@ class hgnn_env(object):
 
 
         time3 = time.time()
-        NDCG10 = self.metrics(pos_logits, neg_logits)
+        NDCG10 = self.metrics(pos_logits, neg_logits).cpu()
         time4 = time.time()
         # print("ALL time: ", time4 - time1)
         # print("Metrics time: ", time4 - time3)

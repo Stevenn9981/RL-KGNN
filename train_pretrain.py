@@ -21,7 +21,7 @@ def main():
     new_env = hgnn_env(dataset=dataset)
     new_env.seed(0)
     new_env.model.load_state_dict(epochCheckpoint['state_dict'])
-    new_env.train_data.x = nn.Embedding.from_pretrained(epochCheckpoint['Embedding'], freeze=False)
+    new_env.train_data.x = nn.Embedding.from_pretrained(epochCheckpoint['Embedding'], freeze=True)
     best_policy = DQNAgent(scope='dqn',
                            action_num=new_env.action_num,
                            replay_memory_size=int(1e4),
@@ -34,6 +34,7 @@ def main():
                            )
     best_policy.q_estimator.qnet.load_state_dict(agentCheckpoint['q_estimator_qnet_state_dict'])
     best_policy.target_estimator.qnet.load_state_dict(agentCheckpoint['target_estimator_qnet_state_dict'])
+    new_env.test_batch()
 
     new_env.policy = best_policy
     index, state = new_env.reset2()

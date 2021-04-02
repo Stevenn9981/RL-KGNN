@@ -22,17 +22,17 @@ def _L2_loss_mean(x):
 
 
 class Net(torch.nn.Module):
-    def __init__(self, dataset='Cora'):
+    def __init__(self):
         super(Net, self).__init__()
-        self.conv1 = GATConv(64, 8, heads=8, dropout=0.5)
-        self.conv3 = GATConv(64, 8, heads=8, dropout=0.5)
-        self.conv2 = GATConv(64, 8, heads=8, dropout=0.5)
+        self.conv1 = GCNConv(64, 32, cached=True)
+        self.conv2 = GCNConv(32, 64, cached=True)
+        self.conv3 = GCNConv(64, 64, cached=True)
 
     def forward(self, x, edge_index):
-
         x = F.relu(self.conv1(x, edge_index))
-        x = F.relu(self.conv3(x, edge_index))
-        self.embedding = self.conv2(x, edge_index)
+        x = F.relu(self.conv2(x, edge_index))
+        x = F.dropout(x, training=self.training)
+        self.embedding = F.normalize(self.conv3(x, edge_index))
         return self.embedding
 
 
@@ -59,7 +59,7 @@ class hgnn_env(object):
                 data.train_graph.edge_index[1][i].item())
         data.train_graph.adj_dist = adj_dist
         # print(data.train_graph.adj)
-        self.model, self.train_data = Net(dataset).to(self.device), data.train_graph.to(self.device)
+        self.model, self.train_data = Net().to(self.device), data.train_graph.to(self.device)
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr, weight_decay=weight_decay)
         self.train_data.node_idx = self.train_data.node_idx.to(self.device)
         self.data.test_graph = self.data.test_graph.to(self.device)
@@ -220,6 +220,8 @@ class hgnn_env(object):
         pos_score = torch.sum(user_embed * item_pos_embed, dim=1)   # (cf_batch_size)
         neg_score = torch.sum(user_embed * item_neg_embed, dim=1)   # (cf_batch_size)
 
+        # print("pos, neg: ", pos_score, neg_score)
+
         cf_loss = (-1.0) * F.logsigmoid(pos_score - neg_score)
         cf_loss = torch.mean(cf_loss)
 
@@ -271,6 +273,14 @@ class hgnn_env(object):
         pos_logits = torch.tensor([]).to(self.device)
         neg_logits = torch.tensor([]).to(self.device)
 
+        # torch.set_printoptions(threshold=64)
+        # print("---------------------")
+        # print(user_ids[0:5])
+        # print(all_embed[21712])
+        # print(all_embed[4258])
+        # print(all_embed[2732])
+        # print(neg_list[0:5])
+
         time2 = time.time()
         idx = 0
         for u in user_ids_batch:
@@ -281,10 +291,14 @@ class hgnn_env(object):
             for i in range(idx, idx + len(self.data.train_user_dict[u])):
                 neg_pos_list.extend(neg_list[i])
             neg_item_embeddings = all_embed[neg_pos_list]
-            idx += len(self.data.train_user_dict[u])
             cf_score_neg = torch.matmul(user_embedding, neg_item_embeddings.transpose(0, 1))
             pos_logits = torch.cat([pos_logits, cf_score_pos])
             neg_logits = torch.cat([neg_logits, torch.unsqueeze(cf_score_neg, 1)])
+            # if idx == 0:
+            #     print(pos_logits)
+            #     print(neg_logits)
+            #     print("---------------------")
+            idx += len(self.data.train_user_dict[u])
 
 
         time3 = time.time()
@@ -299,7 +313,7 @@ class hgnn_env(object):
     def test_batch(self):
         self.model.eval()
         user_ids = list(self.data.test_user_dict.keys())
-        user_ids_batch = random.sample(user_ids, 5000)
+        user_ids_batch = user_ids[0:5000]
         neg_list = []
         for u in user_ids_batch:
             for _ in self.data.test_user_dict[u]:
@@ -309,7 +323,6 @@ class hgnn_env(object):
         all_embed = self.train_data.x(self.train_data.node_idx)
         pos_logits = torch.tensor([]).to(self.device)
         neg_logits = torch.tensor([]).to(self.device)
-
         idx = 0
         for u in user_ids_batch:
             user_embedding = all_embed[u]
@@ -319,10 +332,10 @@ class hgnn_env(object):
             for i in range(idx, idx + len(self.data.test_user_dict[u])):
                 neg_pos_list.extend(neg_list[i])
             neg_item_embeddings = all_embed[neg_pos_list]
-            idx += len(self.data.test_user_dict[u])
             cf_score_neg = torch.matmul(user_embedding, neg_item_embeddings.transpose(0, 1))
             pos_logits = torch.cat([pos_logits, cf_score_pos])
             neg_logits = torch.cat([neg_logits, torch.unsqueeze(cf_score_neg, 1)])
+            idx += len(self.data.test_user_dict[u])
 
         HR1, HR3, HR20, HR50, MRR10, MRR20, MRR50, NDCG10, NDCG20, NDCG50 = self.metrics(pos_logits, neg_logits, training=False)
         print(HR1, HR3, HR20, HR50, MRR10.item(), MRR20.item(), MRR50.item(), NDCG10.item(), NDCG20.item(), NDCG50.item())

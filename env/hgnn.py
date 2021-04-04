@@ -158,11 +158,11 @@ class hgnn_env(object):
                 self.train()
 
             val_precision = self.eval_batch()
-            val_acc.append(val_precision.item())
+            val_acc.append(val_precision)
             self.past_performance.append(val_precision)
             baseline = np.mean(np.array(self.past_performance[-self.baseline_experience:]))
             rew = 100 * (val_precision - baseline)  # FIXME: Reward Engineering
-            reward.append(rew.item())
+            reward.append(rew)
 
         next_state = F.normalize(self.train_data.x(torch.tensor(index).to(self.train_data.x.weight.device)).cpu()).detach().numpy()
         r = np.mean(np.array(reward))
@@ -308,7 +308,7 @@ class hgnn_env(object):
         # print("Metrics time: ", time4 - time3)
         # print("Cat time: ", time3 - time2)
         # print("Data time: ", time2 - time1)
-        return NDCG10
+        return NDCG10.item()
 
     def test_batch(self):
         self.model.eval()
@@ -393,12 +393,12 @@ class hgnn_env(object):
         hit_num3 = 0.0
         hit_num20 = 0.0
         hit_num50 = 0.0
-        mrr_accu10 = 0.0
-        mrr_accu20 = 0.0
-        mrr_accu50 = 0.0
-        ndcg_accu10 = 0.0
-        ndcg_accu20 = 0.0
-        ndcg_accu50 = 0.0
+        mrr_accu10 = torch.tensor(0)
+        mrr_accu20 = torch.tensor(0)
+        mrr_accu50 = torch.tensor(0)
+        ndcg_accu10 = torch.tensor(0)
+        ndcg_accu20 = torch.tensor(0)
+        ndcg_accu50 = torch.tensor(0)
 
         if training:
             batch_neg_of_user = torch.split(batch_nega, NEG_SIZE_TRAIN, dim=0)

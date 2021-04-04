@@ -67,7 +67,7 @@ def main():
     new_env.seed(0)
     new_env.policy = best_policy
     index, state = new_env.reset2()
-    for i_episode in range(1, 10):
+    for i_episode in range(1, 20):
         action = best_policy.eval_step(state)
         state, reward, done, (val_acc, reward) = new_env.step2(index, action)
         test_acc = new_env.test_batch()

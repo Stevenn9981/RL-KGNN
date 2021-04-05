@@ -13,8 +13,8 @@ from KGDataLoader import *
 
 STOP = 0
 
-NEG_SIZE_TRAIN = 4
-NEG_SIZE_RANKING = 100
+NEG_SIZE_TRAIN = 2
+NEG_SIZE_RANKING = 2
 
 
 def _L2_loss_mean(x):
@@ -38,7 +38,7 @@ class Net(torch.nn.Module):
 
 class hgnn_env(object):
     def __init__(self, dataset='last-fm', lr=0.01, weight_decay=5e-4, policy=None):
-        self.device = 'cpu'
+        self.device = 'cuda'
         # dataset = dataset
         # path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', dataset)
         args = parse_args()
@@ -262,7 +262,7 @@ class hgnn_env(object):
         # # print(precision)
         time1 = time.time()
         user_ids = list(self.data.train_user_dict.keys())
-        user_ids_batch = random.sample(user_ids, self.args.train_batch_size)
+        user_ids_batch = random.sample(user_ids, min(len(user_ids) - 2, self.args.train_batch_size))
         neg_list = []
         for u in user_ids_batch:
             for _ in self.data.train_user_dict[u]:

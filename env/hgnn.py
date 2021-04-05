@@ -13,8 +13,8 @@ from KGDataLoader import *
 
 STOP = 0
 
-NEG_SIZE_TRAIN = 2
-NEG_SIZE_RANKING = 2
+NEG_SIZE_TRAIN = 4
+NEG_SIZE_RANKING = 100
 
 
 def _L2_loss_mean(x):
@@ -262,7 +262,7 @@ class hgnn_env(object):
         # # print(precision)
         time1 = time.time()
         user_ids = list(self.data.train_user_dict.keys())
-        user_ids_batch = random.sample(user_ids, min(len(user_ids) - 2, self.args.train_batch_size))
+        user_ids_batch = random.sample(user_ids, self.args.train_batch_size)
         neg_list = []
         for u in user_ids_batch:
             for _ in self.data.train_user_dict[u]:

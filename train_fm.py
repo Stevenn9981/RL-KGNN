@@ -22,7 +22,7 @@ def main():
                     action_num = env.action_num,
                     replay_memory_size=int(1e4),
                     replay_memory_init_size=500,
-                    norm_step=10,
+                    norm_step=1,
                     batch_size=32,
                     state_shape = env.observation_space.shape,
                     mlp_layers=[32, 64, 128, 64, 32],

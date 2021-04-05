@@ -32,17 +32,19 @@ def main():
 
     best_val = 0.0
     best_i = 0
+    val_list = [0, 0, 0]
     # Training: Learning meta-policy
     print("Training Meta-policy on Validation Set")
     for i_episode in range(1, max_episodes+1):
         loss, reward, (val_acc, reward) = agent.learn(env, max_timesteps) # debug = (val_acc, reward)
+        val_list.append(val_acc)
         if val_acc > best_val: # check whether gain improvement on validation set
             best_policy = deepcopy(agent) # save the best policy
             best_val = val_acc
             best_i = i_episode
-        if i_episode - best_i > 3:
+        if val_list[-1] < val_list[-2] < val_list[-3] < val_list[-4]:
             break
-        print("Training Meta-policy:", i_episode, "Val_Acc:", val_acc, "Avg_reward:", reward, "; Best_Acc:", best_val)
+        print("Training Meta-policy:", i_episode, "Val_Acc:", val_acc, "Avg_reward:", reward, "; Best_Acc:", best_val, "; Best_i:", best_i)
         torch.save({'q_estimator_qnet_state_dict': agent.q_estimator.qnet.state_dict(),
                     'target_estimator_qnet_state_dict': agent.target_estimator.qnet.state_dict(),
                     'Val': val_acc,

@@ -1,3 +1,5 @@
+import collections
+
 import torch
 from dqn_agent_pytorch import DQNAgent
 import numpy as np
@@ -22,11 +24,11 @@ def main():
                     action_num = env.action_num,
                     replay_memory_size=int(1e4),
                     replay_memory_init_size=500,
-                    norm_step=50,
+                    norm_step=100,
                     batch_size=128,
                     state_shape = env.observation_space.shape,
                     mlp_layers=[32, 64, 128, 64, 32],
-                    device=torch.device('cuda')
+                    device=torch.device('cpu')
             )
     env.policy = agent
 
@@ -63,19 +65,36 @@ def main():
 
 
     # Testing: Apply meta-policy to train a new GNN
-    best_acc = 0.0
     print("Training GNNs with learned meta-policy")
     new_env = hgnn_env(dataset=dataset)
     new_env.seed(0)
     new_env.policy = best_policy
-    index, state = new_env.reset2()
-    for i_episode in range(1, 20):
+    index, state = new_env.reset2_test()
+    actions = []
+
+    for t in range(max_timesteps):
         action = best_policy.eval_step(state)
         state, reward, done, (val_acc, reward) = new_env.step2(index, action)
+        actions.append(action)
+
+    best_acc = new_env.test_batch()
+    print("Training GNN", 0, "; Test_Acc:", best_acc, "; Best_Acc:", best_acc, "; Best_i: ", 0)
+
+    counter = dict()
+    for i, action in enumerate(actions):
+        counter[i] = collections.Counter(action)
+    print(counter)
+
+    b_i = 0
+    for i_episode in range(1, 20):
+        for t in range(max_timesteps):
+            state, reward, done, (val_acc, reward) = new_env.step2(index, actions[t])
+            print("Training GNN", i_episode, "_", t,  "; Val_Acc:", val_acc, "; Reward:", reward)
         test_acc = new_env.test_batch()
         if test_acc > best_acc:
             best_acc = test_acc
-        print("Training GNN", i_episode, "; Val_Acc:", val_acc, "; Test_Acc:", test_acc, "; Best_Acc:", best_acc)
+            b_i = i_episode
+        print("Training GNN", i_episode, "; Test_Acc:", test_acc, "; Best_Acc:", best_acc, "; Best_i: ", b_i)
 
 if __name__ == '__main__':
     main()

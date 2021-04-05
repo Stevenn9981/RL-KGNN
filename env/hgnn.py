@@ -38,7 +38,7 @@ class Net(torch.nn.Module):
 
 class hgnn_env(object):
     def __init__(self, dataset='last-fm', lr=0.01, weight_decay=5e-4, policy=None):
-        self.device = 'cuda'
+        self.device = 'cpu'
         # dataset = dataset
         # path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', dataset)
         args = parse_args()
@@ -107,6 +107,15 @@ class hgnn_env(object):
         self.meta_path_instances_dict = collections.defaultdict(list)
         nodes = range(self.train_data.x.weight.shape[0])
         index = random.sample(nodes, min(self.batch_size,len(nodes)))
+        state = F.normalize(self.train_data.x(torch.tensor(index).to(self.train_data.x.weight.device))).cpu().detach().numpy()
+        self.optimizer.zero_grad()
+        return index, state
+
+    def reset2_test(self):
+        self.meta_path_dict = collections.defaultdict(list)
+        self.meta_path_instances_dict = collections.defaultdict(list)
+        nodes = range(self.train_data.x.weight.shape[0])
+        index = random.sample(nodes, len(nodes))
         state = F.normalize(self.train_data.x(torch.tensor(index).to(self.train_data.x.weight.device))).cpu().detach().numpy()
         self.optimizer.zero_grad()
         return index, state

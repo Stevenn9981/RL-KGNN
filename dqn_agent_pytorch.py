@@ -180,8 +180,8 @@ class DQNAgent(object):
         # print(next_state_batch.shape)
         trajectories = []
         for t in range(total_timesteps):
-            A, best_actions = self.predict_batch(next_state_batch)
-            # best_actions = np.random.choice(np.arange(len(A)), p=A, size=next_state_batch.shape[0])
+            A = self.predict_batch(next_state_batch)
+            best_actions = np.random.choice(np.arange(len(A)), p=A, size=next_state_batch.shape[0])
             state_batch = next_state_batch
             next_state_batch, reward_batch, done_batch, debug = env.step2(index,
                                                                           best_actions)  # debug = (val_acc, test_acc)
@@ -256,11 +256,10 @@ class DQNAgent(object):
         A = np.ones(self.action_num, dtype=float) * epsilon / self.action_num
         q_values = self.q_estimator.predict_nograd(self.normalizer.normalize(states))
         best_action = np.argmax(q_values, axis=1)
-        # print("predict_batch_actions: ", best_action)
         for a in best_action:
             A[a] += (1.0 - epsilon)
         A = A / A.sum()
-        return A, best_action
+        return A
 
     def train(self):
         ''' Train the network

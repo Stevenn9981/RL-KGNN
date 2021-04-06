@@ -153,7 +153,7 @@ class hgnn_env(object):
                         if act in self.train_data.adj_dist[end_node]:
                             self.meta_path_dict[idx].append(act)
                             for target_node in self.train_data.adj_dist[end_node][act]:
-                                path_i = copy(path_instance)
+                                path_i = path_instance.copy()
                                 path_i.append((end_node, target_node))
                                 self.meta_path_instances_dict[idx].append(path_i)
                             self.meta_path_instances_dict[idx].pop(i)
@@ -269,7 +269,7 @@ class hgnn_env(object):
         # # print(precision)
         time1 = time.time()
         user_ids = list(self.data.train_user_dict.keys())
-        user_ids_batch = random.sample(user_ids, self.args.train_batch_size)
+        user_ids_batch = random.sample(user_ids, min(len(user_ids) - 2, self.args.train_batch_size))
         neg_list = []
         for u in user_ids_batch:
             for _ in self.data.train_user_dict[u]:

@@ -85,6 +85,7 @@ def main():
     # print(counter)
 
     b_i = 0
+    best_acc = 0
     for i_episode in range(1, 20):
         index, state = new_env.reset2()
         for t in range(max_timesteps):

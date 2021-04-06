@@ -8,8 +8,8 @@ import random
 random.seed(0)
 torch.manual_seed(0)
 
-
 Transition = namedtuple('Transition', ['state', 'action', 'reward', 'next_state', 'done'])
+
 
 class Normalizer(object):
     ''' Normalizer class that tracks the running statistics for normlization
@@ -49,6 +49,8 @@ class Normalizer(object):
         self.mean = np.mean(self.state_memory, axis=0)
         self.std = np.mean(self.state_memory, axis=0)
         self.length = len(self.state_memory)
+
+
 class Memory(object):
     ''' Memory for saving transitions
     '''
@@ -89,6 +91,7 @@ class Memory(object):
         '''
         samples = random.sample(self.memory, self.batch_size)
         return map(np.array, zip(*samples))
+
 
 class DQNAgent(object):
     def __init__(self,
@@ -159,18 +162,17 @@ class DQNAgent(object):
         self.epsilons = np.linspace(epsilon_start, epsilon_end, epsilon_decay_steps)
 
         # Create estimators
-        #with tf.variable_scope(scope):
+        # with tf.variable_scope(scope):
         self.q_estimator = Estimator(action_num=action_num, learning_rate=learning_rate, state_shape=state_shape, \
-            mlp_layers=mlp_layers, device=self.device)
+                                     mlp_layers=mlp_layers, device=self.device)
         self.target_estimator = Estimator(action_num=action_num, learning_rate=learning_rate, state_shape=state_shape, \
-            mlp_layers=mlp_layers, device=self.device)
+                                          mlp_layers=mlp_layers, device=self.device)
 
         # Create normalizer
         self.normalizer = Normalizer()
 
         # Create replay memory
         self.memory = Memory(replay_memory_size, batch_size)
-
 
     def learn(self, env, total_timesteps):
         done = [False]
@@ -181,7 +183,8 @@ class DQNAgent(object):
             A, best_actions = self.predict_batch(next_state_batch)
             # best_actions = np.random.choice(np.arange(len(A)), p=A, size=next_state_batch.shape[0])
             state_batch = next_state_batch
-            next_state_batch, reward_batch, done_batch, debug = env.step2(index, best_actions) # debug = (val_acc, test_acc)
+            next_state_batch, reward_batch, done_batch, debug = env.step2(index,
+                                                                          best_actions)  # debug = (val_acc, test_acc)
             trajectories = zip(state_batch, best_actions, reward_batch, next_state_batch, done_batch)
             for each in trajectories:
                 self.feed(each)
@@ -241,7 +244,7 @@ class DQNAgent(object):
         Returns:
             q_values (numpy.array): a 1-d array where each entry represents a Q value
         '''
-        epsilon = self.epsilons[min(self.total_t, self.epsilon_decay_steps-1)]
+        epsilon = self.epsilons[min(self.total_t, self.epsilon_decay_steps - 1)]
         A = np.ones(self.action_num, dtype=float) * epsilon / self.action_num
         q_values = self.q_estimator.predict_nograd(np.expand_dims(self.normalizer.normalize(state), 0))[0]
         best_action = np.argmax(q_values)
@@ -249,14 +252,14 @@ class DQNAgent(object):
         return A
 
     def predict_batch(self, states):
-        epsilon = self.epsilons[min(self.total_t, self.epsilon_decay_steps-1)]
+        epsilon = self.epsilons[min(self.total_t, self.epsilon_decay_steps - 1)]
         A = np.ones(self.action_num, dtype=float) * epsilon / self.action_num
         q_values = self.q_estimator.predict_nograd(self.normalizer.normalize(states))
         best_action = np.argmax(q_values, axis=1)
         # print("predict_batch_actions: ", best_action)
         for a in best_action:
             A[a] += (1.0 - epsilon)
-        A = A/A.sum()
+        A = A / A.sum()
         return A, best_action
 
     def train(self):
@@ -274,7 +277,7 @@ class DQNAgent(object):
         # Evaluate best next actions using Target-network (Double DQN)
         q_values_next_target = self.target_estimator.predict_nograd(next_state_batch)
         target_batch = reward_batch + np.invert(done_batch).astype(np.float32) * \
-            self.discount_factor * q_values_next_target[np.arange(self.batch_size), best_actions]
+                       self.discount_factor * q_values_next_target[np.arange(self.batch_size), best_actions]
 
         # Perform gradient descent update
         state_batch = np.array(state_batch)
@@ -308,6 +311,7 @@ class DQNAgent(object):
         '''
         self.memory.save(self.normalizer.normalize(state), action, reward, self.normalizer.normalize(next_state), done)
 
+
 class Estimator(object):
     '''
     Approximate clone of rlcard.agents.dqn_agent.Estimator that
@@ -327,7 +331,7 @@ class Estimator(object):
             device (torch.device): whether to use cpu or gpu
         '''
         self.action_num = action_num
-        self.learning_rate=learning_rate
+        self.learning_rate = learning_rate
         self.state_shape = state_shape
         self.mlp_layers = mlp_layers
         self.device = device
@@ -347,7 +351,7 @@ class Estimator(object):
         self.mse_loss = nn.MSELoss(reduction='mean')
 
         # set up optimizer
-        self.optimizer =  torch.optim.Adam(self.qnet.parameters(), lr=self.learning_rate)
+        self.optimizer = torch.optim.Adam(self.qnet.parameters(), lr=self.learning_rate)
 
     def predict_nograd(self, s):
         ''' Predicts action values, but prediction is not included
@@ -404,6 +408,7 @@ class Estimator(object):
 
         return batch_loss
 
+
 class EstimatorNetwork(nn.Module):
     ''' The function approximation network for Estimator
         It is just a series of tanh layers. All in/out are torch.tensor
@@ -426,8 +431,8 @@ class EstimatorNetwork(nn.Module):
         # build the Q network
         layer_dims = [np.prod(self.state_shape)] + self.mlp_layers
         fc = [nn.Flatten()]
-        for i in range(len(layer_dims)-1):
-            fc.append(nn.Linear(layer_dims[i], layer_dims[i+1], bias=True))
+        for i in range(len(layer_dims) - 1):
+            fc.append(nn.Linear(layer_dims[i], layer_dims[i + 1], bias=True))
             fc.append(nn.Tanh())
         fc.append(nn.Linear(layer_dims[-1], self.action_num, bias=True))
         self.fc_layers = nn.Sequential(*fc)

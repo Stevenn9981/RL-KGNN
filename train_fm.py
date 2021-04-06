@@ -69,26 +69,27 @@ def main():
     new_env = hgnn_env(dataset=dataset)
     new_env.seed(0)
     new_env.policy = best_policy
-    index, state = new_env.reset2_test()
-    actions = []
+    # actions = []
 
-    for t in range(max_timesteps):
-        action = best_policy.eval_step(state)
-        state, reward, done, (val_acc, reward) = new_env.step2(index, action)
-        actions.append(action)
+    # for t in range(max_timesteps):
+    #     action = best_policy.eval_step(state)
+    #     state, reward, done, (val_acc, reward) = new_env.step2(index, action)
+    #     actions.append(action)
 
-    best_acc = new_env.test_batch()
-    print("Training GNN", 0, "; Test_Acc:", best_acc, "; Best_Acc:", best_acc, "; Best_i: ", 0)
-
-    counter = dict()
-    for i, action in enumerate(actions):
-        counter[i] = collections.Counter(action)
-    print(counter)
+    # best_acc = new_env.test_batch()
+    # print("Training GNN", 0, "; Test_Acc:", best_acc, "; Best_Acc:", best_acc, "; Best_i: ", 0)
+    #
+    # counter = dict()
+    # for i, action in enumerate(actions):
+    #     counter[i] = collections.Counter(action)
+    # print(counter)
 
     b_i = 0
     for i_episode in range(1, 20):
+        index, state = new_env.reset2()
         for t in range(max_timesteps):
-            state, reward, done, (val_acc, reward) = new_env.step2(index, actions[t])
+            action = best_policy.eval_step(state)
+            state, reward, done, (val_acc, reward) = new_env.step2(index, action)
             print("Training GNN", i_episode, "_", t,  "; Val_Acc:", val_acc, "; Reward:", reward)
         test_acc = new_env.test_batch()
         if test_acc > best_acc:

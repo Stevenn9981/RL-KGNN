@@ -8,6 +8,7 @@ import collections
 import numpy as np
 from metrics import *
 import time
+import copy
 
 from KGDataLoader import *
 
@@ -50,14 +51,19 @@ class hgnn_env(object):
         # print(data.train_graph)
         # data.train_graph.adj = to_dense_adj(data.train_graph.edge_index, edge_attr=data.train_graph.edge_attr)
         adj_dist = dict()
+        attr_dict = dict()
         for i, attr in enumerate(data.train_graph.edge_attr):
             if data.train_graph.edge_index[0][i].item() not in adj_dist:
                 adj_dist[data.train_graph.edge_index[0][i].item()] = dict()
             if attr.item() not in adj_dist[data.train_graph.edge_index[0][i].item()]:
                 adj_dist[data.train_graph.edge_index[0][i].item()][attr.item()] = list()
+            if attr.item() not in attr_dict:
+                attr_dict[attr.item()] = list()
+            attr_dict[attr.item()].append(data.train_graph.edge_index[0][i].item())
             adj_dist[data.train_graph.edge_index[0][i].item()][attr.item()].append(
                 data.train_graph.edge_index[1][i].item())
         data.train_graph.adj_dist = adj_dist
+        data.train_graph.attr_dict = attr_dict
         # print(data.train_graph.adj)
         self.model, self.train_data = Net().to(self.device), data.train_graph.to(self.device)
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr, weight_decay=weight_decay)
@@ -123,31 +129,20 @@ class hgnn_env(object):
     def step2(self, index, actions):
         self.model.train()
         self.optimizer.zero_grad()
-        # start = self.i
-        # end = (self.i + self.batch_size) % len(self.train_indexes)
-        # index = self.train_indexes[start:end]
         done_list = [False] * self.train_data.x.weight.shape[0]
-        # for act, idx in zip(actions, index):
-        #     self.buffers[act].append(idx)
-        #     if len(self.buffers[act]) >= self.batch_size:
-        #         self.train(act, self.buffers[act])
-        #         self.buffers[act] = []
-        #         done = True
-        #     index = self.stochastic_k_hop(actions, index)
 
         next_state, reward, val_acc = [], [], []
         for act, idx in zip(actions, index):
             if idx not in self.meta_path_instances_dict:
                 if act == STOP:
                     done_list[idx] = True
-                elif act not in self.train_data.adj_dist[idx]:
-                    # self.meta_path_instances_dict[idx] = list()
+                elif act not in self.train_data.attr_dict:
                     pass
                 else:
                     self.meta_path_dict[idx].append(act)
-                    # print(self.data.adj_dist[idx][act])
-                    for target_node in self.train_data.adj_dist[idx][act]:
-                        self.meta_path_instances_dict[idx].append([(idx, target_node)])
+                    for start_node in self.train_data.attr_dict[act]:
+                        for target_node in self.train_data.adj_dist[start_node][act]:
+                            self.meta_path_instances_dict[idx].append([(start_node, target_node)])
             else:
                 for i in range(len(self.meta_path_instances_dict[idx]) - 1, -1, -1):
                     path_instance = self.meta_path_instances_dict[idx][i]
@@ -158,7 +153,10 @@ class hgnn_env(object):
                         if act in self.train_data.adj_dist[end_node]:
                             self.meta_path_dict[idx].append(act)
                             for target_node in self.train_data.adj_dist[end_node][act]:
-                                path_instance.append((end_node, target_node))
+                                path_i = copy(path_instance)
+                                path_i.append((end_node, target_node))
+                                self.meta_path_instances_dict[idx].append(path_i)
+                            self.meta_path_instances_dict[idx].pop(i)
                         else:
                             self.meta_path_instances_dict[idx].pop(i)
                             if len(self.meta_path_instances_dict[idx]) == 0:

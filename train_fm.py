@@ -62,7 +62,7 @@ def main():
             best_i = i_episode
         if val_list[-1] < val_list[-2] < val_list[-3] < val_list[-4]:
             break
-        logger2.info("Training Meta-policy: %.5f    Val_Acc: %.5f    Avg_reward: %.5f    Best_Acc:  %.5f    Best_i: %d "
+        logger2.info("Training Meta-policy: %d    Val_Acc: %.5f    Avg_reward: %.5f    Best_Acc:  %.5f    Best_i: %d "
                      % (i_episode, val_acc, reward, best_val, best_i))
         torch.save({'q_estimator_qnet_state_dict': agent.q_estimator.qnet.state_dict(),
                     'target_estimator_qnet_state_dict': agent.target_estimator.qnet.state_dict(),

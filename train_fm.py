@@ -62,7 +62,8 @@ def main():
             best_i = i_episode
         if val_list[-1] < val_list[-2] < val_list[-3] < val_list[-4]:
             break
-        logger2.info("Training Meta-policy:", i_episode, "Val_Acc:", val_acc, "Avg_reward:", reward, "; Best_Acc:", best_val, "; Best_i:", best_i)
+        logger2.info("Training Meta-policy: %.5f    Val_Acc: %.5f    Avg_reward: %.5f    Best_Acc:  %.5f    Best_i: %d "
+                     % (i_episode, val_acc, reward, best_val, best_i))
         torch.save({'q_estimator_qnet_state_dict': agent.q_estimator.qnet.state_dict(),
                     'target_estimator_qnet_state_dict': agent.target_estimator.qnet.state_dict(),
                     'Val': val_acc,
@@ -107,12 +108,12 @@ def main():
         for t in range(max_timesteps):
             action = best_policy.eval_step(state)
             state, reward, done, (val_acc, reward) = new_env.step2(logger1, logger2, index, action)
-            logger2.info("Training GNN", i_episode, "_", t,  "; Val_Acc:", val_acc, "; Reward:", reward)
+            logger2.info("Training GNN %d:   Val_Acc: %.5f  Reward: %.5f  " % (i_episode, val_acc, reward))
         test_acc = new_env.test_batch(logger2)
         if test_acc > best_acc:
             best_acc = test_acc
             b_i = i_episode
-        logger2.info("Training GNN", i_episode, "; Test_Acc:", test_acc, "; Best_Acc:", best_acc, "; Best_i: ", b_i)
+        logger2.info("Training GNN %d:   Test_Acc: %.5f   Best_Acc: %.5f   Best_i: %d" % (i_episode, test_acc, best_acc, b_i))
 
 if __name__ == '__main__':
     main()

@@ -174,7 +174,7 @@ class DQNAgent(object):
         # Create replay memory
         self.memory = Memory(replay_memory_size, batch_size)
 
-    def learn(self, env, total_timesteps):
+    def learn(self, logger1, logger2, env, total_timesteps):
         done = [False]
         index, next_state_batch = env.reset2()
         # print(next_state_batch.shape)
@@ -183,7 +183,7 @@ class DQNAgent(object):
             A = self.predict_batch(next_state_batch)
             best_actions = np.random.choice(np.arange(len(A)), p=A, size=next_state_batch.shape[0])
             state_batch = next_state_batch
-            next_state_batch, reward_batch, done_batch, debug = env.step2(index,
+            next_state_batch, reward_batch, done_batch, debug = env.step2(logger1, logger2, index,
                                                                           best_actions)  # debug = (val_acc, test_acc)
             trajectories = zip(state_batch, best_actions, reward_batch, next_state_batch, done_batch)
             for each in trajectories:

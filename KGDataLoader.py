@@ -34,7 +34,7 @@ def parse_args():
                         help='CF batch size.')
     parser.add_argument('--kg_batch_size', type=int, default=2048,
                         help='KG batch size.')
-    parser.add_argument('--nd_batch_size', type=int, default=32,
+    parser.add_argument('--nd_batch_size', type=int, default=64,
                         help='node sampling batch size.')
     parser.add_argument('--train_batch_size', type=int, default=1000,
                         help='Test batch size (the user number to test every batch).')
@@ -86,7 +86,7 @@ def parse_args():
 
 class DataLoaderHGNN(object):
 
-    def __init__(self, args, dataset):
+    def __init__(self, logging, args, dataset):
         self.args = args
         self.data_name = dataset
         self.use_pretrain = args.use_pretrain
@@ -110,8 +110,8 @@ class DataLoaderHGNN(object):
         kg_data = self.load_kg(kg_file)
         self.construct_data(kg_data)
 
-        print("Constructed KG finished.")
-        logging.basicConfig()
+        logging.info("Constructed KG finished.")
+
         self.print_info(logging)
         self.train_graph = self.create_graph(self.kg_train_data, self.n_users_entities)
         self.test_graph = self.create_graph(self.kg_test_data, self.n_users_entities)
@@ -220,17 +220,17 @@ class DataLoaderHGNN(object):
 
 
     def print_info(self, logging):
-        print('n_users:            %d' % self.n_users)
-        print('n_items:            %d' % self.n_items)
-        print('n_entities:         %d' % self.n_entities)
-        print('n_users_entities:   %d' % self.n_users_entities)
-        print('n_relations:        %d' % self.n_relations)
+        logging.info('n_users:            %d' % self.n_users)
+        logging.info('n_items:            %d' % self.n_items)
+        logging.info('n_entities:         %d' % self.n_entities)
+        logging.info('n_users_entities:   %d' % self.n_users_entities)
+        logging.info('n_relations:        %d' % self.n_relations)
 
-        print('n_cf_train:         %d' % self.n_cf_train)
-        print('n_cf_test:          %d' % self.n_cf_test)
+        logging.info('n_cf_train:         %d' % self.n_cf_train)
+        logging.info('n_cf_test:          %d' % self.n_cf_test)
 
-        print('n_kg_train:         %d' % self.n_kg_train)
-        print('n_kg_test:          %d' % self.n_kg_test)
+        logging.info('n_kg_train:         %d' % self.n_kg_train)
+        logging.info('n_kg_test:          %d' % self.n_kg_test)
 
 
     def create_graph(self, kg_data, n_nodes):

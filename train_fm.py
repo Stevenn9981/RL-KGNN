@@ -7,25 +7,41 @@ import os
 import random
 import time
 from copy import deepcopy
+import logging
 
 from env.hgnn import hgnn_env
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '1,2'
 
+
+def get_logger(logger_name, log_file, level=logging.INFO):
+    l = logging.getLogger(logger_name)
+    formatter = logging.Formatter('%(asctime)s : %(message)s', "%Y-%m-%d %H:%M:%S")
+    fileHandler = logging.FileHandler(log_file, mode='a')
+    fileHandler.setFormatter(formatter)
+
+    l.setLevel(level)
+    l.addHandler(fileHandler)
+
+    return logging.getLogger(logger_name)
+
 def main():
     torch.backends.cudnn.deterministic=True
-    max_timesteps = 3
+    max_timesteps = 2
     dataset = 'yelp_data'
     max_episodes = 100
 
-    env = hgnn_env(dataset=dataset)
+    logger1 = get_logger('log', 'logger.log')
+    logger2 = get_logger('log2', 'logger2.log')
+
+    env = hgnn_env(logger1, logger2, dataset=dataset)
     env.seed(0)
     agent = DQNAgent(scope='dqn',
                     action_num = env.action_num,
                     replay_memory_size=int(1e4),
                     replay_memory_init_size=500,
-                    norm_step=100,
-                    batch_size=128,
+                    norm_step=10,
+                    batch_size=64,
                     state_shape = env.observation_space.shape,
                     mlp_layers=[32, 64, 128, 64, 32],
                     device=torch.device('cpu')
@@ -36,9 +52,9 @@ def main():
     best_i = 0
     val_list = [0, 0, 0]
     # Training: Learning meta-policy
-    print("Training Meta-policy on Validation Set")
+    logger2.info("Training Meta-policy on Validation Set")
     for i_episode in range(1, max_episodes+1):
-        loss, reward, (val_acc, reward) = agent.learn(env, max_timesteps) # debug = (val_acc, reward)
+        loss, reward, (val_acc, reward) = agent.learn(logger1, logger2, env, max_timesteps) # debug = (val_acc, reward)
         val_list.append(val_acc)
         if val_acc > best_val: # check whether gain improvement on validation set
             best_policy = deepcopy(agent) # save the best policy
@@ -46,7 +62,7 @@ def main():
             best_i = i_episode
         if val_list[-1] < val_list[-2] < val_list[-3] < val_list[-4]:
             break
-        print("Training Meta-policy:", i_episode, "Val_Acc:", val_acc, "Avg_reward:", reward, "; Best_Acc:", best_val, "; Best_i:", best_i)
+        logger2.info("Training Meta-policy:", i_episode, "Val_Acc:", val_acc, "Avg_reward:", reward, "; Best_Acc:", best_val, "; Best_i:", best_i)
         torch.save({'q_estimator_qnet_state_dict': agent.q_estimator.qnet.state_dict(),
                     'target_estimator_qnet_state_dict': agent.target_estimator.qnet.state_dict(),
                     'Val': val_acc,
@@ -65,8 +81,8 @@ def main():
 
 
     # Testing: Apply meta-policy to train a new GNN
-    print("Training GNNs with learned meta-policy")
-    new_env = hgnn_env(dataset=dataset)
+    logger2.info("Training GNNs with learned meta-policy")
+    new_env = hgnn_env(logger1, logger2, dataset=dataset)
     new_env.seed(0)
     new_env.policy = best_policy
     # actions = []
@@ -90,13 +106,13 @@ def main():
         index, state = new_env.reset2()
         for t in range(max_timesteps):
             action = best_policy.eval_step(state)
-            state, reward, done, (val_acc, reward) = new_env.step2(index, action)
-            print("Training GNN", i_episode, "_", t,  "; Val_Acc:", val_acc, "; Reward:", reward)
-        test_acc = new_env.test_batch()
+            state, reward, done, (val_acc, reward) = new_env.step2(logger1, logger2, index, action)
+            logger2.info("Training GNN", i_episode, "_", t,  "; Val_Acc:", val_acc, "; Reward:", reward)
+        test_acc = new_env.test_batch(logger2)
         if test_acc > best_acc:
             best_acc = test_acc
             b_i = i_episode
-        print("Training GNN", i_episode, "; Test_Acc:", test_acc, "; Best_Acc:", best_acc, "; Best_i: ", b_i)
+        logger2.info("Training GNN", i_episode, "; Test_Acc:", test_acc, "; Best_Acc:", best_acc, "; Best_i: ", b_i)
 
 if __name__ == '__main__':
     main()

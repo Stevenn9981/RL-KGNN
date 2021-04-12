@@ -25,16 +25,18 @@ def _L2_loss_mean(x):
 class Net(torch.nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.conv1 = GCNConv(64, 32, cached=True)
-        self.conv2 = GCNConv(32, 64, cached=True)
-        self.conv3 = GCNConv(64, 64, cached=True)
+        self.conv1 = GCNConv(64, 32)
+        self.conv2 = GCNConv(32, 64)
+        # self.conv3 = GCNConv(64, 64)
+        self.activation = nn.ReLU()
+        self.dropout = nn.Dropout(0.5)
 
     def forward(self, x, edge_index):
-        x = F.relu(self.conv1(x, edge_index))
-        x = F.relu(self.conv2(x, edge_index))
-        x = F.dropout(x, training=self.training)
-        self.embedding = F.normalize(self.conv3(x, edge_index))
-        return self.embedding
+        x = self.activation(self.conv1(x, edge_index))
+        # x = self.activation(self.conv2(x, edge_index))
+        x = self.dropout(x)
+        embedding = F.normalize(self.conv2(x, edge_index))
+        return embedding
 
 
 class hgnn_env(object):
@@ -220,10 +222,6 @@ class hgnn_env(object):
         time1 = time.time()
         edge_index = [[], []]
         edges = set()
-        # for path in self.meta_path_instances_dict[idx]:
-        #     for edge in path:
-        #         edges.add((edge[0], edge[1]))
-        #         edges.add((edge[1], edge[0]))
         for edge in self.meta_path_graph_edges[idx]:
             edges.add((edge[0], edge[1]))
             edges.add((edge[1], edge[0]))
@@ -232,15 +230,6 @@ class hgnn_env(object):
             edge_index[0].append(edge[0])
             edge_index[1].append(edge[1])
 
-        # for paths in self.meta_path_instances_dict.values():
-        #     if len(paths) > 0:
-        #         for path in paths:
-        #             for edge in path:
-        #                 edge_index[0].append(edge[0])
-        #                 edge_index[1].append(edge[1])
-        #                 edge_index[0].append(edge[1])
-        #                 edge_index[1].append(edge[0])
-
         time2 = time.time()
         logger1.info("edge index construction:    %.2f" % (time2 - time1))
         if edge_index == [[], []]:
@@ -248,22 +237,33 @@ class hgnn_env(object):
         self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))
         edge_index = torch.tensor(edge_index).to(self.device)
         # print(self.data.x.weight.shape)
-        pred = self.model(self.train_data.x(self.train_data.node_idx), edge_index).to(self.device)
+        # pred = self.model(self.train_data.x(self.train_data.node_idx), edge_index).to(self.device)
         # self.train_data.x = nn.Embedding.from_pretrained(pred, freeze=False)
-        self.train_data.x.weight = nn.Parameter(pred)
-        cf_batch_user, cf_batch_pos_item, cf_batch_neg_item = self.data.generate_cf_batch(self.data.train_user_dict)
-        cf_batch_loss = self.calc_cf_loss(self.train_data, cf_batch_user, cf_batch_pos_item, cf_batch_neg_item)
-        cf_batch_loss.backward()
-        self.optimizer.step()
-        self.optimizer.zero_grad()
+        # self.train_data.x.weight = nn.Parameter(pred)
+        # print(self.train_data.x.weight)
 
-    def calc_cf_loss(self, g, user_ids, item_pos_ids, item_neg_ids):
+        n_cf_batch = self.data.n_cf_train // self.data.cf_batch_size + 1
+
+        # for i in range(5):
+        for iter in range(1, n_cf_batch + 1):
+            self.optimizer.zero_grad()
+            cf_batch_user, cf_batch_pos_item, cf_batch_neg_item = self.data.generate_cf_batch(self.data.train_user_dict)
+            cf_batch_loss = self.calc_cf_loss(self.train_data, edge_index, cf_batch_user, cf_batch_pos_item, cf_batch_neg_item)
+            cf_batch_loss.backward()
+            self.optimizer.step()
+            # for para in self.model.named_parameters():
+            #     print(para)
+
+    def calc_cf_loss(self, g, edge_index, user_ids, item_pos_ids, item_neg_ids):
         """
         user_ids:       (cf_batch_size)
         item_pos_ids:   (cf_batch_size)
         item_neg_ids:   (cf_batch_size)
         """
-        all_embed = g.x(g.node_idx)                        # (n_users + n_entities, cf_concat_dim)
+
+        pred = self.model(self.train_data.x(self.train_data.node_idx), edge_index).to(self.device)
+        # self.train_data.x.weight = nn.Parameter(pred)
+        all_embed = pred                       # (n_users + n_entities, cf_concat_dim)
         user_embed = all_embed[user_ids]                            # (cf_batch_size, cf_concat_dim)
         item_pos_embed = all_embed[item_pos_ids]                    # (cf_batch_size, cf_concat_dim)
         item_neg_embed = all_embed[item_neg_ids]                    # (cf_batch_size, cf_concat_dim)
@@ -278,6 +278,7 @@ class hgnn_env(object):
 
         l2_loss = _L2_loss_mean(user_embed) + _L2_loss_mean(item_pos_embed) + _L2_loss_mean(item_neg_embed)
         loss = cf_loss + self.cf_l2loss_lambda * l2_loss
+        print("loss: ", loss)
         return loss
 
     def eval_batch(self):

@@ -109,7 +109,7 @@ def main():
         index, state = new_env.reset2()
         for t in range(max_timesteps):
             action = best_policy.eval_step(state)
-            state, reward, done, (val_acc, reward) = new_env.step2(logger1, logger2, index, action)
+            state, reward, done, (val_acc, reward) = new_env.step2(logger1, logger2, index, action, True)
             logger2.info("Training GNN %d:   Val_Acc: %.5f  Reward: %.5f  " % (i_episode, val_acc, reward))
         test_acc = new_env.test_batch(logger2)
         if test_acc > best_acc:

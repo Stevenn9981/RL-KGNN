@@ -41,7 +41,7 @@ class Net(torch.nn.Module):
 
 class hgnn_env(object):
     def __init__(self, logger1, logger2, dataset='last-fm', lr=0.01, weight_decay=5e-4, policy=None):
-        self.device = 'cpu'
+        self.device = 'cuda'
         # dataset = dataset
         # path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', dataset)
         args = parse_args()
@@ -189,7 +189,7 @@ class hgnn_env(object):
             logger1.info("len(meta-path edges):     %d" % len(self.meta_path_graph_edges[idx]))
 
             if len(self.meta_path_graph_edges) > 0 and not done_list[idx]:
-                self.train(logger1, idx)
+                self.train(logger1, idx, test)
 
             time3 = time.time()
             logger1.info("training time:            %.2f" % (time3 - time2))
@@ -219,7 +219,7 @@ class hgnn_env(object):
 
         return next_state, reward, np.array(done_list)[index].tolist(), (val_acc, r)
 
-    def train(self, logger1, idx):
+    def train(self, logger1, idx, test=False):
         self.model.train()
         time1 = time.time()
         edge_index = [[], []]
@@ -250,13 +250,13 @@ class hgnn_env(object):
         for iter in range(1, n_cf_batch + 1):
             self.optimizer.zero_grad()
             cf_batch_user, cf_batch_pos_item, cf_batch_neg_item = self.data.generate_cf_batch(self.data.train_user_dict)
-            cf_batch_loss = self.calc_cf_loss(self.train_data, edge_index, cf_batch_user, cf_batch_pos_item, cf_batch_neg_item)
+            cf_batch_loss = self.calc_cf_loss(self.train_data, edge_index, cf_batch_user, cf_batch_pos_item, cf_batch_neg_item, test)
             cf_batch_loss.backward()
             self.optimizer.step()
             # for para in self.model.named_parameters():
             #     print(para)
 
-    def calc_cf_loss(self, g, edge_index, user_ids, item_pos_ids, item_neg_ids):
+    def calc_cf_loss(self, g, edge_index, user_ids, item_pos_ids, item_neg_ids, test=False):
         """
         user_ids:       (cf_batch_size)
         item_pos_ids:   (cf_batch_size)
@@ -264,7 +264,8 @@ class hgnn_env(object):
         """
 
         pred = self.model(self.train_data.x(self.train_data.node_idx), edge_index).to(self.device)
-        # self.train_data.x.weight = nn.Parameter(pred)
+        if True:
+            self.train_data.x.weight = nn.Parameter(pred)
         all_embed = pred                       # (n_users + n_entities, cf_concat_dim)
         user_embed = all_embed[user_ids]                            # (cf_batch_size, cf_concat_dim)
         item_pos_embed = all_embed[item_pos_ids]                    # (cf_batch_size, cf_concat_dim)

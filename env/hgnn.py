@@ -131,7 +131,7 @@ class hgnn_env(object):
         self.optimizer.zero_grad()
         return index, state
 
-    def step2(self, logger1, logger2, index, actions):
+    def step2(self, logger1, logger2, index, actions, test=False):
         self.model.train()
         self.optimizer.zero_grad()
         done_list = [False] * self.train_data.x.weight.shape[0]
@@ -182,6 +182,8 @@ class hgnn_env(object):
             time2 = time.time()
             logger1.info("time2-time1:              %.2f" % (time2 - time1))
             logger1.info("meta-path:                %s" % self.meta_path_dict[idx])
+            if test:
+                logger2.info("meta-path:                %s" % self.meta_path_dict[idx])
             # logger1.info("meta-path instances: ", self.meta_path_instances_dict[idx])
             # logger1.info("len(meta-path instances): ", len(self.meta_path_instances_dict[idx]))
             logger1.info("len(meta-path edges):     %d" % len(self.meta_path_graph_edges[idx]))

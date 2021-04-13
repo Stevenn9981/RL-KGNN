@@ -24,7 +24,7 @@ def main():
     torch.backends.cudnn.deterministic = True
     dataset = 'yelp_data'
 
-    agentCheckpoint = torch.load("model/agentpoints/m-0.5899120550602674-2021-04-09 18:39:39.pth.tar")
+    agentCheckpoint = torch.load("model/agentpoints/m-0.5884217349812388-2021-04-09 18:18:50.pth.tar")
     epochCheckpoint = torch.load("model/epochpoints/m-2021-04-09 20:24:07.pth.tar")
 
 

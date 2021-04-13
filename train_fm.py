@@ -29,10 +29,10 @@ def main():
     torch.backends.cudnn.deterministic=True
     max_timesteps = 2
     dataset = 'yelp_data'
-    max_episodes = 100
+    max_episodes = 25
 
-    logger1 = get_logger('log', 'logger_fixa.log')
-    logger2 = get_logger('log2', 'logger2_fixa.log')
+    logger1 = get_logger('log', 'logger_quick.log')
+    logger2 = get_logger('log2', 'logger2_quick.log')
 
     env = hgnn_env(logger1, logger2, dataset=dataset)
     env.seed(0)

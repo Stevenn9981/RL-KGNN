@@ -86,7 +86,7 @@ def main():
     new_env = hgnn_env(logger1, logger2, dataset=dataset)
     new_env.seed(0)
     new_env.policy = best_policy
-    new_env.model = env.model
+    # new_env.model = env.model
     # new_env.optimizer = env.optimizer
     # actions = []
 

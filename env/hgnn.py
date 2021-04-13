@@ -25,8 +25,8 @@ def _L2_loss_mean(x):
 class Net(torch.nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.conv1 = GCNConv(64, 32)
-        self.conv2 = GCNConv(32, 64)
+        self.conv1 = GCNConv(48, 24)
+        self.conv2 = GCNConv(24, 48)
         # self.conv3 = GCNConv(64, 64)
         self.activation = nn.ReLU()
         self.dropout = nn.Dropout(0.3)

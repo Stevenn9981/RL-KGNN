@@ -266,7 +266,6 @@ class hgnn_env(object):
         pred = self.model(self.train_data.x(self.train_data.node_idx), edge_index).to(self.device)
         if test:
             self.train_data.x.weight = nn.Parameter(pred)
-        print(self.train_data.x.weight[10])
         all_embed = pred                       # (n_users + n_entities, cf_concat_dim)
         user_embed = all_embed[user_ids]                            # (cf_batch_size, cf_concat_dim)
         item_pos_embed = all_embed[item_pos_ids]                    # (cf_batch_size, cf_concat_dim)

@@ -37,6 +37,8 @@ def main():
     new_env.seed(0)
     new_env.model.load_state_dict(epochCheckpoint['state_dict'])
     new_env.train_data.x = nn.Embedding.from_pretrained(epochCheckpoint['Embedding'], freeze=True)
+    for para in new_env.model.named_parameters():
+        print(para)
     best_policy = DQNAgent(scope='dqn',
                            action_num=new_env.action_num,
                            replay_memory_size=int(1e4),
@@ -45,7 +47,7 @@ def main():
                            batch_size=64,
                            state_shape=new_env.observation_space.shape,
                            mlp_layers=[32, 64, 128, 64, 32],
-                           device=torch.device('cuda')
+                           device=torch.device('cpu')
                            )
     best_policy.q_estimator.qnet.load_state_dict(agentCheckpoint['q_estimator_qnet_state_dict'])
     best_policy.target_estimator.qnet.load_state_dict(agentCheckpoint['target_estimator_qnet_state_dict'])

@@ -29,7 +29,7 @@ class Net(torch.nn.Module):
         self.conv2 = GCNConv(24, 48)
         # self.conv3 = GCNConv(64, 64)
         self.activation = nn.ReLU()
-        self.dropout = nn.Dropout(0.5)
+        self.dropout = nn.Dropout(0.3)
 
     def forward(self, x, edge_index):
         x = self.activation(self.conv1(x, edge_index))

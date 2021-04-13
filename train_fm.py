@@ -87,7 +87,7 @@ def main():
     new_env.seed(0)
     new_env.policy = best_policy
     new_env.model = env.model
-    new_env.optimizer = env.optimizer
+    # new_env.optimizer = env.optimizer
     # actions = []
 
     # for t in range(max_timesteps):

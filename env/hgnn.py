@@ -29,7 +29,7 @@ class Net(torch.nn.Module):
         self.conv2 = GCNConv(32, 64)
         # self.conv3 = GCNConv(64, 64)
         self.activation = nn.ReLU()
-        self.dropout = nn.Dropout(0.5)
+        self.dropout = nn.Dropout(0.3)
 
     def forward(self, x, edge_index):
         x = self.activation(self.conv1(x, edge_index))
@@ -264,8 +264,9 @@ class hgnn_env(object):
         """
 
         pred = self.model(self.train_data.x(self.train_data.node_idx), edge_index).to(self.device)
-        if True:
+        if test:
             self.train_data.x.weight = nn.Parameter(pred)
+        print(self.train_data.x.weight[10])
         all_embed = pred                       # (n_users + n_entities, cf_concat_dim)
         user_embed = all_embed[user_ids]                            # (cf_batch_size, cf_concat_dim)
         item_pos_embed = all_embed[item_pos_ids]                    # (cf_batch_size, cf_concat_dim)
@@ -368,7 +369,7 @@ class hgnn_env(object):
     def test_batch(self, logger2):
         self.model.eval()
         user_ids = list(self.data.test_user_dict.keys())
-        user_ids_batch = user_ids[0:5000]
+        user_ids_batch = user_ids[:]
         neg_list = []
         for u in user_ids_batch:
             for _ in self.data.test_user_dict[u]:

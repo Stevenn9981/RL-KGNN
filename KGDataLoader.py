@@ -41,9 +41,9 @@ def parse_args():
     parser.add_argument('--test_batch_size', type=int, default=10000,
                         help='Test batch size (the user number to test every batch).')
 
-    parser.add_argument('--entity_dim', type=int, default=64,
+    parser.add_argument('--entity_dim', type=int, default=48,
                         help='User / entity Embedding size.')
-    parser.add_argument('--relation_dim', type=int, default=64,
+    parser.add_argument('--relation_dim', type=int, default=48,
                         help='Relation Embedding size.')
 
     parser.add_argument('--aggregation_type', nargs='?', default='bi-interaction',

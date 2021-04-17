@@ -344,7 +344,7 @@ class hgnn_env(object):
         self.model.eval()
         time1 = time.time()
         user_ids = list(self.data.train_user_dict.keys())
-        user_ids_batch = user_ids #random.sample(user_ids, min(len(user_ids) - 2, self.args.train_batch_size))
+        user_ids_batch = random.sample(user_ids, min(len(user_ids) - 2, self.args.train_batch_size))
         # neg_list = []
         neg_dict = collections.defaultdict(list)
         for u in user_ids_batch:
@@ -367,11 +367,11 @@ class hgnn_env(object):
         time3 = time.time()
         NDCG10 = self.metrics(pos_logits, neg_logits).cpu()
         time4 = time.time()
-        # print("ALL time: ", time4 - time1)
-        # print("Metrics time: ", time4 - time3)
-        # print("Cat time: ", time3 - time2)
-        # print("Data time: ", time2 - time1)
-        # print("-----------------------------------\n")
+        print("ALL time: ", time4 - time1)
+        print("Metrics time: ", time4 - time3)
+        print("Cat time: ", time3 - time2)
+        print("Data time: ", time2 - time1)
+        print("-----------------------------------\n")
         return NDCG10.item()
 
     def test_batch(self, logger2):
@@ -397,8 +397,6 @@ class hgnn_env(object):
                 neg_pos_list.extend(neg_list[i])
             neg_item_embeddings = all_embed[neg_pos_list]
             cf_score_neg = torch.matmul(user_embedding, neg_item_embeddings.transpose(0, 1))
-            # print("cf_score_pos: ", cf_score_pos)
-            # print("cf_score_neg: ", cf_score_neg)
             pos_logits = torch.cat([pos_logits, cf_score_pos])
             neg_logits = torch.cat([neg_logits, torch.unsqueeze(cf_score_neg, 1)])
             idx += len(self.data.test_user_dict[u])

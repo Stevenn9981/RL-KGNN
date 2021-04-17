@@ -319,8 +319,7 @@ class hgnn_env(object):
         """
 
         pred = self.model(self.train_data.x(self.train_data.node_idx), edge_index).to(self.device)
-        if test:
-            self.train_data.x.weight = nn.Parameter(pred)
+        self.train_data.x.weight = nn.Parameter(pred)
         all_embed = pred                       # (n_users + n_entities, cf_concat_dim)
         user_embed = all_embed[user_ids]                            # (cf_batch_size, cf_concat_dim)
         item_pos_embed = all_embed[item_pos_ids]                    # (cf_batch_size, cf_concat_dim)
@@ -367,11 +366,9 @@ class hgnn_env(object):
         time3 = time.time()
         NDCG10 = self.metrics(pos_logits, neg_logits).cpu()
         time4 = time.time()
-        print("ALL time: ", time4 - time1)
-        print("Metrics time: ", time4 - time3)
-        print("Cat time: ", time3 - time2)
-        print("Data time: ", time2 - time1)
-        print("-----------------------------------\n")
+        # print("ALL time: ", time4 - time1)
+
+
         return NDCG10.item()
 
     def test_batch(self, logger2):
@@ -398,6 +395,9 @@ class hgnn_env(object):
             for idx, u in enumerate(user_ids_batch):
                 pos_logits = torch.cat([pos_logits, cf_scores[idx][self.data.train_user_dict[u]]])
                 neg_logits = torch.cat([neg_logits, torch.unsqueeze(cf_scores[idx][neg_dict[u]], 1)])
+
+            print("pos_logits: ", pos_logits)
+            print("neg_logits: ", neg_logits)
 
             HR1, HR3, HR20, HR50, MRR10, MRR20, MRR50, NDCG10, NDCG20, NDCG50 = self.metrics(pos_logits, neg_logits, training=False)
             logger2.info("HR1 : %.4f, HR3 : %.4f, HR20 : %.4f, HR50 : %.4f, MRR10 : %.4f, MRR20 : %.4f, MRR50 : %.4f, "

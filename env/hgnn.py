@@ -42,7 +42,7 @@ class Net(torch.nn.Module):
 
 class hgnn_env(object):
     def __init__(self, logger1, logger2, dataset='last-fm', lr=0.01, weight_decay=5e-4, policy=None):
-        self.device = 'cpu'
+        self.device = 'cuda'
         # dataset = dataset
         # path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', dataset)
         args = parse_args()
@@ -342,76 +342,28 @@ class hgnn_env(object):
 
     def eval_batch(self):
         self.model.eval()
-        # batch_dict = {}
-        # val_index = np.where(self.data.val_mask.to('cpu').numpy()==True)[0]
-        # val_states = self.data.x[val_index].to('cpu').numpy()
-        # val_acts = self.policy.eval_step(val_states)
-        # s_a = zip(val_index, val_acts)
-        # for i, a in s_a:
-        #     if a not in batch_dict.keys():
-        #         batch_dict[a] = []
-        #     batch_dict[a].append(i)
-        # #acc = 0.0
-        # acc = {a: 0.0 for a in range(self.max_layer)}
-        # for a in batch_dict.keys():
-        #     idx = batch_dict[a]
-        #     logits = self.model(a, self.data)
-        #     pred = logits[idx].max(1)[1]
-        #     #acc += pred.eq(self.data.y[idx]).sum().item() / len(idx)
-        #     acc[a] = pred.eq(self.data.y[idx]).sum().item() / len(idx)
-        # #acc = acc / len(batch_dict.keys())
-        # return acc
-
-        # user_ids = list(self.data.test_user_dict.keys())
-        # user_ids_batches = [user_ids[i: i + self.args.test_batch_size] for i in
-        #                     range(0, len(user_ids), self.args.test_batch_size)]
-        # user_ids_batches = [torch.LongTensor(d) for d in user_ids_batches]
-        # item_ids = torch.arange(self.data.n_items, dtype=torch.long)
-        # _, precision, recall = self.evaluate(self.model, self.train_data, self.data.train_user_dict,
-        #                                      self.data.test_user_dict,
-        #                                      user_ids_batches, item_ids, self.args.K)
-        # # print(precision)
         time1 = time.time()
         user_ids = list(self.data.train_user_dict.keys())
-        user_ids_batch = random.sample(user_ids, min(len(user_ids) - 2, self.args.train_batch_size))
-        neg_list = []
+        user_ids_batch = user_ids #random.sample(user_ids, min(len(user_ids) - 2, self.args.train_batch_size))
+        # neg_list = []
+        neg_dict = collections.defaultdict(list)
         for u in user_ids_batch:
             for _ in self.data.train_user_dict[u]:
-                neg_list.append(self.data.sample_neg_items_for_u(self.data.train_user_dict, u, NEG_SIZE_TRAIN))
+                nl = self.data.sample_neg_items_for_u(self.data.train_user_dict, u, NEG_SIZE_TRAIN)
+                # neg_list.append(nl)
+                neg_dict[u].extend(nl)
         self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))
         all_embed = self.train_data.x(self.train_data.node_idx).to(self.device)
+
+        time2 = time.time()
 
         pos_logits = torch.tensor([]).to(self.device)
         neg_logits = torch.tensor([]).to(self.device)
 
-        # torch.set_printoptions(threshold=64)
-        # print("---------------------")
-        # print(user_ids[0:5])
-        # print(all_embed[21712])
-        # print(all_embed[4258])
-        # print(all_embed[2732])
-        # print(neg_list[0:5])
-
-        time2 = time.time()
-        idx = 0
-        for u in user_ids_batch:
-            user_embedding = all_embed[u]
-            pos_item_embeddings = all_embed[self.data.train_user_dict[u]]
-            cf_score_pos = torch.matmul(user_embedding, pos_item_embeddings.transpose(0, 1))
-            neg_pos_list = []
-            for i in range(idx, idx + len(self.data.train_user_dict[u])):
-                neg_pos_list.extend(neg_list[i])
-            neg_item_embeddings = all_embed[neg_pos_list]
-            cf_score_neg = torch.matmul(user_embedding, neg_item_embeddings.transpose(0, 1))
-            pos_logits = torch.cat([pos_logits, cf_score_pos])
-            neg_logits = torch.cat([neg_logits, torch.unsqueeze(cf_score_neg, 1)])
-            # if idx == 0:
-            #     print(pos_logits)
-            #     print(neg_logits)
-            #     print("---------------------")
-            idx += len(self.data.train_user_dict[u])
-
-
+        cf_scores = torch.matmul(all_embed[user_ids_batch], all_embed[torch.arange(self.data.n_items, dtype=torch.long)].transpose(0, 1))
+        for idx, u in enumerate(user_ids_batch):
+            pos_logits = torch.cat([pos_logits, cf_scores[idx][self.data.train_user_dict[u]]])
+            neg_logits = torch.cat([neg_logits, torch.unsqueeze(cf_scores[idx][neg_dict[u]], 1)])
         time3 = time.time()
         NDCG10 = self.metrics(pos_logits, neg_logits).cpu()
         time4 = time.time()
@@ -419,6 +371,7 @@ class hgnn_env(object):
         # print("Metrics time: ", time4 - time3)
         # print("Cat time: ", time3 - time2)
         # print("Data time: ", time2 - time1)
+        # print("-----------------------------------\n")
         return NDCG10.item()
 
     def test_batch(self, logger2):

@@ -24,12 +24,15 @@ def main():
     torch.backends.cudnn.deterministic = True
     dataset = 'yelp_data'
 
-    agentCheckpoint = torch.load("model/agentpoints/m-0.5884217349812388-2021-04-09 18:18:50.pth.tar")
-    epochCheckpoint = torch.load("model/epochpoints/m-2021-04-09 20:24:07.pth.tar")
+    agentCheckpoint = torch.load("model/agentpoints/m-0.7687571719288826-2021-04-13 15:26:41.pth.tar", map_location=torch.device('cpu'))
+    epochCheckpoint = torch.load("model/epochpoints/m-2021-04-14 00:41:53.pth.tar", map_location=torch.device('cpu'))
+
+    print(epochCheckpoint['Val'])
 
 
     logger1 = get_logger('log', 'logger_pre.log')
     logger2 = get_logger('log2', 'logger2_pre.log')
+
 
     best_acc = 0.0
     print("Training GNNs with learned meta-policy")
@@ -37,8 +40,7 @@ def main():
     new_env.seed(0)
     new_env.model.load_state_dict(epochCheckpoint['state_dict'])
     new_env.train_data.x = nn.Embedding.from_pretrained(epochCheckpoint['Embedding'], freeze=True)
-    for para in new_env.model.named_parameters():
-        print(para)
+    new_env.test_batch(logger2)
     best_policy = DQNAgent(scope='dqn',
                            action_num=new_env.action_num,
                            replay_memory_size=int(1e4),
@@ -51,7 +53,6 @@ def main():
                            )
     best_policy.q_estimator.qnet.load_state_dict(agentCheckpoint['q_estimator_qnet_state_dict'])
     best_policy.target_estimator.qnet.load_state_dict(agentCheckpoint['target_estimator_qnet_state_dict'])
-    new_env.test_batch(logger2)
 
     new_env.policy = best_policy
 

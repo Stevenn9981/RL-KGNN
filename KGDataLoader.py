@@ -43,7 +43,7 @@ def parse_args():
 
     parser.add_argument('--entity_dim', type=int, default=48,
                         help='User / entity Embedding size.')
-    parser.add_argument('--relation_dim', type=int, default=48,
+    parser.add_argument('--relation_dim', type=int, default=32,
                         help='Relation Embedding size.')
 
     parser.add_argument('--aggregation_type', nargs='?', default='bi-interaction',

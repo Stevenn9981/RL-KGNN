@@ -8,6 +8,7 @@ import collections
 import numpy as np
 from metrics import *
 import time
+import torch
 import copy
 
 from KGDataLoader import *
@@ -28,13 +29,13 @@ class Net(torch.nn.Module):
         self.conv1 = GCNConv(48, 24)
         self.conv2 = GCNConv(24, 48)
         # self.conv3 = GCNConv(64, 64)
-        self.activation = nn.ReLU()
-        self.dropout = nn.Dropout(0.3)
+        # self.activation = nn.ReLU()
+        # self.dropout = nn.Dropout(0.3)
 
     def forward(self, x, edge_index):
-        x = self.activation(self.conv1(x, edge_index))
+        x = F.relu(self.conv1(x, edge_index))
         # x = self.activation(self.conv2(x, edge_index))
-        x = self.dropout(x)
+        x = F.dropout(x)
         embedding = F.normalize(self.conv2(x, edge_index))
         return embedding
 
@@ -77,7 +78,13 @@ class hgnn_env(object):
         self._set_observation_space(obs)
         self.policy = policy
         self.batch_size = args.nd_batch_size
+        self.W_R = nn.Parameter(torch.Tensor(self.data.n_relations, self.data.entity_dim,
+                                             self.data.relation_dim))
+        nn.init.xavier_uniform_(self.W_R, gain=nn.init.calculate_gain('relu'))
+
         self.cf_l2loss_lambda = args.cf_l2loss_lambda
+        self.kg_l2loss_lambda = args.kg_l2loss_lambda
+
         self.baseline_experience = 20
         # print(adj_dist)
         # print(data.train_graph.x[random.sample(range(data.train_graph.x.shape[0]), 5)])
@@ -213,7 +220,7 @@ class hgnn_env(object):
                     'Val': val_acc,
                     'Embedding': self.train_data.x.weight,
                     'Reward': r},
-                   'model/epochpoints/m-' + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + '.pth.tar')
+                   'model/epochpoints/e-' + str(val_acc) + '-' + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + '.pth.tar')
 
         logger2.info("Val acc: %.5f  reward: %.5f" % (val_acc, r))
 
@@ -256,6 +263,54 @@ class hgnn_env(object):
             # for para in self.model.named_parameters():
             #     print(para)
 
+        # n_kg_batch = self.data.n_kg_train // self.data.kg_batch_size + 1
+
+        # for iter in range(1, n_kg_batch + 1):
+        #     self.optimizer.zero_grad()
+        #     kg_batch_head, kg_batch_relation, kg_batch_pos_tail, kg_batch_neg_tail = self.data.generate_kg_batch(
+        #         self.data.train_kg_dict)
+        #     kg_batch_head = kg_batch_head.to(self.device)
+        #     kg_batch_relation = kg_batch_relation.to(self.device)
+        #     kg_batch_pos_tail = kg_batch_pos_tail.to(self.device)
+        #     kg_batch_neg_tail = kg_batch_neg_tail.to(self.device)
+        #     kg_batch_loss = self.calc_kg_loss(kg_batch_head, kg_batch_relation, kg_batch_pos_tail,
+        #                           kg_batch_neg_tail)
+        #
+        #     kg_batch_loss.backward()
+        #     self.optimizer.step()
+        # print(self.train_data.x(torch.tensor([10,11,12])))
+
+    def calc_kg_loss(self, h, r, pos_t, neg_t):
+        """
+        h:      (kg_batch_size)
+        r:      (kg_batch_size)
+        pos_t:  (kg_batch_size)
+        neg_t:  (kg_batch_size)
+        """
+        r_embed = self.train_data.relation_embed(r)  # (kg_batch_size, relation_dim)
+        W_r = self.W_R[r]  # (kg_batch_size, entity_dim, relation_dim)
+
+        h_embed = self.train_data.x(h)  # (kg_batch_size, entity_dim)
+        pos_t_embed = self.train_data.x(pos_t)  # (kg_batch_size, entity_dim)
+        neg_t_embed = self.train_data.x(neg_t)  # (kg_batch_size, entity_dim)
+
+        r_mul_h = torch.bmm(h_embed.unsqueeze(1), W_r).squeeze(1)  # (kg_batch_size, relation_dim)
+        r_mul_pos_t = torch.bmm(pos_t_embed.unsqueeze(1), W_r).squeeze(1)  # (kg_batch_size, relation_dim)
+        r_mul_neg_t = torch.bmm(neg_t_embed.unsqueeze(1), W_r).squeeze(1)  # (kg_batch_size, relation_dim)
+
+        # Equation (1)
+        pos_score = torch.sum(torch.pow(r_mul_h + r_embed - r_mul_pos_t, 2), dim=1)  # (kg_batch_size)
+        neg_score = torch.sum(torch.pow(r_mul_h + r_embed - r_mul_neg_t, 2), dim=1)  # (kg_batch_size)
+
+        # Equation (2)
+        kg_loss = (-1.0) * F.logsigmoid(neg_score - pos_score)
+        kg_loss = torch.mean(kg_loss)
+
+        l2_loss = _L2_loss_mean(r_mul_h) + _L2_loss_mean(r_embed) + _L2_loss_mean(r_mul_pos_t) + _L2_loss_mean(
+            r_mul_neg_t)
+        loss = kg_loss + self.kg_l2loss_lambda * l2_loss
+        return loss
+
     def calc_cf_loss(self, g, edge_index, user_ids, item_pos_ids, item_neg_ids, test=False):
         """
         user_ids:       (cf_batch_size)
@@ -281,7 +336,8 @@ class hgnn_env(object):
 
         l2_loss = _L2_loss_mean(user_embed) + _L2_loss_mean(item_pos_embed) + _L2_loss_mean(item_neg_embed)
         loss = cf_loss + self.cf_l2loss_lambda * l2_loss
-        print("loss: ", loss)
+        # loss = cf_loss
+        # print("loss: ", loss)
         return loss
 
     def eval_batch(self):
@@ -388,6 +444,8 @@ class hgnn_env(object):
                 neg_pos_list.extend(neg_list[i])
             neg_item_embeddings = all_embed[neg_pos_list]
             cf_score_neg = torch.matmul(user_embedding, neg_item_embeddings.transpose(0, 1))
+            # print("cf_score_pos: ", cf_score_pos)
+            # print("cf_score_neg: ", cf_score_neg)
             pos_logits = torch.cat([pos_logits, cf_score_pos])
             neg_logits = torch.cat([neg_logits, torch.unsqueeze(cf_score_neg, 1)])
             idx += len(self.data.test_user_dict[u])
@@ -396,6 +454,10 @@ class hgnn_env(object):
         logger2.info("HR1 : %.4f, HR3 : %.4f, HR20 : %.4f, HR50 : %.4f, MRR10 : %.4f, MRR20 : %.4f, MRR50 : %.4f, "
                      "NDCG10 : %.4f, NDCG20 : %.4f, NDCG50 : %.4f" %(HR1, HR3, HR20, HR50, MRR10.item(), MRR20.item(),
                                                                      MRR50.item(), NDCG10.item(), NDCG20.item(), NDCG50.item()))
+        print("HR1 : %.4f, HR3 : %.4f, HR20 : %.4f, HR50 : %.4f, MRR10 : %.4f, MRR20 : %.4f, MRR50 : %.4f, "
+                     "NDCG10 : %.4f, NDCG20 : %.4f, NDCG50 : %.4f" % (HR1, HR3, HR20, HR50, MRR10.item(), MRR20.item(),
+                                                                      MRR50.item(), NDCG10.item(), NDCG20.item(),
+                                                                      NDCG50.item()))
 
         return NDCG10.cpu().item()
 

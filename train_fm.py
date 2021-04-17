@@ -29,7 +29,7 @@ def main():
     torch.backends.cudnn.deterministic=True
     max_timesteps = 2
     dataset = 'yelp_data'
-    max_episodes = 25
+    max_episodes = 10
 
     logger1 = get_logger('log', 'logger_quick.log')
     logger2 = get_logger('log2', 'logger2_quick.log')
@@ -68,7 +68,7 @@ def main():
                     'target_estimator_qnet_state_dict': agent.target_estimator.qnet.state_dict(),
                     'Val': val_acc,
                     'Reward': reward},
-                    'model/agentpoints/m-' + str(val_acc) + '-' + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + '.pth.tar')
+                    'model/agentpoints/a-' + str(val_acc) + '-' + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + '.pth.tar')
 
     # last_val = 0.0
     # # Training: Learning meta-policy
@@ -106,7 +106,7 @@ def main():
     b_i = 0
     best_acc = 0
     actions = dict()
-    for i_episode in range(1, 20):
+    for i_episode in range(1, 6):
         index, state = new_env.reset2()
         for t in range(max_timesteps):
             if i_episode == 1:

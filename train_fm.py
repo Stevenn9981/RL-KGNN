@@ -31,8 +31,8 @@ def main():
     dataset = 'yelp_data'
     max_episodes = 10
 
-    logger1 = get_logger('log', 'logger_4wa.log')
-    logger2 = get_logger('log2', 'logger2_4wa.log')
+    logger1 = get_logger('log', 'logger_10wa.log')
+    logger2 = get_logger('log2', 'logger2_10wa.log')
 
     env = hgnn_env(logger1, logger2, dataset=dataset)
     env.seed(0)
@@ -106,7 +106,7 @@ def main():
     b_i = 0
     best_acc = 0
     actions = dict()
-    for i_episode in range(1, 16):
+    for i_episode in range(1, 11):
         index, state = new_env.reset2()
         for t in range(max_timesteps):
             if i_episode == 1:

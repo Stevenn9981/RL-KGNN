@@ -15,7 +15,7 @@ from KGDataLoader import *
 
 STOP = 0
 
-NEG_SIZE_TRAIN = 4
+NEG_SIZE_TRAIN = 10
 NEG_SIZE_RANKING = 100
 
 

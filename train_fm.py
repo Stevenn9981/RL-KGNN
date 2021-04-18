@@ -31,11 +31,12 @@ def main():
     dataset = 'yelp_data'
     max_episodes = 10
 
-    logger1 = get_logger('log', 'logger_10wna.log')
-    logger2 = get_logger('log2', 'logger2_10wna.log')
+    logger1 = get_logger('log', 'logger_10wa.log')
+    logger2 = get_logger('log2', 'logger2_10wa.log')
 
     env = hgnn_env(logger1, logger2, dataset=dataset)
     env.seed(0)
+
     agent = DQNAgent(scope='dqn',
                     action_num = env.action_num,
                     replay_memory_size=int(1e4),
@@ -109,7 +110,7 @@ def main():
     for i_episode in range(1, 11):
         index, state = new_env.reset2()
         for t in range(max_timesteps):
-            if i_episode != 0:
+            if i_episode == 1:
                 action = best_policy.eval_step(state)
                 actions[t] = action
             state, reward, done, (val_acc, reward) = new_env.step2(logger1, logger2, index, actions[t], True)

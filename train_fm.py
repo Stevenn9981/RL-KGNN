@@ -71,55 +71,42 @@ def main():
                     'Reward': reward},
                     'model/agentpoints/a-' + str(val_acc) + '-' + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + '.pth.tar')
 
-    # last_val = 0.0
-    # # Training: Learning meta-policy
-    # print("Training Meta-policy on Validation Set")
-    # for i_episode in range(1, max_episodes+1):
-    #     loss, reward, (val_acc, reward) = agent.learn(env, max_timesteps) # debug = (val_acc, reward)
-    #     if val_acc > last_val: # check whether gain improvement on validation set
-    #         best_policy = deepcopy(agent) # save the best policy
-    #     last_val = val_acc
-    #     print("Training Meta-policy:", i_episode, "Val_Acc:", val_acc, "Avg_reward:", reward)
-
 
     # Testing: Apply meta-policy to train a new GNN
     logger2.info("Training GNNs with learned meta-policy")
     new_env = hgnn_env(logger1, logger2, dataset=dataset)
     new_env.seed(0)
     new_env.policy = best_policy
-    # new_env.model = env.model
-    # new_env.optimizer = env.optimizer
-    # actions = []
-
-    # for t in range(max_timesteps):
-    #     action = best_policy.eval_step(state)
-    #     state, reward, done, (val_acc, reward) = new_env.step2(index, action)
-    #     actions.append(action)
-
-    # best_acc = new_env.test_batch()
-    # print("Training GNN", 0, "; Test_Acc:", best_acc, "; Best_Acc:", best_acc, "; Best_i: ", 0)
-    #
-    # counter = dict()
-    # for i, action in enumerate(actions):
-    #     counter[i] = collections.Counter(action)
-    # print(counter)
 
     b_i = 0
-    best_acc = 0
+    best_val_i = 0
+    best_val_acc = 0
+    best_test_acc = 0
     actions = dict()
-    for i_episode in range(1, 7):
+    val_acc = reward = 0
+    model, embedding, optimizer = new_env.model, new_env.train_data.x, new_env.optimizer
+    for i_episode in range(1, 11):
         index, state = new_env.reset2()
         for t in range(max_timesteps):
             if i_episode == 1:
                 action = best_policy.eval_step(state)
                 actions[t] = action
             state, reward, done, (val_acc, reward) = new_env.step2(logger1, logger2, index, actions[t], True)
-            logger2.info("Training GNN %d:   Val_Acc: %.5f  Reward: %.5f  " % (i_episode, val_acc, reward))
+        logger2.info("Training GNN %d:   Val_Acc: %.5f  Reward: %.5f  " % (i_episode, val_acc, reward))
+        if val_acc > best_val_acc:
+            best_val_acc = val_acc
+            model, embedding, optimizer = new_env.model, new_env.train_data.x, new_env.optimizer
+            best_val_i = i_episode
+
         test_acc = new_env.test_batch(logger2)
-        if test_acc > best_acc:
-            best_acc = test_acc
+        if test_acc > best_test_acc:
+            best_test_acc = test_acc
             b_i = i_episode
-        logger2.info("Training GNN %d:   Test_Acc: %.5f   Best_Acc: %.5f   Best_i: %d" % (i_episode, test_acc, best_acc, b_i))
+        logger2.info("Training GNN %d:   Test_Acc: %.5f  Best_i: %d  best_val_i: %d" % (i_episode, test_acc, b_i, best_val_i))
+
+    new_env.model, new_env.train_data.x, new_env.optimizer = model, embedding, optimizer
+    logger2.info("\nStart the performance testing on test dataset:")
+    new_env.test_batch(logger2)
 
 if __name__ == '__main__':
     main()

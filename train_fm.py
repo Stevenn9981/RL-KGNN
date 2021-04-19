@@ -31,8 +31,8 @@ def main():
     dataset = 'yelp_data'
     max_episodes = 10
 
-    logger1 = get_logger('log', 'logger_9wna_2500.log')
-    logger2 = get_logger('log2', 'logger2_9wna_2500.log')
+    logger1 = get_logger('log', 'logger_9wna_2000.log')
+    logger2 = get_logger('log2', 'logger2_9wna_2000.log')
 
     env = hgnn_env(logger1, logger2, dataset=dataset)
     env.seed(0)

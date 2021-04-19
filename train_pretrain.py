@@ -25,7 +25,7 @@ def main():
     dataset = 'yelp_data'
 
     agentCheckpoint = torch.load("model/agentpoints/m-0.7687571719288826-2021-04-13 15:26:41.pth.tar", map_location=torch.device('cpu'))
-    epochCheckpoint = torch.load("model/epochpoints/m-2021-04-14 00:41:53.pth.tar", map_location=torch.device('cpu'))
+    epochCheckpoint = torch.load("model/epochpoints/e-0.6802247818559408-2021-04-18 13:33:21.pth.tar", map_location=torch.device('cpu'))
 
     print(epochCheckpoint['Val'])
 

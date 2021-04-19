@@ -44,7 +44,7 @@ class Net(torch.nn.Module):
 
 class hgnn_env(object):
     def __init__(self, logger1, logger2, dataset='last-fm', lr=0.01, weight_decay=5e-4, policy=None):
-        self.device = 'cuda'
+        self.device = 'cpu'
         # dataset = dataset
         # path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', dataset)
         args = parse_args()
@@ -332,12 +332,12 @@ class hgnn_env(object):
 
         # print("pos, neg: ", pos_score, neg_score)
         # print("user_embedding: ", user_embed)
-        cf_loss = (-1.0) * F.logsigmoid(pos_score - neg_score) + F.sigmoid(neg_score)
+        cf_loss = (-1.0) * F.logsigmoid(pos_score - neg_score)
         cf_loss = torch.mean(cf_loss)
 
         l2_loss = _L2_loss_mean(user_embed) + _L2_loss_mean(item_pos_embed) + _L2_loss_mean(item_neg_embed)
         loss = cf_loss + self.cf_l2loss_lambda * l2_loss
-        print("cf_loss, l2_loss, loss:", cf_loss.item(), l2_loss.item(), loss.item())
+        # print("cf_loss, l2_loss, loss:", cf_loss.item(), l2_loss.item(), loss.item())
         return loss
 
     def eval_batch(self):
@@ -383,7 +383,7 @@ class hgnn_env(object):
         with torch.no_grad():
             for u in user_ids_batch:
                 for _ in self.data.test_user_dict[u]:
-                    nl = self.data.sample_neg_items_for_u(self.data.test_neg_dict, u, NEG_SIZE_RANKING)
+                    nl = self.data.sample_neg_items_for_u_test(self.data.train_user_dict, self.data.test_user_dict, u, NEG_SIZE_RANKING)
                     neg_dict[u].extend(nl)
             self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))
             all_embed = self.train_data.x(self.train_data.node_idx).to(self.device)
@@ -411,36 +411,36 @@ class hgnn_env(object):
 
         return NDCG10.cpu().item()
 
-    def evaluate(self, model, train_graph, train_user_dict, test_user_dict, user_ids_batches, item_ids, K):
-        model.eval()
-
-        n_users = len(test_user_dict.keys())
-        item_ids_batch = item_ids.cpu().numpy()
-
-        cf_scores = []
-        precision = []
-        recall = []
-        # ndcg = []
-
-        with torch.no_grad():
-            for user_ids_batch in user_ids_batches:
-                cf_scores_batch = self.cf_score(train_graph, user_ids_batch, item_ids)  # (n_batch_users, n_eval_items)
-                cf_scores_batch = cf_scores_batch.cpu()
-                user_ids_batch = user_ids_batch.cpu().numpy()
-                precision_batch, recall_batch = calc_metrics_at_k(cf_scores_batch, train_user_dict,
-                                                                  test_user_dict, user_ids_batch,
-                                                                  item_ids_batch, K)
-
-                cf_scores.append(cf_scores_batch.numpy())
-                precision.append(precision_batch)
-                recall.append(recall_batch)
-                # ndcg.append(ndcg_batch)
-
-        cf_scores = np.concatenate(cf_scores, axis=0)
-        precision_k = sum(np.concatenate(precision)) / n_users
-        recall_k = sum(np.concatenate(recall)) / n_users
-        # ndcg_k = sum(np.concatenate(ndcg)) / n_users
-        return cf_scores, precision_k, recall_k  # , ndcg_k
+    # def evaluate(self, model, train_graph, train_user_dict, test_user_dict, user_ids_batches, item_ids, K):
+    #     model.eval()
+    #
+    #     n_users = len(test_user_dict.keys())
+    #     item_ids_batch = item_ids.cpu().numpy()
+    #
+    #     cf_scores = []
+    #     precision = []
+    #     recall = []
+    #     # ndcg = []
+    #
+    #     with torch.no_grad():
+    #         for user_ids_batch in user_ids_batches:
+    #             cf_scores_batch = self.cf_score(train_graph, user_ids_batch, item_ids)  # (n_batch_users, n_eval_items)
+    #             cf_scores_batch = cf_scores_batch.cpu()
+    #             user_ids_batch = user_ids_batch.cpu().numpy()
+    #             precision_batch, recall_batch = calc_metrics_at_k(cf_scores_batch, train_user_dict,
+    #                                                               test_user_dict, user_ids_batch,
+    #                                                               item_ids_batch, K)
+    #
+    #             cf_scores.append(cf_scores_batch.numpy())
+    #             precision.append(precision_batch)
+    #             recall.append(recall_batch)
+    #             # ndcg.append(ndcg_batch)
+    #
+    #     cf_scores = np.concatenate(cf_scores, axis=0)
+    #     precision_k = sum(np.concatenate(precision)) / n_users
+    #     recall_k = sum(np.concatenate(recall)) / n_users
+    #     # ndcg_k = sum(np.concatenate(ndcg)) / n_users
+    #     return cf_scores, precision_k, recall_k  # , ndcg_k
 
     def cf_score(self, g, user_ids, item_ids):
         """

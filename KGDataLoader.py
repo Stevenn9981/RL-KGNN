@@ -87,7 +87,7 @@ def parse_args():
 class DataLoaderHGNN(object):
 
     def __init__(self, logging, args, dataset):
-        self.test_neg_dict = dict()
+        # self.test_neg_dict = dict()
         self.args = args
         self.data_name = dataset
         self.use_pretrain = args.use_pretrain
@@ -107,8 +107,8 @@ class DataLoaderHGNN(object):
         self.cf_train_data, self.train_user_dict = self.load_cf(train_file)
         self.cf_test_data, self.test_user_dict = self.load_cf(test_file)
 
-        for u in self.test_user_dict:
-            self.test_neg_dict[u] = list(set(self.train_user_dict[u]) | set(self.test_user_dict[u]))
+        # for u in self.test_user_dict:
+        #     self.test_neg_dict[u] = list(set(self.train_user_dict[u]) | set(self.test_user_dict[u]))
 
         self.statistic_cf()
 

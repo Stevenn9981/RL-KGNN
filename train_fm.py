@@ -45,7 +45,7 @@ def main():
                     batch_size=48,
                     state_shape = env.observation_space.shape,
                     mlp_layers=[32, 64, 128, 64, 32],
-                    device=torch.device('cuda')
+                    device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')
             )
     env.policy = agent
 
@@ -85,7 +85,7 @@ def main():
     actions = dict()
     val_acc = reward = 0
     model, embedding, optimizer = new_env.model, new_env.train_data.x, new_env.optimizer
-    for i_episode in range(1, 11):
+    for i_episode in range(1, 16):
         index, state = new_env.reset2()
         for t in range(max_timesteps):
             if i_episode >= 1:

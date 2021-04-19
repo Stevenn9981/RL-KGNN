@@ -44,9 +44,7 @@ class Net(torch.nn.Module):
 
 class hgnn_env(object):
     def __init__(self, logger1, logger2, dataset='last-fm', lr=0.01, weight_decay=5e-4, policy=None):
-        self.device = 'cuda'
-        # dataset = dataset
-        # path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', dataset)
+        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         args = parse_args()
         self.args = args
         # args.data_dir = path

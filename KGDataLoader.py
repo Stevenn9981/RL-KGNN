@@ -30,13 +30,13 @@ def parse_args():
     parser.add_argument('--pretrain_model_path', nargs='?', default='trained_model/model.pth',
                         help='Path of stored model.')
 
-    parser.add_argument('--cf_batch_size', type=int, default=2024,
+    parser.add_argument('--cf_batch_size', type=int, default=2048,
                         help='CF batch size.')
     parser.add_argument('--kg_batch_size', type=int, default=2048,
                         help='KG batch size.')
     parser.add_argument('--nd_batch_size', type=int, default=32,
                         help='node sampling batch size.')
-    parser.add_argument('--train_batch_size', type=int, default=2500,
+    parser.add_argument('--train_batch_size', type=int, default=2000,
                         help='Test batch size (the user number to test every batch).')
     parser.add_argument('--test_batch_size', type=int, default=10000,
                         help='Test batch size (the user number to test every batch).')

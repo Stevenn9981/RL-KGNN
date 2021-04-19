@@ -25,7 +25,7 @@ def main():
     dataset = 'yelp_data'
 
     agentCheckpoint = torch.load("model/agentpoints/m-0.7687571719288826-2021-04-13 15:26:41.pth.tar", map_location=torch.device('cpu'))
-    epochCheckpoint = torch.load("model/epochpoints/e-0.6802247818559408-2021-04-18 13:33:21.pth.tar", map_location=torch.device('cpu'))
+    epochCheckpoint = torch.load("model/epochpoints/e-0.7912314925342798-2021-04-17 21:39:01.pth.tar", map_location=torch.device('cpu'))
 
     print(epochCheckpoint['Val'])
 
@@ -49,7 +49,7 @@ def main():
                            batch_size=64,
                            state_shape=new_env.observation_space.shape,
                            mlp_layers=[32, 64, 128, 64, 32],
-                           device=torch.device('cpu')
+                           device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')
                            )
     best_policy.q_estimator.qnet.load_state_dict(agentCheckpoint['q_estimator_qnet_state_dict'])
     best_policy.target_estimator.qnet.load_state_dict(agentCheckpoint['target_estimator_qnet_state_dict'])

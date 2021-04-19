@@ -55,7 +55,7 @@ def parse_args():
 
     parser.add_argument('--kg_l2loss_lambda', type=float, default=1e-5,
                         help='Lambda when calculating KG l2 loss.')
-    parser.add_argument('--cf_l2loss_lambda', type=float, default=1e-5,
+    parser.add_argument('--cf_l2loss_lambda', type=float, default=1e-2,
                         help='Lambda when calculating CF l2 loss.')
 
     parser.add_argument('--lr', type=float, default=0.0001,
@@ -87,6 +87,7 @@ def parse_args():
 class DataLoaderHGNN(object):
 
     def __init__(self, logging, args, dataset):
+        self.test_neg_dict = dict()
         self.args = args
         self.data_name = dataset
         self.use_pretrain = args.use_pretrain
@@ -105,6 +106,10 @@ class DataLoaderHGNN(object):
 
         self.cf_train_data, self.train_user_dict = self.load_cf(train_file)
         self.cf_test_data, self.test_user_dict = self.load_cf(test_file)
+
+        for u in self.test_user_dict:
+            self.test_neg_dict[u] = list(set(self.train_user_dict[u]) | set(self.test_user_dict[u]))
+
         self.statistic_cf()
 
         kg_data = self.load_kg(kg_file)

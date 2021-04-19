@@ -10,6 +10,8 @@ from metrics import *
 import time
 import torch
 import copy
+import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1 import host_subplot
 
 from KGDataLoader import *
 
@@ -42,7 +44,7 @@ class Net(torch.nn.Module):
 
 class hgnn_env(object):
     def __init__(self, logger1, logger2, dataset='last-fm', lr=0.01, weight_decay=5e-4, policy=None):
-        self.device = 'cuda'
+        self.device = 'cpu'
         # dataset = dataset
         # path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', dataset)
         args = parse_args()
@@ -253,15 +255,15 @@ class hgnn_env(object):
 
         n_cf_batch = self.data.n_cf_train // self.data.cf_batch_size + 1
 
-        # for i in range(5):
+        cf_total_loss = 0
         for iter in range(1, n_cf_batch + 1):
             self.optimizer.zero_grad()
             cf_batch_user, cf_batch_pos_item, cf_batch_neg_item = self.data.generate_cf_batch(self.data.train_user_dict)
             cf_batch_loss = self.calc_cf_loss(self.train_data, edge_index, cf_batch_user, cf_batch_pos_item, cf_batch_neg_item, test)
             cf_batch_loss.backward()
+            cf_total_loss += cf_batch_loss
             self.optimizer.step()
-            # for para in self.model.named_parameters():
-            #     print(para)
+        # print("total_loss: ", cf_total_loss)
 
         # n_kg_batch = self.data.n_kg_train // self.data.kg_batch_size + 1
 
@@ -329,14 +331,13 @@ class hgnn_env(object):
         neg_score = torch.sum(user_embed * item_neg_embed, dim=1)   # (cf_batch_size)
 
         # print("pos, neg: ", pos_score, neg_score)
-
-        cf_loss = (-1.0) * F.logsigmoid(pos_score - neg_score)
+        # print("user_embedding: ", user_embed)
+        cf_loss = (-1.0) * F.logsigmoid(pos_score - neg_score) + F.sigmoid(neg_score)
         cf_loss = torch.mean(cf_loss)
 
         l2_loss = _L2_loss_mean(user_embed) + _L2_loss_mean(item_pos_embed) + _L2_loss_mean(item_neg_embed)
         loss = cf_loss + self.cf_l2loss_lambda * l2_loss
-        # loss = cf_loss
-        # print("loss: ", loss)
+        print("cf_loss, l2_loss, loss:", cf_loss.item(), l2_loss.item(), loss.item())
         return loss
 
     def eval_batch(self):
@@ -381,8 +382,8 @@ class hgnn_env(object):
 
         with torch.no_grad():
             for u in user_ids_batch:
-                for _ in self.data.train_user_dict[u]:
-                    nl = self.data.sample_neg_items_for_u(self.data.train_user_dict, u, NEG_SIZE_RANKING)
+                for _ in self.data.test_user_dict[u]:
+                    nl = self.data.sample_neg_items_for_u(self.data.test_neg_dict, u, NEG_SIZE_RANKING)
                     neg_dict[u].extend(nl)
             self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))
             all_embed = self.train_data.x(self.train_data.node_idx).to(self.device)
@@ -393,11 +394,11 @@ class hgnn_env(object):
             cf_scores = torch.matmul(all_embed[user_ids_batch],
                                      all_embed[torch.arange(self.data.n_items, dtype=torch.long)].transpose(0, 1))
             for idx, u in enumerate(user_ids_batch):
-                pos_logits = torch.cat([pos_logits, cf_scores[idx][self.data.train_user_dict[u]]])
+                pos_logits = torch.cat([pos_logits, cf_scores[idx][self.data.test_user_dict[u]]])
                 neg_logits = torch.cat([neg_logits, torch.unsqueeze(cf_scores[idx][neg_dict[u]], 1)])
 
-            print("pos_logits: ", pos_logits)
-            print("neg_logits: ", neg_logits)
+
+            print(pos_logits, neg_logits)
 
             HR1, HR3, HR20, HR50, MRR10, MRR20, MRR50, NDCG10, NDCG20, NDCG50 = self.metrics(pos_logits, neg_logits, training=False)
             logger2.info("HR1 : %.4f, HR3 : %.4f, HR20 : %.4f, HR50 : %.4f, MRR10 : %.4f, MRR20 : %.4f, MRR50 : %.4f, "

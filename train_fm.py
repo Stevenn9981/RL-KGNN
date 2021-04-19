@@ -45,7 +45,7 @@ def main():
                     batch_size=48,
                     state_shape = env.observation_space.shape,
                     mlp_layers=[32, 64, 128, 64, 32],
-                    device=torch.device('cuda')
+                    device=torch.device('cpu')
             )
     env.policy = agent
 
@@ -97,7 +97,6 @@ def main():
             best_val_acc = val_acc
             model, embedding, optimizer = new_env.model, new_env.train_data.x, new_env.optimizer
             best_val_i = i_episode
-
         test_acc = new_env.test_batch(logger2)
         if test_acc > best_test_acc:
             best_test_acc = test_acc

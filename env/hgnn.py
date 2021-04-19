@@ -263,7 +263,7 @@ class hgnn_env(object):
             cf_batch_loss.backward()
             cf_total_loss += cf_batch_loss
             self.optimizer.step()
-        # print("total_loss: ", cf_total_loss)
+        print("total_loss: ", cf_total_loss)
 
         # n_kg_batch = self.data.n_kg_train // self.data.kg_batch_size + 1
 
@@ -396,9 +396,6 @@ class hgnn_env(object):
             for idx, u in enumerate(user_ids_batch):
                 pos_logits = torch.cat([pos_logits, cf_scores[idx][self.data.test_user_dict[u]]])
                 neg_logits = torch.cat([neg_logits, torch.unsqueeze(cf_scores[idx][neg_dict[u]], 1)])
-
-
-            print(pos_logits, neg_logits)
 
             HR1, HR3, HR20, HR50, MRR10, MRR20, MRR50, NDCG10, NDCG20, NDCG50 = self.metrics(pos_logits, neg_logits, training=False)
             logger2.info("HR1 : %.4f, HR3 : %.4f, HR20 : %.4f, HR50 : %.4f, MRR10 : %.4f, MRR20 : %.4f, MRR50 : %.4f, "

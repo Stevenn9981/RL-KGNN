@@ -32,7 +32,7 @@ def main():
     dataset = 'yelp_data'
     max_episodes = 10
 
-    infor = '9wna_2000'
+    infor = '9wna_0.01'
 
     logger1 = get_logger('log', 'logger_' + infor + '.log')
     logger2 = get_logger('log2', 'logger2_' + infor + '.log')

@@ -32,7 +32,7 @@ def main():
     dataset = 'yelp_data'
     max_episodes = 10
 
-    infor = '9wna_0.01'
+    infor = '9wna_0.0005'
 
     logger1 = get_logger('log', 'logger_' + infor + '.log')
     logger2 = get_logger('log2', 'logger2_' + infor + '.log')
@@ -88,7 +88,7 @@ def main():
     best_test_acc = 0
     actions = dict()
     val_acc = reward = 0
-    for i_episode in range(1, 16):
+    for i_episode in range(1, 11):
         index, state = new_env.reset2()
         for t in range(max_timesteps):
             if i_episode >= 1:

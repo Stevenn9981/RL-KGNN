@@ -43,12 +43,13 @@ class Net(torch.nn.Module):
 
 
 class hgnn_env(object):
-    def __init__(self, logger1, logger2, dataset='last-fm', lr=0.01, weight_decay=5e-4, policy=None):
+    def __init__(self, logger1, logger2, dataset='yelp_data', weight_decay=5e-4, policy=None):
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         args = parse_args()
         self.args = args
         # args.data_dir = path
         # print(args.data_dir)
+        lr = args.lr
         self.data = DataLoaderHGNN(logger1, args, dataset)
         data = self.data
         # print(data.train_graph)

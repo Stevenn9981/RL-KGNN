@@ -26,7 +26,7 @@ def main():
 
     agentCheckpoint = torch.load("model/agentpoints/a-0.6805325392633677-2021-04-19 17:32:55.pth.tar")
 
-    infor = '9wna_0.001_pretrain'
+    infor = '9wna_0.0001_pretrain'
 
     logger1 = get_logger('log', 'logger_' + infor + '.log')
     logger2 = get_logger('log2', 'logger2_' + infor + '.log')

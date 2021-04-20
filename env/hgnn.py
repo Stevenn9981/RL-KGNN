@@ -367,7 +367,6 @@ class hgnn_env(object):
         time4 = time.time()
         # print("ALL time: ", time4 - time1)
 
-
         return NDCG10.item()
 
     def test_batch(self, logger2):

@@ -95,7 +95,7 @@ def main():
                 action = best_policy.eval_step(state)
                 actions[t] = action
             state, reward, done, (val_acc, reward) = new_env.step2(logger1, logger2, index, actions[t], True)
-        val_acc = new_env.eval_batch()
+        val_acc = new_env.eval_batch(100)
         logger2.info("Training GNN %d:   Val_Acc: %.5f  Reward: %.5f  " % (i_episode, val_acc, reward))
         if val_acc > best_val_acc:
             best_val_acc = val_acc

@@ -339,7 +339,7 @@ class hgnn_env(object):
         # print("cf_loss, l2_loss, loss:", cf_loss.item(), l2_loss.item(), loss.item())
         return loss
 
-    def eval_batch(self):
+    def eval_batch(self, neg_num=NEG_SIZE_TRAIN):
         self.model.eval()
         time1 = time.time()
         user_ids = list(self.data.train_user_dict.keys())
@@ -348,7 +348,7 @@ class hgnn_env(object):
         neg_dict = collections.defaultdict(list)
         for u in user_ids_batch:
             for _ in self.data.train_user_dict[u]:
-                nl = self.data.sample_neg_items_for_u(self.data.train_user_dict, u, NEG_SIZE_TRAIN)
+                nl = self.data.sample_neg_items_for_u(self.data.train_user_dict, u, neg_num)
                 # neg_list.append(nl)
                 neg_dict[u].extend(nl)
         self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))

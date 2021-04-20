@@ -101,7 +101,7 @@ def main():
             best_val_acc = val_acc
             if os.path.exists(model_name):
                 os.remove(model_name)
-                torch.save({'state_dict': new_env.model.state_dict(),
+            torch.save({'state_dict': new_env.model.state_dict(),
                             'optimizer': new_env.optimizer.state_dict(),
                             'Val': val_acc,
                             'Embedding': new_env.train_data.x.weight},

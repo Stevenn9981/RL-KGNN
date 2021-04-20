@@ -33,7 +33,7 @@ def main():
     logger2 = get_logger('log2', 'logger2_pre.log')
 
     max_timesteps = 2
-    infor = '9wna_2000'
+    infor = '9wna_0.001'
     new_env = hgnn_env(logger1, logger2, dataset=dataset)
     new_env.seed(0)
     new_env.model.load_state_dict(epochCheckpoint['state_dict'])
@@ -74,7 +74,7 @@ def main():
             best_val_acc = val_acc
             if os.path.exists(model_name):
                 os.remove(model_name)
-                torch.save({'state_dict': new_env.model.state_dict(),
+            torch.save({'state_dict': new_env.model.state_dict(),
                             'optimizer': new_env.optimizer.state_dict(),
                             'Val': val_acc,
                             'Embedding': new_env.train_data.x.weight},

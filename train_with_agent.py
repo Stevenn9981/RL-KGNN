@@ -26,7 +26,7 @@ def main():
 
     agentCheckpoint = torch.load("model/agentpoints/a-0.6805325392633677-2021-04-19 17:32:55.pth.tar")
 
-    infor = '9wna_0.01_pretrain'
+    infor = '9wna_0.001_pretrain'
 
     logger1 = get_logger('log', 'logger_' + infor + '.log')
     logger2 = get_logger('log2', 'logger2_' + infor + '.log')
@@ -70,7 +70,7 @@ def main():
             best_val_acc = val_acc
             if os.path.exists(model_name):
                 os.remove(model_name)
-                torch.save({'state_dict': new_env.model.state_dict(),
+            torch.save({'state_dict': new_env.model.state_dict(),
                             'optimizer': new_env.optimizer.state_dict(),
                             'Val': val_acc,
                             'Embedding': new_env.train_data.x.weight},

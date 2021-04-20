@@ -113,7 +113,7 @@ def main():
             b_i = i_episode
         logger2.info("Training GNN %d:   Test_Acc: %.5f  Best_test_i: %d  best_val_i: %d" % (i_episode, test_acc, b_i, best_val_i))
 
-    logger2.info("\nStart the performance testing on test dataset:")
+    logger2.info("---------------------------------------------------\nStart the performance testing on test dataset:")
     model_checkpoint = torch.load(model_name)
     new_env.model.load_state_dict(model_checkpoint['state_dict'])
     new_env.train_data.x = nn.Embedding.from_pretrained(model_checkpoint['Embedding'], freeze=True)

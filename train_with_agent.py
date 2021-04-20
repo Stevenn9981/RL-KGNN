@@ -24,7 +24,7 @@ def main():
     torch.backends.cudnn.deterministic = True
     dataset = 'yelp_data'
 
-    agentCheckpoint = torch.load("model/agentpoints/m-0.7687571719288826-2021-04-13 15:26:41.pth.tar")
+    agentCheckpoint = torch.load("model/agentpoints/a-0.6805325392633677-2021-04-19 17:32:55.pth.tar")
 
     infor = '9wna_0.01_pretrain'
 
@@ -57,7 +57,7 @@ def main():
     best_test_acc = 0
     actions = dict()
     val_acc = reward = 0
-    for i_episode in range(1, 16):
+    for i_episode in range(1, 11):
         index, state = new_env.reset2()
         for t in range(max_timesteps):
             if i_episode >= 1:

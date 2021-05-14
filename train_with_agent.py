@@ -50,6 +50,7 @@ def main():
 
     new_env.policy = best_policy
     model_name = 'model_' + infor + '.pth'
+    val_acc = new_env.eval_batch(100)
 
     b_i = 0
     best_val_i = 0

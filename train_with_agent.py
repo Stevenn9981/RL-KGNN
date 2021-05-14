@@ -24,7 +24,9 @@ def main():
     torch.backends.cudnn.deterministic = True
     dataset = 'yelp_data'
 
-    agentCheckpoint = torch.load("model/agentpoints/a-0.6805325392633677-2021-04-19 17:32:55.pth.tar")
+    device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+
+    agentCheckpoint = torch.load("model/agentpoints/a-0.6805325392633677-2021-04-19 17:32:55.pth.tar", map_location=torch.device(device))
 
     infor = '9wna_0.0001_pretrain'
 
@@ -34,6 +36,29 @@ def main():
     max_timesteps = 2
     new_env = hgnn_env(logger1, logger2, dataset=dataset)
     new_env.seed(0)
+
+    fr1 = open('user.embedding', 'r')
+    fr2 = open('business.embedding', 'r')
+
+    emb = new_env.train_data.x.weight
+    emb.requires_grad = False
+
+    for line in fr1.readlines():
+        embeddings = line.strip().split()
+        id, embedding = int(embeddings[0]), embeddings[1:]
+        embedding = list(map(float, embedding))
+        emb[id] = torch.tensor(embedding)
+
+    for line in fr2.readlines():
+        embeddings = line.strip().split()
+        id, embedding = int(embeddings[0]), embeddings[1:]
+        embedding = list(map(float, embedding))
+        emb[id] = torch.tensor(embedding)
+
+    emb.requires_grad = True
+    new_env.train_data.x.weight = nn.Parameter(emb)
+
+
     new_env.test_batch(logger2)
     best_policy = DQNAgent(scope='dqn',
                            action_num=new_env.action_num,
@@ -50,7 +75,6 @@ def main():
 
     new_env.policy = best_policy
     model_name = 'model_' + infor + '.pth'
-    val_acc = new_env.eval_batch(100)
 
     b_i = 0
     best_val_i = 0

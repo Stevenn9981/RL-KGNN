@@ -28,18 +28,21 @@ def _L2_loss_mean(x):
 class Net(torch.nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.conv1 = GCNConv(48, 24)
-        self.conv2 = GCNConv(24, 48)
-        # self.conv3 = GCNConv(64, 64)
-        # self.activation = nn.ReLU()
-        # self.dropout = nn.Dropout(0.3)
+        self.layer1 = nn.Linear(48, 48)
+        self.conv1 = GATConv(48, 16, 3)
+        self.conv2 = GATConv(48, 48, 1)
 
     def forward(self, x, edge_index):
-        x = F.relu(self.conv1(x, edge_index))
+        x = F.relu(self.layer1(x))
+        x = F.normalize(F.relu(x))
+        x = self.conv1(x, edge_index)
+        x = torch.flatten(x, start_dim=1)
+        x = F.relu(x)
         # x = self.activation(self.conv2(x, edge_index))
-        x = F.dropout(x)
-        embedding = F.normalize(self.conv2(x, edge_index))
-        return embedding
+        x = F.dropout(x, training=self.training)
+        x = torch.flatten(x, start_dim=1)
+        # x = F.normalize(F.relu(x))
+        return x
 
 
 class hgnn_env(object):
@@ -320,7 +323,7 @@ class hgnn_env(object):
         """
 
         pred = self.model(self.train_data.x(self.train_data.node_idx), edge_index).to(self.device)
-        self.train_data.x.weight = nn.Parameter(pred)
+        # self.train_data.x.weight = nn.Parameter(pred)
         all_embed = pred                       # (n_users + n_entities, cf_concat_dim)
         user_embed = all_embed[user_ids]                            # (cf_batch_size, cf_concat_dim)
         item_pos_embed = all_embed[item_pos_ids]                    # (cf_batch_size, cf_concat_dim)

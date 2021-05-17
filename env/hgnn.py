@@ -265,7 +265,7 @@ class hgnn_env(object):
             cf_batch_loss.backward()
             cf_total_loss += cf_batch_loss
             self.optimizer.step()
-        print("total_loss: ", cf_total_loss.item())
+        # print("total_loss: ", cf_total_loss.item())
 
         # n_kg_batch = self.data.n_kg_train // self.data.kg_batch_size + 1
 

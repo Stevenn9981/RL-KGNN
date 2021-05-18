@@ -60,7 +60,7 @@ def main():
         emb[id] = torch.tensor(embedding)
 
     emb.requires_grad = True
-    env.train_data.x.weight = nn.Parameter(emb).to(device)
+    env.train_data.x.weight = nn.Parameter(emb.to(device))
 
     agent = DQNAgent(scope='dqn',
                     action_num = env.action_num,

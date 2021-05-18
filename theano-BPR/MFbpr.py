@@ -90,7 +90,6 @@ class MFbpr(object):
                     for f in self.U_np[u]:
                         line += str(f) + ' '
                     line += '\n'
-                print(line)
                 fw.write(line)
                 line = ''
                 for v in range(1, len(self.V_np)):
@@ -98,7 +97,6 @@ class MFbpr(object):
                     for f in self.V_np[v]:
                         line += str(f) + ' '
                     line += '\n'
-                print(line)
                 fw2.write(line)
 
             if iteration % 10 == 0:

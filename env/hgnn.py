@@ -249,7 +249,7 @@ class hgnn_env(object):
         logger1.info("edge index construction:    %.2f" % (time2 - time1))
         if edge_index == [[], []]:
             return
-        self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))
+        # self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))
         edge_index = torch.tensor(edge_index).to(self.device)
         # print(self.data.x.weight.shape)
         # pred = self.model(self.train_data.x(self.train_data.node_idx), edge_index).to(self.device)

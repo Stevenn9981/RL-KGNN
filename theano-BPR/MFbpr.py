@@ -79,11 +79,11 @@ class MFbpr(object):
                 # perform a batched SGD step
                 self.sgd_step(users, items_pos, items_neg, self.learning_rate)
 
+            self.U_np = self.U.eval()
+            self.V_np = self.V.eval()
             if iteration == 199:
                 fw = open('./data/yelp.bpr.user_embedding', 'w')
                 fw2 = open('./data/yelp.bpr.item_embedding', 'w')
-                self.U_np = self.U.eval()
-                self.V_np = self.V.eval()
                 line = ''
                 for u in range(1, len(self.U_np)):
                     line += str(u - 1) + ' '

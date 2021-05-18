@@ -31,6 +31,7 @@ def main():
     max_timesteps = 2
     dataset = 'yelp_data'
     max_episodes = 10
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     infor = '9wna_0.0005'
 
@@ -39,6 +40,27 @@ def main():
 
     env = hgnn_env(logger1, logger2, dataset=dataset)
     env.seed(0)
+
+    fr1 = open('user.embedding', 'r')
+    fr2 = open('business.embedding', 'r')
+
+    emb = env.train_data.x.weight
+    emb.requires_grad = False
+
+    for line in fr1.readlines():
+        embeddings = line.strip().split()
+        id, embedding = int(embeddings[0]), embeddings[1:]
+        embedding = list(map(float, embedding))
+        emb[id] = torch.tensor(embedding)
+
+    for line in fr2.readlines():
+        embeddings = line.strip().split()
+        id, embedding = int(embeddings[0]), embeddings[1:]
+        embedding = list(map(float, embedding))
+        emb[id] = torch.tensor(embedding)
+
+    emb.requires_grad = True
+    env.train_data.x.weight = nn.Parameter(emb).to(device)
 
     agent = DQNAgent(scope='dqn',
                     action_num = env.action_num,

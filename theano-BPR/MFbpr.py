@@ -66,7 +66,7 @@ class MFbpr(object):
                                         updates = [(self.U, self.U - lr * T.grad(loss, self.U)),
                                                    (self.V, self.V - lr * T.grad(loss, self.V))])
         
-    def build_model(self, maxIter=100, num_thread=4, batch_size=32):
+    def build_model(self, maxIter=200, num_thread=4, batch_size=32):
         # Training process
         print("Training MF-BPR with: learning_rate=%.2f, regularization=%.4f, factors=%d, #epoch=%d, batch_size=%d."
               %(self.learning_rate, self.reg, self.factors, maxIter, batch_size))
@@ -79,14 +79,14 @@ class MFbpr(object):
                 # perform a batched SGD step
                 self.sgd_step(users, items_pos, items_neg, self.learning_rate)
 
-            if iteration == 99:
-                fw = open('./data/user.embedding', 'w')
-                fw2 = open('./data/business.embedding', 'w')
+            if iteration == 199:
+                fw = open('./data/yelp.bpr.user_embedding', 'w')
+                fw2 = open('./data/yelp.bpr.item_embedding', 'w')
                 self.U_np = self.U.eval()
                 self.V_np = self.V.eval()
                 line = ''
                 for u in range(1, len(self.U_np)):
-                    line += str(u + 14852) + ' '
+                    line += str(u - 1) + ' '
                     for f in self.U_np[u]:
                         line += str(f) + ' '
                     line += '\n'
@@ -100,6 +100,8 @@ class MFbpr(object):
                     line += '\n'
                 print(line)
                 fw2.write(line)
+
+            if iteration % 10 == 0:
                 topK = 3
                 t2 = time.time()
                 (hits, ndcgs) = evaluate_model(self, self.test, topK, num_thread)

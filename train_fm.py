@@ -44,7 +44,7 @@ def main():
     fr1 = open('user.embedding', 'r')
     fr2 = open('business.embedding', 'r')
 
-    emb = env.train_data.x.weight
+    emb = env.train_data.x
     emb.requires_grad = False
 
     for line in fr1.readlines():
@@ -60,7 +60,7 @@ def main():
         emb[id] = torch.tensor(embedding)
 
     emb.requires_grad = True
-    env.train_data.x.weight = nn.Parameter(emb.to(device))
+    env.train_data.x = emb.to(device)
 
     agent = DQNAgent(scope='dqn',
                     action_num = env.action_num,
@@ -138,7 +138,7 @@ def main():
     logger2.info("---------------------------------------------------\nStart the performance testing on test dataset:")
     model_checkpoint = torch.load(model_name)
     new_env.model.load_state_dict(model_checkpoint['state_dict'])
-    new_env.train_data.x = nn.Embedding.from_pretrained(model_checkpoint['Embedding'], freeze=True)
+    new_env.train_data.x = model_checkpoint['Embedding']
     new_env.test_batch(logger2)
 
 

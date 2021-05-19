@@ -28,10 +28,10 @@ def _L2_loss_mean(x):
 class Net(torch.nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.layer1 = nn.Linear(48, 24)
-        self.layer2 = nn.Linear(24, 48)
-        self.conv1 = GATConv(48, 16, 3)
-        self.conv2 = GATConv(48, 48, 1)
+        self.layer1 = nn.Linear(48, 32)
+        self.layer2 = nn.Linear(32, 64)
+        self.conv1 = GATConv(64, 16, 4)
+        self.conv2 = GATConv(64, 48, 1)
 
     def forward(self, x, edge_index):
         x = F.relu(self.layer1(x))

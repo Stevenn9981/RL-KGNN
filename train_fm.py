@@ -75,6 +75,7 @@ def main():
                     batch_size=48,
                     state_shape = env.observation_space.shape,
                     mlp_layers=[32, 64, 128, 64, 32],
+                    learning_rate=0.01,
                     device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')
             )
     env.policy = agent

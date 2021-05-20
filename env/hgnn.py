@@ -262,19 +262,19 @@ class hgnn_env(object):
         # print(self.train_data.x.weight)
 
         n_cf_batch = self.data.n_cf_train // self.data.cf_batch_size + 1
-        # self.optimizer.zero_grad()
+        self.optimizer.zero_grad()
 
         cf_total_loss = 0
         for iter in range(1, n_cf_batch + 1):
-            self.optimizer.zero_grad()
+            # self.optimizer.zero_grad()
             cf_batch_user, cf_batch_pos_item, cf_batch_neg_item = self.data.generate_cf_batch(self.data.train_user_dict)
             cf_batch_loss = self.calc_cf_loss(self.train_data, edge_index, cf_batch_user, cf_batch_pos_item, cf_batch_neg_item, test)
-            cf_batch_loss.backward()
-            self.optimizer.step()
+            # cf_batch_loss.backward()
+            # self.optimizer.step()
             cf_total_loss += cf_batch_loss
 
-        # cf_total_loss.backward()
-        # self.optimizer.step()
+        cf_total_loss.backward()
+        self.optimizer.step()
         print("total_loss: ", cf_total_loss.item())
 
         # n_kg_batch = self.data.n_kg_train // self.data.kg_batch_size + 1

@@ -32,7 +32,7 @@ class Net(torch.nn.Module):
         self.layer1 = nn.Linear(48, 32)
         self.layer2 = nn.Linear(32, 64)
         self.conv1 = GATConv(64, 16, 4, dropout=dout)
-        self.conv2 = GATConv(64, 16, 4, dropout=dout)
+        # self.conv2 = GATConv(64, 16, 4, dropout=dout)
         self.conv3 = GATConv(64, 48, 1, dropout=dout)
 
     def forward(self, x, edge_index):
@@ -42,9 +42,9 @@ class Net(torch.nn.Module):
         x = self.conv1(x, edge_index)
         x = torch.flatten(x, start_dim=1)
         x = F.relu(x)
-        x = self.conv2(x, edge_index)
-        x = torch.flatten(x, start_dim=1)
-        x = F.relu(x)
+        # x = self.conv2(x, edge_index)
+        # x = torch.flatten(x, start_dim=1)
+        # x = F.relu(x)
         x = self.conv3(x, edge_index)
         x = torch.flatten(x, start_dim=1)
         # x = F.normalize(F.relu(x))

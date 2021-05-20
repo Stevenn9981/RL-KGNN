@@ -205,7 +205,7 @@ class hgnn_env(object):
             # logger1.info("len(meta-path instances): ", len(self.meta_path_instances_dict[idx]))
             logger1.info("len(meta-path edges):     %d" % len(self.meta_path_graph_edges[idx]))
 
-            if len(self.meta_path_graph_edges) > 0 and not done_list[idx]:
+            if len(self.meta_path_graph_edges) > 0 and not done_list[idx] and len(self.meta_path_dict[idx]) == 2:
                 self.train(logger1, idx, test)
 
             time3 = time.time()

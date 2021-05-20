@@ -134,7 +134,7 @@ def main():
             torch.save({'state_dict': new_env.model.state_dict(),
                             'optimizer': new_env.optimizer.state_dict(),
                             'Val': val_acc,
-                            'Embedding': new_env.train_data.x.weight},
+                            'Embedding': new_env.train_data.x},
                            model_name)
             best_val_i = i_episode
         test_acc = new_env.test_batch(logger2)

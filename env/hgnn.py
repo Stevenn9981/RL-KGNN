@@ -28,16 +28,16 @@ def _L2_loss_mean(x):
 class Net(torch.nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        dout = 0.2
-        self.layer1 = nn.Linear(48, 24)
-        self.layer2 = nn.Linear(24, 64)
-        self.conv1 = GATConv(64, 16, 4, dropout=dout)
+        dout = 0
+        # self.layer1 = nn.Linear(48, 24)
+        # self.layer2 = nn.Linear(24, 64)
+        self.conv1 = GATConv(48, 16, 4, dropout=dout)
         self.conv2 = GATConv(64, 16, 4, dropout=dout)
         self.conv3 = GATConv(64, 48, 1, dropout=dout)
 
     def forward(self, x, edge_index):
-        x = F.relu(self.layer1(x))
-        x = F.relu(self.layer2(x))
+        # x = F.relu(self.layer1(x))
+        # x = F.relu(self.layer2(x))
         x = self.conv1(x, edge_index)
         x = torch.flatten(x, start_dim=1)
         x = F.relu(x)
@@ -133,8 +133,8 @@ class hgnn_env(object):
         self.meta_path_instances_dict = collections.defaultdict(list)
         self.meta_path_graph_edges = collections.defaultdict(set)
         nodes = range(self.train_data.x.shape[0])
-        index = random.sample(nodes, min(self.batch_size,len(nodes)))
-        state = F.normalize(self.model(self.train_data.x, self.train_data.edge_index)).cpu().detach().numpy()
+        index = random.sample(nodes, min(self.batch_size, len(nodes)))
+        state = F.normalize(self.model(self.train_data.x, self.train_data.edge_index)[index]).cpu().detach().numpy()
         self.optimizer.zero_grad()
         return index, state
 
@@ -143,7 +143,7 @@ class hgnn_env(object):
         self.meta_path_instances_dict = collections.defaultdict(list)
         nodes = range(self.train_data.x.weight.shape[0])
         index = random.sample(nodes, len(nodes))
-        state = F.normalize(self.model(self.train_data.x, self.train_data.edge_index)).cpu().detach().numpy()
+        state = F.normalize(self.model(self.train_data.x, self.train_data.edge_index)[index]).cpu().detach().numpy()
         self.optimizer.zero_grad()
         return index, state
 
@@ -219,7 +219,8 @@ class hgnn_env(object):
             logger1.info("Val acc: %.5f  reward: %.5f" % (val_precision, rew))
             logger1.info("-----------------------------------------------------------------------")
 
-        next_state = F.normalize(self.model(self.train_data.x, self.train_data.edge_index)[index].cpu()).detach().numpy()
+        next_state = F.normalize(
+            self.model(self.train_data.x, self.train_data.edge_index)[index]).cpu().detach().numpy()
         r = np.mean(np.array(reward))
         val_acc = np.mean(val_acc)
         next_state = np.array(next_state)
@@ -229,7 +230,8 @@ class hgnn_env(object):
                     'Val': val_acc,
                     'Embedding': self.train_data.x,
                     'Reward': r},
-                   'model/epochpoints/e-' + str(val_acc) + '-' + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + '.pth.tar')
+                   'model/epochpoints/e-' + str(val_acc) + '-' + time.strftime("%Y-%m-%d %H:%M:%S",
+                                                                               time.localtime()) + '.pth.tar')
 
         logger2.info("Val acc: %.5f  reward: %.5f" % (val_acc, r))
 
@@ -266,7 +268,8 @@ class hgnn_env(object):
         cf_total_loss = 0
         for iter in range(1, n_cf_batch + 1):
             cf_batch_user, cf_batch_pos_item, cf_batch_neg_item = self.data.generate_cf_batch(self.data.train_user_dict)
-            cf_batch_loss = self.calc_cf_loss(self.train_data, edge_index, cf_batch_user, cf_batch_pos_item, cf_batch_neg_item, test)
+            cf_batch_loss = self.calc_cf_loss(self.train_data, edge_index, cf_batch_user, cf_batch_pos_item,
+                                              cf_batch_neg_item, test)
             cf_batch_loss.backward()
             self.optimizer.step()
             self.optimizer.zero_grad()
@@ -333,13 +336,13 @@ class hgnn_env(object):
 
         pred = self.model(self.train_data.x, edge_index).to(self.device)
         # self.train_data.x.weight = nn.Parameter(pred)
-        all_embed = pred                       # (n_users + n_entities, cf_concat_dim)
-        user_embed = all_embed[user_ids]                            # (cf_batch_size, cf_concat_dim)
-        item_pos_embed = all_embed[item_pos_ids]                    # (cf_batch_size, cf_concat_dim)
-        item_neg_embed = all_embed[item_neg_ids]                    # (cf_batch_size, cf_concat_dim)
+        all_embed = pred  # (n_users + n_entities, cf_concat_dim)
+        user_embed = all_embed[user_ids]  # (cf_batch_size, cf_concat_dim)
+        item_pos_embed = all_embed[item_pos_ids]  # (cf_batch_size, cf_concat_dim)
+        item_neg_embed = all_embed[item_neg_ids]  # (cf_batch_size, cf_concat_dim)
 
-        pos_score = torch.sum(user_embed * item_pos_embed, dim=1)   # (cf_batch_size)
-        neg_score = torch.sum(user_embed * item_neg_embed, dim=1)   # (cf_batch_size)
+        pos_score = torch.sum(user_embed * item_pos_embed, dim=1)  # (cf_batch_size)
+        neg_score = torch.sum(user_embed * item_neg_embed, dim=1)  # (cf_batch_size)
 
         # print("pos, neg: ", pos_score, neg_score)
         # print("user_embedding: ", user_embed)
@@ -373,7 +376,8 @@ class hgnn_env(object):
             pos_logits = torch.tensor([]).to(self.device)
             neg_logits = torch.tensor([]).to(self.device)
 
-            cf_scores = torch.matmul(all_embed[user_ids_batch], all_embed[torch.arange(self.data.n_items, dtype=torch.long)].transpose(0, 1))
+            cf_scores = torch.matmul(all_embed[user_ids_batch],
+                                     all_embed[torch.arange(self.data.n_items, dtype=torch.long)].transpose(0, 1))
             for idx, u in enumerate(user_ids_batch):
                 pos_logits = torch.cat([pos_logits, cf_scores[idx][self.data.train_user_dict[u]]])
                 neg_logits = torch.cat([neg_logits, torch.unsqueeze(cf_scores[idx][neg_dict[u]], 1)])
@@ -395,7 +399,8 @@ class hgnn_env(object):
         with torch.no_grad():
             for u in user_ids_batch:
                 for _ in self.data.test_user_dict[u]:
-                    nl = self.data.sample_neg_items_for_u_test(self.data.train_user_dict, self.data.test_user_dict, u, NEG_SIZE_RANKING)
+                    nl = self.data.sample_neg_items_for_u_test(self.data.train_user_dict, self.data.test_user_dict, u,
+                                                               NEG_SIZE_RANKING)
                     neg_dict[u].extend(nl)
             # self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))
             all_embed = self.model(self.train_data.x, self.train_data.edge_index).to(self.device)
@@ -409,14 +414,16 @@ class hgnn_env(object):
                 pos_logits = torch.cat([pos_logits, cf_scores[idx][self.data.test_user_dict[u]]])
                 neg_logits = torch.cat([neg_logits, torch.unsqueeze(cf_scores[idx][neg_dict[u]], 1)])
 
-            HR1, HR3, HR20, HR50, MRR10, MRR20, MRR50, NDCG10, NDCG20, NDCG50 = self.metrics(pos_logits, neg_logits, training=False)
+            HR1, HR3, HR20, HR50, MRR10, MRR20, MRR50, NDCG10, NDCG20, NDCG50 = self.metrics(pos_logits, neg_logits,
+                                                                                             training=False)
             logger2.info("HR1 : %.4f, HR3 : %.4f, HR20 : %.4f, HR50 : %.4f, MRR10 : %.4f, MRR20 : %.4f, MRR50 : %.4f, "
-                         "NDCG10 : %.4f, NDCG20 : %.4f, NDCG50 : %.4f" %(HR1, HR3, HR20, HR50, MRR10.item(), MRR20.item(),
-                                                                         MRR50.item(), NDCG10.item(), NDCG20.item(), NDCG50.item()))
+                         "NDCG10 : %.4f, NDCG20 : %.4f, NDCG50 : %.4f" % (
+                         HR1, HR3, HR20, HR50, MRR10.item(), MRR20.item(),
+                         MRR50.item(), NDCG10.item(), NDCG20.item(), NDCG50.item()))
             print("HR1 : %.4f, HR3 : %.4f, HR20 : %.4f, HR50 : %.4f, MRR10 : %.4f, MRR20 : %.4f, MRR50 : %.4f, "
-                         "NDCG10 : %.4f, NDCG20 : %.4f, NDCG50 : %.4f" % (HR1, HR3, HR20, HR50, MRR10.item(), MRR20.item(),
-                                                                          MRR50.item(), NDCG10.item(), NDCG20.item(),
-                                                                          NDCG50.item()))
+                  "NDCG10 : %.4f, NDCG20 : %.4f, NDCG50 : %.4f" % (HR1, HR3, HR20, HR50, MRR10.item(), MRR20.item(),
+                                                                   MRR50.item(), NDCG10.item(), NDCG20.item(),
+                                                                   NDCG50.item()))
 
         return NDCG10.cpu().item()
 
@@ -458,9 +465,9 @@ class hgnn_env(object):
         """
         g.x.weight = nn.Parameter(g.x.weight.to(self.device))
         g = g.to(self.device)
-        all_embed = g.x(g.node_idx)           # (n_users + n_entities, cf_concat_dim)
-        user_embed = all_embed[user_ids]                # (n_eval_users, cf_concat_dim)
-        item_embed = all_embed[item_ids]                # (n_eval_items, cf_concat_dim)
+        all_embed = g.x(g.node_idx)  # (n_users + n_entities, cf_concat_dim)
+        user_embed = all_embed[user_ids]  # (n_eval_users, cf_concat_dim)
+        item_embed = all_embed[item_ids]  # (n_eval_items, cf_concat_dim)
 
         # Equation (12)
         cf_score = torch.matmul(user_embed, item_embed.transpose(0, 1))  # (n_eval_users, n_eval_items)
@@ -489,7 +496,8 @@ class hgnn_env(object):
                 rank = torch.squeeze((indices == 0).nonzero().to(self.device))
                 rank = rank[0]
                 if rank < 10:
-                    ndcg_accu10 = ndcg_accu10 + torch.log(torch.tensor([2.0]).to(self.device)) / torch.log((rank + 2).type(torch.float32))
+                    ndcg_accu10 = ndcg_accu10 + torch.log(torch.tensor([2.0]).to(self.device)) / torch.log(
+                        (rank + 2).type(torch.float32))
             return ndcg_accu10 / batch_pos.shape[0]
         else:
             for i in range(batch_pos.shape[0]):
@@ -498,22 +506,26 @@ class hgnn_env(object):
                 rank = torch.squeeze((indices == 0).nonzero().to(self.device))
                 rank = rank[0]
                 if rank < 50:
-                    ndcg_accu50 = ndcg_accu50 + torch.log(torch.tensor([2.0]).to(self.device)) / torch.log((rank + 2).type(torch.float32))
+                    ndcg_accu50 = ndcg_accu50 + torch.log(torch.tensor([2.0]).to(self.device)) / torch.log(
+                        (rank + 2).type(torch.float32))
                     mrr_accu50 = mrr_accu50 + 1 / (rank + 1).type(torch.float32)
                     hit_num50 = hit_num50 + 1
                 if rank < 20:
-                    ndcg_accu20 = ndcg_accu20 + torch.log(torch.tensor([2.0]).to(self.device)) / torch.log((rank + 2).type(torch.float32))
+                    ndcg_accu20 = ndcg_accu20 + torch.log(torch.tensor([2.0]).to(self.device)) / torch.log(
+                        (rank + 2).type(torch.float32))
                     mrr_accu20 = mrr_accu20 + 1 / (rank + 1).type(torch.float32)
                     hit_num20 = hit_num20 + 1
                 if rank < 10:
-                    ndcg_accu10 = ndcg_accu10 + torch.log(torch.tensor([2.0]).to(self.device)) / torch.log((rank + 2).type(torch.float32))
+                    ndcg_accu10 = ndcg_accu10 + torch.log(torch.tensor([2.0]).to(self.device)) / torch.log(
+                        (rank + 2).type(torch.float32))
                 if rank < 10:
                     mrr_accu10 = mrr_accu10 + 1 / (rank + 1).type(torch.float32)
                 if rank < 3:
                     hit_num3 = hit_num3 + 1
                 if rank < 1:
                     hit_num1 = hit_num1 + 1
-            return hit_num1 / batch_pos.shape[0], hit_num3 / batch_pos.shape[0], hit_num20 / batch_pos.shape[0], hit_num50 / \
+            return hit_num1 / batch_pos.shape[0], hit_num3 / batch_pos.shape[0], hit_num20 / batch_pos.shape[
+                0], hit_num50 / \
                    batch_pos.shape[0], mrr_accu10 / batch_pos.shape[0], mrr_accu20 / batch_pos.shape[0], mrr_accu50 / \
                    batch_pos.shape[0], \
                    ndcg_accu10 / batch_pos.shape[0], ndcg_accu20 / batch_pos.shape[0], ndcg_accu50 / batch_pos.shape[0]

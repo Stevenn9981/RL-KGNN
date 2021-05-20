@@ -26,23 +26,11 @@ def get_logger(logger_name, log_file, level=logging.INFO):
 
     return logging.getLogger(logger_name)
 
-def main():
-    torch.backends.cudnn.deterministic=True
-    max_timesteps = 2
-    dataset = 'yelp_data'
-    max_episodes = 10
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-
-    infor = '9wna_0.01'
-
-    logger1 = get_logger('log', 'logger_' + infor + '.log')
-    logger2 = get_logger('log2', 'logger2_' + infor + '.log')
-
-    env = hgnn_env(logger1, logger2, dataset=dataset)
-    env.seed(0)
-
+def use_pretrain(env):
     fr1 = open('user.embedding', 'r')
     fr2 = open('business.embedding', 'r')
+
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     emb = env.train_data.x
     emb.requires_grad = False
@@ -61,6 +49,23 @@ def main():
 
     emb.requires_grad = True
     env.train_data.x = emb.to(device)
+
+
+def main():
+    torch.backends.cudnn.deterministic=True
+    max_timesteps = 2
+    dataset = 'yelp_data'
+    max_episodes = 10
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+    infor = '9wna_0.01'
+
+    logger1 = get_logger('log', 'logger_' + infor + '.log')
+    logger2 = get_logger('log2', 'logger2_' + infor + '.log')
+
+    env = hgnn_env(logger1, logger2, dataset=dataset)
+    env.seed(0)
+    use_pretrain(env)
 
     agent = DQNAgent(scope='dqn',
                     action_num = env.action_num,
@@ -101,6 +106,8 @@ def main():
     logger2.info("Training GNNs with learned meta-policy")
     new_env = hgnn_env(logger1, logger2, dataset=dataset)
     new_env.seed(0)
+    use_pretrain(new_env)
+
     new_env.policy = best_policy
     model_name = 'model_' + infor + '.pth'
 

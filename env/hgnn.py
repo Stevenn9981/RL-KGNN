@@ -36,9 +36,8 @@ class Net(torch.nn.Module):
         self.conv3 = GATConv(64, 48, 1, dropout=dout)
 
     def forward(self, x, edge_index):
-        # x = F.relu(self.layer1(x))
-        # x = F.relu(self.layer2(x))
-        # x = F.normalize(F.relu(x))
+        x = F.relu(self.layer1(x))
+        x = F.relu(self.layer2(x))
         x = self.conv1(x, edge_index)
         x = torch.flatten(x, start_dim=1)
         x = F.relu(x)

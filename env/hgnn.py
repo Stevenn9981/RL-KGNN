@@ -31,7 +31,7 @@ class Net(torch.nn.Module):
         dout = 0.2
         # self.layer1 = nn.Linear(48, 24)
         # self.layer2 = nn.Linear(24, 64)
-        self.conv1 = GATConv(64, 16, 4, dropout=dout)
+        self.conv1 = GATConv(48, 16, 4, dropout=dout)
         self.conv2 = GATConv(64, 16, 4, dropout=dout)
         self.conv3 = GATConv(64, 48, 1, dropout=dout)
 

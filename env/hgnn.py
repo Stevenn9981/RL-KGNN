@@ -33,7 +33,7 @@ class Net(torch.nn.Module):
         self.layer2 = nn.Linear(32, 64)
         self.conv1 = GATConv(64, 16, 4, dropout=dout)
         self.conv2 = GATConv(64, 16, 4, dropout=dout)
-        self.conv2 = GATConv(64, 48, 1, dropout=dout)
+        self.conv3 = GATConv(64, 48, 1, dropout=dout)
 
     def forward(self, x, edge_index):
         x = F.relu(self.layer1(x))

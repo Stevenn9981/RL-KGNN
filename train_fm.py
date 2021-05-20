@@ -33,7 +33,7 @@ def main():
     max_episodes = 10
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-    infor = '9wna_0.0005'
+    infor = '9wna_0.01'
 
     logger1 = get_logger('log', 'logger_' + infor + '.log')
     logger2 = get_logger('log2', 'logger2_' + infor + '.log')

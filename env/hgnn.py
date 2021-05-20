@@ -29,10 +29,10 @@ class Net(torch.nn.Module):
     def __init__(self):
         super(Net, self).__init__()
         dout = 0
-        # self.layer1 = nn.Linear(48, 24)
-        # self.layer2 = nn.Linear(24, 64)
-        self.conv1 = GATConv(48, 16, 3, dropout=dout)
-        self.conv2 = GATConv(48, 16, 4, dropout=dout)
+        self.layer1 = nn.Linear(48, 24)
+        self.layer2 = nn.Linear(24, 64)
+        self.conv1 = GATConv(64, 16, 4, dropout=dout)
+        self.conv2 = GATConv(64, 16, 4, dropout=dout)
         self.conv3 = GATConv(64, 48, 1, dropout=dout)
 
     def forward(self, x, edge_index):
@@ -205,7 +205,7 @@ class hgnn_env(object):
             # logger1.info("len(meta-path instances): ", len(self.meta_path_instances_dict[idx]))
             logger1.info("len(meta-path edges):     %d" % len(self.meta_path_graph_edges[idx]))
 
-            if len(self.meta_path_graph_edges) > 0 and not done_list[idx] and len(self.meta_path_dict[idx]) == 2:
+            if len(self.meta_path_graph_edges) > 0 and not done_list[idx]:
                 self.train(logger1, idx, test)
 
             time3 = time.time()

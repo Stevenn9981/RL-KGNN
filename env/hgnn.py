@@ -222,19 +222,19 @@ class hgnn_env(object):
 
         next_state = F.normalize(self.train_data.x[index].cpu()).detach().numpy()
         r = np.mean(np.array(reward))
-        val_a = np.mean(val_acc)
+        val_acc = np.mean(val_acc)
         next_state = np.array(next_state)
 
         torch.save({'state_dict': self.model.state_dict(),
                     'optimizer': self.optimizer.state_dict(),
-                    'Val': val_a,
+                    'Val': val_acc,
                     'Embedding': self.train_data.x,
                     'Reward': r},
                    'model/epochpoints/e-' + str(val_acc) + '-' + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + '.pth.tar')
 
-        logger2.info("Val acc: %.5f  reward: %.5f" % (val_a, r))
+        logger2.info("Val acc: %.5f  reward: %.5f" % (val_acc, r))
 
-        return next_state, reward, np.array(done_list)[index].tolist(), (val_a, r)
+        return next_state, reward, np.array(done_list)[index].tolist(), (val_acc, r)
 
     def train(self, logger1, idx, test=False):
         self.model.train()

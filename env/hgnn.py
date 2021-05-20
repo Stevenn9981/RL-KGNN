@@ -222,19 +222,19 @@ class hgnn_env(object):
 
         next_state = F.normalize(self.train_data.x[index].cpu()).detach().numpy()
         r = np.mean(np.array(reward))
-        val_acc = np.mean(val_acc)
+        val_a = np.mean(val_acc)
         next_state = np.array(next_state)
 
         torch.save({'state_dict': self.model.state_dict(),
                     'optimizer': self.optimizer.state_dict(),
-                    'Val': val_acc,
+                    'Val': val_a,
                     'Embedding': self.train_data.x,
                     'Reward': r},
                    'model/epochpoints/e-' + str(val_acc) + '-' + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + '.pth.tar')
 
-        logger2.info("Val acc: %.5f  reward: %.5f" % (val_acc, r))
+        logger2.info("Val acc: %.5f  reward: %.5f" % (val_a, r))
 
-        return next_state, reward, np.array(done_list)[index].tolist(), (val_acc, r)
+        return next_state, reward, np.array(done_list)[index].tolist(), (val_a, r)
 
     def train(self, logger1, idx, test=False):
         self.model.train()
@@ -365,21 +365,23 @@ class hgnn_env(object):
                 # neg_list.append(nl)
                 neg_dict[u].extend(nl)
         # self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))
-        all_embed = self.train_data.x.to(self.device)
 
-        time2 = time.time()
+        with torch.no_grad():
+            all_embed = self.model(self.train_data.x, self.train_data.edge_index).to(self.device)
 
-        pos_logits = torch.tensor([]).to(self.device)
-        neg_logits = torch.tensor([]).to(self.device)
+            time2 = time.time()
 
-        cf_scores = torch.matmul(all_embed[user_ids_batch], all_embed[torch.arange(self.data.n_items, dtype=torch.long)].transpose(0, 1))
-        for idx, u in enumerate(user_ids_batch):
-            pos_logits = torch.cat([pos_logits, cf_scores[idx][self.data.train_user_dict[u]]])
-            neg_logits = torch.cat([neg_logits, torch.unsqueeze(cf_scores[idx][neg_dict[u]], 1)])
-        time3 = time.time()
-        NDCG10 = self.metrics(pos_logits, neg_logits).cpu()
-        time4 = time.time()
-        # print("ALL time: ", time4 - time1)
+            pos_logits = torch.tensor([]).to(self.device)
+            neg_logits = torch.tensor([]).to(self.device)
+
+            cf_scores = torch.matmul(all_embed[user_ids_batch], all_embed[torch.arange(self.data.n_items, dtype=torch.long)].transpose(0, 1))
+            for idx, u in enumerate(user_ids_batch):
+                pos_logits = torch.cat([pos_logits, cf_scores[idx][self.data.train_user_dict[u]]])
+                neg_logits = torch.cat([neg_logits, torch.unsqueeze(cf_scores[idx][neg_dict[u]], 1)])
+            time3 = time.time()
+            NDCG10 = self.metrics(pos_logits, neg_logits).cpu()
+            time4 = time.time()
+            # print("ALL time: ", time4 - time1)
 
         return NDCG10.item()
 
@@ -397,7 +399,7 @@ class hgnn_env(object):
                     nl = self.data.sample_neg_items_for_u_test(self.data.train_user_dict, self.data.test_user_dict, u, NEG_SIZE_RANKING)
                     neg_dict[u].extend(nl)
             # self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))
-            all_embed = self.train_data.x.to(self.device)
+            all_embed = self.model(self.train_data.x, self.train_data.edge_index).to(self.device)
 
             pos_logits = torch.tensor([]).to(self.device)
             neg_logits = torch.tensor([]).to(self.device)

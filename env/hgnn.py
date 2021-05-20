@@ -28,7 +28,7 @@ def _L2_loss_mean(x):
 class Net(torch.nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        dout = 0.2
+        dout = 0
         # self.layer1 = nn.Linear(48, 24)
         # self.layer2 = nn.Linear(24, 64)
         self.conv1 = GATConv(48, 16, 3, dropout=dout)

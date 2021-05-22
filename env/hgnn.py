@@ -207,6 +207,7 @@ class hgnn_env(object):
             if len(self.meta_path_graph_edges) > 0 and not done_list[idx]:
                 self.train(logger1, idx, test)
                 if test:
+                    self.test_train_batch()
                     self.test_batch(logger2)
 
             time3 = time.time()

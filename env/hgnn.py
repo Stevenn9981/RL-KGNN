@@ -311,7 +311,7 @@ class hgnn_env(object):
         pos_t:  (kg_batch_size)
         neg_t:  (kg_batch_size)
         """
-        r_embed = self.train_data.relation_embed(r)  # (kg_batch_size, relation_dim)
+        r_embed = self.train_data.relation_embed[r]  # (kg_batch_size, relation_dim)
         W_r = self.W_R[r]  # (kg_batch_size, entity_dim, relation_dim)
 
         h_embed = self.train_data.x[h]  # (kg_batch_size, entity_dim)

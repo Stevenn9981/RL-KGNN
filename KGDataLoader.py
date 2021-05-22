@@ -243,7 +243,7 @@ class DataLoaderHGNN(object):
         edge_index = torch.tensor([kg_data['t'],kg_data['h']],dtype=torch.long)
         edge_attr = torch.tensor(kg_data['r'])
         data = Data(x=x, edge_index=edge_index, edge_attr=edge_attr)
-        data.relation_embed = torch.nn.Embedding(self.n_relations, self.relation_dim)
+        data.relation_embed = torch.randn(self.n_relations, self.relation_dim)
         data.node_idx = torch.arange(n_nodes, dtype=torch.long)
         return data
         # g = dgl.DGLGraph()

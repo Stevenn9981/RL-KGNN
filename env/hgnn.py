@@ -457,7 +457,7 @@ class hgnn_env(object):
 
             HR1, HR3, HR20, HR50, MRR10, MRR20, MRR50, NDCG10, NDCG20, NDCG50 = self.metrics(pos_logits, neg_logits,
                                                                                              training=False)
-            print("HR1 : %.4f, HR3 : %.4f, HR20 : %.4f, HR50 : %.4f, MRR10 : %.4f, MRR20 : %.4f, MRR50 : %.4f, "
+            print("TRAINING DATA: HR1 : %.4f, HR3 : %.4f, HR20 : %.4f, HR50 : %.4f, MRR10 : %.4f, MRR20 : %.4f, MRR50 : %.4f, "
                   "NDCG10 : %.4f, NDCG20 : %.4f, NDCG50 : %.4f" % (HR1, HR3, HR20, HR50, MRR10.item(), MRR20.item(),
                                                                    MRR50.item(), NDCG10.item(), NDCG20.item(),
                                                                    NDCG50.item()))

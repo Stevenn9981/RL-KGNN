@@ -28,11 +28,11 @@ def _L2_loss_mean(x):
 class Net(torch.nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        dout = 0
+        dout = 0.1
         # self.layer1 = nn.Linear(48, 24)
         # self.layer2 = nn.Linear(24, 64)
         self.conv1 = GATConv(48, 16, 4, dropout=dout)
-        self.conv2 = GATConv(64, 16, 4, dropout=dout)
+        # self.conv2 = GATConv(64, 16, 4, dropout=dout)
         self.conv3 = GATConv(64, 48, 1, dropout=dout)
 
     def forward(self, x, edge_index):
@@ -41,9 +41,9 @@ class Net(torch.nn.Module):
         x = self.conv1(x, edge_index)
         x = torch.flatten(x, start_dim=1)
         x = F.relu(x)
-        x = self.conv2(x, edge_index)
-        x = torch.flatten(x, start_dim=1)
-        x = F.relu(x)
+        # x = self.conv2(x, edge_index)
+        # x = torch.flatten(x, start_dim=1)
+        # x = F.relu(x)
         x = self.conv3(x, edge_index)
         x = torch.flatten(x, start_dim=1)
         # x = F.normalize(F.relu(x))
@@ -428,6 +428,42 @@ class hgnn_env(object):
                                                                    NDCG50.item()))
 
         return NDCG10.cpu().item()
+
+    def test_train_batch(self):
+        self.model.eval()
+        user_ids = list(self.data.train_user_dict.keys())
+        user_ids_batch = random.sample(user_ids, 50)
+
+        neg_dict = collections.defaultdict(list)
+        NDCG10 = 0
+
+        with torch.no_grad():
+            for u in user_ids_batch:
+                for _ in self.data.train_user_dict[u]:
+                    nl = self.data.sample_neg_items_for_u_test(self.data.train_user_dict, self.data.test_user_dict, u,
+                                                               NEG_SIZE_RANKING)
+                    neg_dict[u].extend(nl)
+            # self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))
+            all_embed = self.model(self.train_data.x, self.train_data.edge_index).to(self.device)
+
+            pos_logits = torch.tensor([]).to(self.device)
+            neg_logits = torch.tensor([]).to(self.device)
+
+            cf_scores = torch.matmul(all_embed[user_ids_batch],
+                                     all_embed[torch.arange(self.data.n_items, dtype=torch.long)].transpose(0, 1))
+            for idx, u in enumerate(user_ids_batch):
+                pos_logits = torch.cat([pos_logits, cf_scores[idx][self.data.train_user_dict[u]]])
+                neg_logits = torch.cat([neg_logits, torch.unsqueeze(cf_scores[idx][neg_dict[u]], 1)])
+
+            HR1, HR3, HR20, HR50, MRR10, MRR20, MRR50, NDCG10, NDCG20, NDCG50 = self.metrics(pos_logits, neg_logits,
+                                                                                             training=False)
+            print("HR1 : %.4f, HR3 : %.4f, HR20 : %.4f, HR50 : %.4f, MRR10 : %.4f, MRR20 : %.4f, MRR50 : %.4f, "
+                  "NDCG10 : %.4f, NDCG20 : %.4f, NDCG50 : %.4f" % (HR1, HR3, HR20, HR50, MRR10.item(), MRR20.item(),
+                                                                   MRR50.item(), NDCG10.item(), NDCG20.item(),
+                                                                   NDCG50.item()))
+
+        return NDCG10.cpu().item()
+
 
     # def evaluate(self, model, train_graph, train_user_dict, test_user_dict, user_ids_batches, item_ids, K):
     #     model.eval()

@@ -441,7 +441,7 @@ class hgnn_env(object):
     def test_train_batch(self):
         self.model.eval()
         user_ids = list(self.data.train_user_dict.keys())
-        user_ids_batch = random.sample(user_ids, 50)
+        user_ids_batch = user_ids
 
         neg_dict = collections.defaultdict(list)
         NDCG10 = 0

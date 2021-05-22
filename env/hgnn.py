@@ -314,9 +314,11 @@ class hgnn_env(object):
         r_embed = self.train_data.relation_embed[r]  # (kg_batch_size, relation_dim)
         W_r = self.W_R[r]  # (kg_batch_size, entity_dim, relation_dim)
 
-        h_embed = self.train_data.x[h]  # (kg_batch_size, entity_dim)
-        pos_t_embed = self.train_data.x[pos_t]  # (kg_batch_size, entity_dim)
-        neg_t_embed = self.train_data.x[neg_t]  # (kg_batch_size, entity_dim)
+        pred = self.model(self.train_data.x, self.train_data.edge_index).to(self.device)
+
+        h_embed = pred[h]  # (kg_batch_size, entity_dim)
+        pos_t_embed = pred[pos_t]  # (kg_batch_size, entity_dim)
+        neg_t_embed = pred[neg_t]  # (kg_batch_size, entity_dim)
 
         r_mul_h = torch.bmm(h_embed.unsqueeze(1), W_r).squeeze(1)  # (kg_batch_size, relation_dim)
         r_mul_pos_t = torch.bmm(pos_t_embed.unsqueeze(1), W_r).squeeze(1)  # (kg_batch_size, relation_dim)

@@ -98,7 +98,7 @@ def main():
                             'optimizer': new_env.optimizer.state_dict(),
                             'Val': val_acc,
                             'Embedding': new_env.train_data.x},
-                           model_name + '-' + str(val_acc))
+                           model_name)
             best_val_i = i_episode
         test_acc = new_env.test_batch(logger2)
         if test_acc > best_test_acc:

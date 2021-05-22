@@ -37,27 +37,26 @@ def main():
     new_env = hgnn_env(logger1, logger2, dataset=dataset)
     new_env.seed(0)
 
-    fr1 = open('user.embedding', 'r')
-    fr2 = open('business.embedding', 'r')
-
-    emb = new_env.train_data.x
-    emb.requires_grad = False
-
-    for line in fr1.readlines():
-        embeddings = line.strip().split()
-        id, embedding = int(embeddings[0]), embeddings[1:]
-        embedding = list(map(float, embedding))
-        emb[id] = torch.tensor(embedding)
-
-    for line in fr2.readlines():
-        embeddings = line.strip().split()
-        id, embedding = int(embeddings[0]), embeddings[1:]
-        embedding = list(map(float, embedding))
-        emb[id] = torch.tensor(embedding)
-
-    emb.requires_grad = True
-    new_env.train_data.x = emb.to(device)
-
+    # fr1 = open('user.embedding', 'r')
+    # fr2 = open('business.embedding', 'r')
+    #
+    # emb = new_env.train_data.x
+    # emb.requires_grad = False
+    #
+    # for line in fr1.readlines():
+    #     embeddings = line.strip().split()
+    #     id, embedding = int(embeddings[0]), embeddings[1:]
+    #     embedding = list(map(float, embedding))
+    #     emb[id] = torch.tensor(embedding)
+    #
+    # for line in fr2.readlines():
+    #     embeddings = line.strip().split()
+    #     id, embedding = int(embeddings[0]), embeddings[1:]
+    #     embedding = list(map(float, embedding))
+    #     emb[id] = torch.tensor(embedding)
+    #
+    # emb.requires_grad = True
+    # new_env.train_data.x = emb.to(device)
 
     new_env.test_batch(logger2)
     best_policy = DQNAgent(scope='dqn',

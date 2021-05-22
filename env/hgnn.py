@@ -280,23 +280,28 @@ class hgnn_env(object):
 
         # cf_total_loss.backward()
         # self.optimizer.step()
-        print("total_loss: ", cf_total_loss.item())
+        print("total_cf_loss: ", cf_total_loss.item())
 
-        # n_kg_batch = self.data.n_kg_train // self.data.kg_batch_size + 1
+        n_kg_batch = self.data.n_kg_train // self.data.kg_batch_size + 1
 
-        # for iter in range(1, n_kg_batch + 1):
-        #     self.optimizer.zero_grad()
-        #     kg_batch_head, kg_batch_relation, kg_batch_pos_tail, kg_batch_neg_tail = self.data.generate_kg_batch(
-        #         self.data.train_kg_dict)
-        #     kg_batch_head = kg_batch_head.to(self.device)
-        #     kg_batch_relation = kg_batch_relation.to(self.device)
-        #     kg_batch_pos_tail = kg_batch_pos_tail.to(self.device)
-        #     kg_batch_neg_tail = kg_batch_neg_tail.to(self.device)
-        #     kg_batch_loss = self.calc_kg_loss(kg_batch_head, kg_batch_relation, kg_batch_pos_tail,
-        #                           kg_batch_neg_tail)
-        #
-        #     kg_batch_loss.backward()
-        #     self.optimizer.step()
+        kg_total_loss = 0
+
+        for iter in range(1, n_kg_batch + 1):
+            kg_batch_head, kg_batch_relation, kg_batch_pos_tail, kg_batch_neg_tail = self.data.generate_kg_batch(
+                self.data.train_kg_dict)
+            kg_batch_head = kg_batch_head.to(self.device)
+            kg_batch_relation = kg_batch_relation.to(self.device)
+            kg_batch_pos_tail = kg_batch_pos_tail.to(self.device)
+            kg_batch_neg_tail = kg_batch_neg_tail.to(self.device)
+            kg_batch_loss = self.calc_kg_loss(kg_batch_head, kg_batch_relation, kg_batch_pos_tail,
+                                  kg_batch_neg_tail)
+
+            kg_batch_loss.backward()
+            self.optimizer.step()
+            self.optimizer.zero_grad()
+            kg_total_loss += kg_batch_loss
+
+        print("total_kg_loss: ", kg_total_loss.item())
         # print(self.train_data.x(torch.tensor([10,11,12])))
 
     def calc_kg_loss(self, h, r, pos_t, neg_t):

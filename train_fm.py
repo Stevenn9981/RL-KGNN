@@ -55,15 +55,17 @@ def main():
     torch.backends.cudnn.deterministic=True
     max_timesteps = 2
     dataset = 'yelp_data'
-    max_episodes = 10
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     infor = '9wna_0.01'
+    model_name = 'model_' + infor + '.pth'
+
+    max_episodes = 10
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     logger1 = get_logger('log', 'logger_' + infor + '.log')
     logger2 = get_logger('log2', 'logger2_' + infor + '.log')
 
-    env = hgnn_env(logger1, logger2, dataset=dataset)
+    env = hgnn_env(logger1, logger2, model_name, dataset=dataset)
     env.seed(0)
     use_pretrain(env)
 
@@ -105,12 +107,11 @@ def main():
 
     # Testing: Apply meta-policy to train a new GNN
     logger2.info("Training GNNs with learned meta-policy")
-    new_env = hgnn_env(logger1, logger2, dataset=dataset)
+    new_env = hgnn_env(logger1, logger2, model_name, dataset=dataset)
     new_env.seed(0)
     use_pretrain(new_env)
 
     new_env.policy = best_policy
-    model_name = 'model_' + infor + '.pth'
 
     b_i = 0
     best_val_i = 0
@@ -125,9 +126,9 @@ def main():
                 action = best_policy.eval_step(state)
                 actions[t] = action
             state, reward, done, (val_acc, reward) = new_env.step2(logger1, logger2, index, actions[t], True)
-        val_acc = new_env.eval_batch(100)
+        val_acc = new_env.test_batch(logger2)
         logger2.info("Training GNN %d:   Val_Acc: %.5f  Reward: %.5f  " % (i_episode, val_acc, reward))
-        if val_acc > best_val_acc:
+        if val_acc > best_val_acc and val_acc > new_env.cur_best:
             best_val_acc = val_acc
             if os.path.exists(model_name):
                 os.remove(model_name)
@@ -135,7 +136,7 @@ def main():
                             'optimizer': new_env.optimizer.state_dict(),
                             'Val': val_acc,
                             'Embedding': new_env.train_data.x},
-                           model_name)
+                           model_name+ '-' + str(val_acc))
             best_val_i = i_episode
         test_acc = new_env.test_batch(logger2)
         if test_acc > best_test_acc:

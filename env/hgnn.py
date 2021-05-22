@@ -51,8 +51,10 @@ class Net(torch.nn.Module):
 
 
 class hgnn_env(object):
-    def __init__(self, logger1, logger2, dataset='yelp_data', weight_decay=5e-4, policy=None):
+    def __init__(self, logger1, logger2, model_name, dataset='yelp_data', weight_decay=5e-4, policy=None):
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.model_name = model_name
+        self.cur_best = 0
         args = parse_args()
         self.args = args
         # args.data_dir = path
@@ -207,8 +209,17 @@ class hgnn_env(object):
             if len(self.meta_path_graph_edges) > 0 and not done_list[idx]:
                 self.train(logger1, idx, test)
                 if test:
-                    self.test_train_batch()
-                    self.test_batch(logger2)
+                    accur = self.test_batch(logger2)
+                    if self.cur_best < accur:
+                        self.cur_best = accur
+                        if os.path.exists(self.model_name):
+                            os.remove(self.model_name)
+                        torch.save({'state_dict': self.model.state_dict(),
+                                    'optimizer': self.optimizer.state_dict(),
+                                    'Val': accur,
+                                    'Embedding': self.train_data.x},
+                                   self.model_name + '-' + str(accur))
+                    # self.test_batch(logger2)
 
             time3 = time.time()
             logger1.info("training time:            %.2f" % (time3 - time2))

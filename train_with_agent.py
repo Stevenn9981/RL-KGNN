@@ -26,7 +26,7 @@ def main():
 
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
-    agentCheckpoint = torch.load("model/agentpoints/a-0.6805325392633677-2021-04-19 17:32:55.pth.tar", map_location=torch.device(device))
+    agentCheckpoint = torch.load("model/agentpoints/a-0.778860904276371-2021-05-20 19:22:07.pth.tar", map_location=torch.device(device))
 
     infor = '9wna_0.005_pretrain'
 

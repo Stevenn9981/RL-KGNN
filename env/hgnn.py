@@ -402,7 +402,8 @@ class hgnn_env(object):
         with torch.no_grad():
             for u in user_ids_batch:
                 for _ in self.data.test_user_dict[u]:
-                    nl = self.data.sample_neg_items_for_u(self.data.train_user_dict, u, NEG_SIZE_RANKING)
+                    nl = self.data.sample_neg_items_for_u_test(self.data.train_user_dict, self.data.test_user_dict, u,
+                                                               NEG_SIZE_RANKING)
                     neg_dict[u].extend(nl)
             # self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))
             all_embed = self.model(self.train_data.x, self.train_data.edge_index).to(self.device)
@@ -440,8 +441,7 @@ class hgnn_env(object):
         with torch.no_grad():
             for u in user_ids_batch:
                 for _ in self.data.train_user_dict[u]:
-                    nl = self.data.sample_neg_items_for_u_test(self.data.train_user_dict, self.data.test_user_dict, u,
-                                                               NEG_SIZE_RANKING)
+                    nl = self.data.sample_neg_items_for_u(self.data.train_user_dict, u, NEG_SIZE_RANKING)
                     neg_dict[u].extend(nl)
             # self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))
             all_embed = self.model(self.train_data.x, self.train_data.edge_index).to(self.device)

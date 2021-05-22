@@ -313,9 +313,6 @@ class hgnn_env(object):
         """
         r_embed = self.train_data.relation_embed[r]  # (kg_batch_size, relation_dim)
 
-        print(r)
-        print(self.W_R.shape)
-
         W_r = self.W_R[r]  # (kg_batch_size, entity_dim, relation_dim)
 
         pred = self.model(self.train_data.x, self.train_data.edge_index).to(self.device)

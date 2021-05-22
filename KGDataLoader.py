@@ -4,6 +4,7 @@ import collections
 import argparse
 
 import torch
+import torch.nn as nn
 import numpy as np
 import pandas as pd
 from torch_geometric.data import Data
@@ -32,13 +33,13 @@ def parse_args():
 
     parser.add_argument('--cf_batch_size', type=int, default=4096,
                         help='CF batch size.')
-    parser.add_argument('--kg_batch_size', type=int, default=2048,
+    parser.add_argument('--kg_batch_size', type=int, default=10000,
                         help='KG batch size.')
     parser.add_argument('--nd_batch_size', type=int, default=32,
                         help='node sampling batch size.')
     parser.add_argument('--train_batch_size', type=int, default=2000,
                         help='Test batch size (the user number to test every batch).')
-    parser.add_argument('--test_batch_size', type=int, default=10000,
+    parser.add_argument('--test_batch_size', type=int, default=20000,
                         help='Test batch size (the user number to test every batch).')
 
     parser.add_argument('--entity_dim', type=int, default=48,
@@ -244,6 +245,7 @@ class DataLoaderHGNN(object):
         edge_attr = torch.tensor(kg_data['r'])
         data = Data(x=x, edge_index=edge_index, edge_attr=edge_attr)
         data.relation_embed = torch.randn(self.n_relations + 1, self.relation_dim)
+        nn.init.xavier_uniform_(data.relation_embed, gain=nn.init.calculate_gain('relu'))
         data.node_idx = torch.arange(n_nodes, dtype=torch.long)
         return data
         # g = dgl.DGLGraph()

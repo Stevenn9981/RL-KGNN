@@ -87,7 +87,7 @@ class hgnn_env(object):
         self._set_observation_space(obs)
         self.policy = policy
         self.batch_size = args.nd_batch_size
-        self.W_R = torch.randn(self.data.n_relations, self.data.entity_dim,
+        self.W_R = torch.randn(self.data.n_relations + 1, self.data.entity_dim,
                                              self.data.relation_dim)
         nn.init.xavier_uniform_(self.W_R, gain=nn.init.calculate_gain('relu'))
 
@@ -313,8 +313,8 @@ class hgnn_env(object):
         """
         r_embed = self.train_data.relation_embed[r]  # (kg_batch_size, relation_dim)
 
-        print('r', r)
-        print('shape: ', self.W_R.shape)
+        print(r)
+        print(self.W_R.shape)
 
         W_r = self.W_R[r]  # (kg_batch_size, entity_dim, relation_dim)
 

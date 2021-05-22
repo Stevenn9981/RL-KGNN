@@ -87,8 +87,8 @@ class hgnn_env(object):
         self._set_observation_space(obs)
         self.policy = policy
         self.batch_size = args.nd_batch_size
-        self.W_R = nn.Parameter(torch.Tensor(self.data.n_relations + 1, self.data.entity_dim,
-                                             self.data.relation_dim))
+        self.W_R = torch.randn(self.data.n_relations, self.data.entity_dim,
+                                             self.data.relation_dim)
         nn.init.xavier_uniform_(self.W_R, gain=nn.init.calculate_gain('relu'))
 
         self.cf_l2loss_lambda = args.cf_l2loss_lambda
@@ -312,6 +312,10 @@ class hgnn_env(object):
         neg_t:  (kg_batch_size)
         """
         r_embed = self.train_data.relation_embed[r]  # (kg_batch_size, relation_dim)
+
+        print('r', r)
+        print('shape: ', self.W_R.shape)
+
         W_r = self.W_R[r]  # (kg_batch_size, entity_dim, relation_dim)
 
         pred = self.model(self.train_data.x, self.train_data.edge_index).to(self.device)

@@ -218,7 +218,7 @@ class hgnn_env(object):
                                     'optimizer': self.optimizer.state_dict(),
                                     'Val': accur,
                                     'Embedding': self.train_data.x},
-                                   self.model_name + '-' + str(accur))
+                                   self.model_name)
                     # self.test_batch(logger2)
 
             time3 = time.time()

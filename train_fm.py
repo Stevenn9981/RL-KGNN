@@ -56,7 +56,7 @@ def main():
     max_timesteps = 2
     dataset = 'yelp_data'
 
-    infor = '10wna_0.005_wdecay_normal'
+    infor = '10wna_0.005_wdecay'
     model_name = 'model_' + infor + '.pth'
 
     max_episodes = 15

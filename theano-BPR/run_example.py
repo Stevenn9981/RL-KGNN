@@ -20,12 +20,12 @@ if __name__ == '__main__':
     print("#users: %d, #items: %d, #ratings: %d" %(num_user, num_item, num_ratings))
     
     # MFbpr parameters
-    factors = 128
+    factors = 48
     learning_rate = 0.3
     reg = 0.01
     init_mean = 0
     init_stdev = 0.01
-    maxIter = 200
+    maxIter = 100
     num_thread = mp.cpu_count()
     
     # Run model

@@ -56,10 +56,10 @@ def main():
     max_timesteps = 2
     dataset = 'yelp_data'
 
-    infor = '9wna_0.01'
+    infor = '10wna_0.005'
     model_name = 'model_' + infor + '.pth'
 
-    max_episodes = 10
+    max_episodes = 15
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     logger1 = get_logger('log', 'logger_' + infor + '.log')
@@ -78,7 +78,7 @@ def main():
                     state_shape = env.observation_space.shape,
                     mlp_layers=[32, 64, 128, 64, 32],
                     learning_rate=0.005,
-                    device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+                    device=torch.device(device)
             )
     env.policy = agent
 
@@ -119,7 +119,7 @@ def main():
     best_test_acc = 0
     actions = dict()
     val_acc = reward = 0
-    for i_episode in range(1, 11):
+    for i_episode in range(1, 21):
         index, state = new_env.reset2()
         for t in range(max_timesteps):
             if i_episode >= 1:

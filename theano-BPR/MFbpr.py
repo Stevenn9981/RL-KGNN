@@ -81,12 +81,12 @@ class MFbpr(object):
 
             self.U_np = self.U.eval()
             self.V_np = self.V.eval()
-            if iteration == 99:
+            if iteration == 100:
                 fw = open('./data/yelp.bpr.user_embedding', 'w')
                 fw2 = open('./data/yelp.bpr.item_embedding', 'w')
                 line = ''
                 for u in range(1, len(self.U_np)):
-                    line += str(u - 1) + ' '
+                    line += str(u + 14852) + ' '
                     for f in self.U_np[u]:
                         line += str(f) + ' '
                     line += '\n'
@@ -99,7 +99,7 @@ class MFbpr(object):
                     line += '\n'
                 fw2.write(line)
 
-            if iteration % 1 == 0:
+            if iteration % 10 == 0:
                 topK = 3
                 t2 = time.time()
                 (hits, ndcgs) = evaluate_model(self, self.test, topK, num_thread)

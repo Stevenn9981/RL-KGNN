@@ -26,7 +26,7 @@ if __name__ == '__main__':
     init_mean = 0
     init_stdev = 0.01
     maxIter = 100
-    num_thread = mp.cpu_count()
+    num_thread = 1
     
     # Run model
     bpr = MFbpr(train, test, num_user, num_item, 

@@ -46,8 +46,7 @@ class Net(torch.nn.Module):
         x = F.relu(x)
         x = self.conv3(x, edge_index)
         x = torch.flatten(x, start_dim=1)
-        # x = F.normalize(F.relu(x))
-        print(x)
+        x = F.normalize(x)
         return x
 
 
@@ -137,7 +136,7 @@ class hgnn_env(object):
         self.meta_path_graph_edges = collections.defaultdict(set)
         nodes = range(self.train_data.x.shape[0])
         index = random.sample(nodes, min(self.batch_size, len(nodes)))
-        state = F.normalize(self.model(self.train_data.x, self.train_data.edge_index)[index]).cpu().detach().numpy()
+        state = self.model(self.train_data.x, self.train_data.edge_index)[index].cpu().detach().numpy()
         self.optimizer.zero_grad()
         return index, state
 
@@ -146,7 +145,7 @@ class hgnn_env(object):
         self.meta_path_instances_dict = collections.defaultdict(list)
         nodes = range(self.train_data.x.weight.shape[0])
         index = random.sample(nodes, len(nodes))
-        state = F.normalize(self.model(self.train_data.x, self.train_data.edge_index)[index]).cpu().detach().numpy()
+        state = self.model(self.train_data.x, self.train_data.edge_index)[index].cpu().detach().numpy()
         self.optimizer.zero_grad()
         return index, state
 
@@ -234,8 +233,7 @@ class hgnn_env(object):
             logger1.info("Val acc: %.5f  reward: %.5f" % (val_precision, rew))
             logger1.info("-----------------------------------------------------------------------")
 
-        next_state = F.normalize(
-            self.model(self.train_data.x, self.train_data.edge_index)[index]).cpu().detach().numpy()
+        next_state = self.model(self.train_data.x, self.train_data.edge_index)[index].cpu().detach().numpy()
         r = np.mean(np.array(reward))
         val_acc = np.mean(val_acc)
         next_state = np.array(next_state)

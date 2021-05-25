@@ -95,7 +95,7 @@ class hgnn_env(object):
         self.cf_l2loss_lambda = args.cf_l2loss_lambda
         self.kg_l2loss_lambda = args.kg_l2loss_lambda
 
-        self.baseline_experience = 20
+        self.baseline_experience = 10
         # print(adj_dist)
         # print(data.train_graph.x[random.sample(range(data.train_graph.x.shape[0]), 5)])
 

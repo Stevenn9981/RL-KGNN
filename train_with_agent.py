@@ -28,7 +28,7 @@ def main():
 
     agentCheckpoint = torch.load("model/agentpoints/a-0.8719202727079391-2021-05-25 04:14:49.pth.tar", map_location=torch.device(device))
 
-    infor = '9wna_0.005_pretrain'
+    infor = '9wna_0.005_pretrain_l2'
     model_name = 'model_' + infor + '.pth'
 
     logger1 = get_logger('log', 'logger_' + infor + '.log')

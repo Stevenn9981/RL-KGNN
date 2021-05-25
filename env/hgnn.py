@@ -50,7 +50,7 @@ class Net(torch.nn.Module):
 
 
 class hgnn_env(object):
-    def __init__(self, logger1, logger2, model_name, dataset='yelp_data', weight_decay=0, policy=None):
+    def __init__(self, logger1, logger2, model_name, dataset='yelp_data', weight_decay=5e-4, policy=None):
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.model_name = model_name
         self.cur_best = 0

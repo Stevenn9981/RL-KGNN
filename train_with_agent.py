@@ -38,8 +38,8 @@ def main():
     new_env = hgnn_env(logger1, logger2, model_name, dataset=dataset)
     new_env.seed(0)
 
-    fr1 = open('user.embedding', 'r')
-    fr2 = open('business.embedding', 'r')
+    fr1 = open('data/yelp_data/embedding/user.embedding_' + str(new_env.data.entity_dim), 'r')
+    fr2 = open('data/yelp_data/embedding/business.embedding_' + str(new_env.data.entity_dim), 'r')
 
     emb = new_env.train_data.x
     emb.requires_grad = False

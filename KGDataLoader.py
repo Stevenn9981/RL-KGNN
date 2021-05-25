@@ -42,7 +42,7 @@ def parse_args():
     parser.add_argument('--test_batch_size', type=int, default=20000,
                         help='Test batch size (the user number to test every batch).')
 
-    parser.add_argument('--entity_dim', type=int, default=48,
+    parser.add_argument('--entity_dim', type=int, default=64,
                         help='User / entity Embedding size.')
     parser.add_argument('--relation_dim', type=int, default=32,
                         help='Relation Embedding size.')

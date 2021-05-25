@@ -26,14 +26,14 @@ def _L2_loss_mean(x):
 
 
 class Net(torch.nn.Module):
-    def __init__(self):
+    def __init__(self, entity_dim):
         super(Net, self).__init__()
         dout = 0
-        self.layer1 = nn.Linear(48, 24)
-        self.layer2 = nn.Linear(24, 48)
-        self.conv1 = GATConv(48, 16, 4, dropout=dout)
-        self.conv2 = GATConv(64, 16, 4, dropout=dout)
-        self.conv3 = GATConv(64, 48, 1, dropout=dout)
+        self.layer1 = nn.Linear(entity_dim, 32)
+        self.layer2 = nn.Linear(32, 64)
+        self.conv1 = GATConv(64, 16, 4, dropout=dout)
+        self.conv2 = GATConv(64, 16, 3, dropout=dout)
+        self.conv3 = GATConv(48, 48, 1, dropout=dout)
 
     def forward(self, x, edge_index):
         x = F.relu(self.layer1(x))
@@ -78,7 +78,7 @@ class hgnn_env(object):
         data.train_graph.adj_dist = adj_dist
         data.train_graph.attr_dict = attr_dict
         # print(data.train_graph.adj)
-        self.model, self.train_data = Net().to(self.device), data.train_graph.to(self.device)
+        self.model, self.train_data = Net(data.entity_dim).to(self.device), data.train_graph.to(self.device)
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr, weight_decay=weight_decay)
         self.train_data.node_idx = self.train_data.node_idx.to(self.device)
         self.data.test_graph = self.data.test_graph.to(self.device)

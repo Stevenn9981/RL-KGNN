@@ -82,8 +82,8 @@ class MFbpr(object):
             self.U_np = self.U.eval()
             self.V_np = self.V.eval()
             if iteration == 100:
-                fw = open('./data/yelp.bpr.user_embedding', 'w')
-                fw2 = open('./data/yelp.bpr.item_embedding', 'w')
+                fw = open('./data/user_embedding', 'w')
+                fw2 = open('./data/item_embedding', 'w')
                 line = ''
                 for u in range(1, len(self.U_np)):
                     line += str(u + 14852) + ' '

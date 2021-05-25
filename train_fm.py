@@ -27,6 +27,7 @@ def get_logger(logger_name, log_file, level=logging.INFO):
     return logging.getLogger(logger_name)
 
 def use_pretrain(env):
+    print('./data/yelp_data/embedding/user.embedding_' + str(env.data.entity_dim))
     fr1 = open('./data/yelp_data/embedding/user.embedding_' + str(env.data.entity_dim), 'r')
     fr2 = open('./data/yelp_data/embedding/business.embedding_' + str(env.data.entity_dim), 'r')
 

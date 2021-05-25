@@ -46,7 +46,6 @@ class Net(torch.nn.Module):
         x = F.relu(x)
         x = self.conv3(x, edge_index)
         x = torch.flatten(x, start_dim=1)
-        x = F.normalize(x)
         return x
 
 

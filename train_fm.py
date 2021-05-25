@@ -57,7 +57,7 @@ def main():
     max_timesteps = 2
     dataset = 'yelp_data'
 
-    infor = '10wna_0.005_no_w'
+    infor = '10wna_0.005_64_0.1'
     model_name = 'model_' + infor + '.pth'
 
     max_episodes = 15

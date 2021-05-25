@@ -6,7 +6,7 @@ import logging
 
 from env.hgnn import hgnn_env
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '1,2'
+os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 
 
 def get_logger(logger_name, log_file, level=logging.INFO):

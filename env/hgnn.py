@@ -31,8 +31,8 @@ class Net(torch.nn.Module):
         dout = 0
         self.layer1 = nn.Linear(entity_dim, 32)
         self.layer2 = nn.Linear(32, 64)
-        self.conv1 = GATConv(64, 16, 4, dropout=dout)
-        self.conv2 = GATConv(64, 32, 4, dropout=dout)
+        self.conv1 = GATConv(64, 32, 2, dropout=dout)
+        self.conv2 = GATConv(64, 64, 2, dropout=dout)
         self.conv3 = GATConv(128, entity_dim, 1, dropout=dout)
 
     def forward(self, x, edge_index):

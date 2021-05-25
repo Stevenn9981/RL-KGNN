@@ -26,7 +26,7 @@ def main():
 
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
-    agentCheckpoint = torch.load("model/agentpoints/a-0.778860904276371-2021-05-20 19:22:07.pth.tar", map_location=torch.device(device))
+    agentCheckpoint = torch.load("model/agentpoints/a-0.8719202727079391-2021-05-25 04:14:49.pth.tar", map_location=torch.device(device))
 
     infor = '9wna_0.005_pretrain'
     model_name = 'model_' + infor + '.pth'
@@ -81,7 +81,7 @@ def main():
     best_test_acc = 0
     actions = dict()
     val_acc = reward = 0
-    for i_episode in range(1, 11):
+    for i_episode in range(1, 21):
         index, state = new_env.reset2()
         for t in range(max_timesteps):
             if i_episode >= 1:

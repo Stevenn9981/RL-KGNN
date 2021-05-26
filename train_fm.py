@@ -124,6 +124,7 @@ def main():
     best_test_acc = 0
     actions = dict()
     val_acc = reward = 0
+    val_list = [0, 0, 0]
     for i_episode in range(1, 16):
         index, state = new_env.reset2()
         for t in range(max_timesteps):
@@ -132,7 +133,7 @@ def main():
                 actions[t] = action
             state, reward, done, (val_acc, reward) = new_env.step2(logger1, logger2, index, actions[t], True)
         val_acc = new_env.test_batch(logger2)
-        logger2.info("Training GNN %d:   Val_Acc: %.5f  Reward: %.5f  " % (i_episode, val_acc, reward))
+        val_list.append(val_acc)
         if val_acc > best_val_acc and val_acc > new_env.cur_best:
             best_val_acc = val_acc
             if os.path.exists(model_name):
@@ -143,11 +144,14 @@ def main():
                             'Embedding': new_env.train_data.x},
                            model_name)
             best_val_i = i_episode
-        test_acc = new_env.test_batch(logger2)
-        if test_acc > best_test_acc:
-            best_test_acc = test_acc
-            b_i = i_episode
-        logger2.info("Training GNN %d:   Test_Acc: %.5f  Best_test_i: %d  best_val_i: %d" % (i_episode, test_acc, b_i, best_val_i))
+        logger2.info("Evaluating GNN %d:   Val_Acc: %.5f  Reward: %.5f  best_val_i: %d" % (i_episode, val_acc, reward, best_val_i))
+        if val_list[-1] < val_list[-2] < val_list[-3] < val_list[-4]:
+            break
+        # test_acc = new_env.test_batch(logger2)
+        # if test_acc > best_test_acc:
+        #     best_test_acc = test_acc
+        #     b_i = i_episode
+        # logger2.info("Testing GNN %d:   Test_Acc: %.5f  Best_test_i: %d  best_val_i: %d" % (i_episode, test_acc, b_i, best_val_i))
 
     logger2.info("---------------------------------------------------\nStart the performance testing on test dataset:")
     model_checkpoint = torch.load(model_name)

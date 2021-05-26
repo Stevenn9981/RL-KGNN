@@ -60,7 +60,7 @@ def main():
     infor = '10wna_0.005_64_0.1'
     model_name = 'model_' + infor + '.pth'
 
-    max_episodes = 15
+    max_episodes = 10
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     logger1 = get_logger('log', 'logger_' + infor + '.log')
@@ -120,7 +120,7 @@ def main():
     best_test_acc = 0
     actions = dict()
     val_acc = reward = 0
-    for i_episode in range(1, 21):
+    for i_episode in range(1, 16):
         index, state = new_env.reset2()
         for t in range(max_timesteps):
             if i_episode >= 1:

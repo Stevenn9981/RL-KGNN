@@ -1,4 +1,6 @@
 import torch
+
+from KGDataLoader import parse_args
 from dqn_agent_pytorch import DQNAgent
 import os
 import torch.nn as nn
@@ -25,6 +27,7 @@ def main():
     dataset = 'yelp_data'
 
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+    args = parse_args()
 
     agentCheckpoint = torch.load("model/agentpoints/a-0.8719202727079391-2021-05-25 04:14:49.pth.tar", map_location=torch.device(device))
 
@@ -35,7 +38,7 @@ def main():
     logger2 = get_logger('log2', 'logger2_' + infor + '.log')
 
     max_timesteps = 2
-    new_env = hgnn_env(logger1, logger2, model_name, dataset=dataset)
+    new_env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset)
     new_env.seed(0)
 
     fr1 = open('data/yelp_data/embedding/user.embedding_' + str(new_env.data.entity_dim), 'r')

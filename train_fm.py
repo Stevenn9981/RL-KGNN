@@ -1,6 +1,8 @@
 import collections
 
 import torch
+
+from KGDataLoader import parse_args
 from dqn_agent_pytorch import DQNAgent
 import numpy as np
 import os
@@ -57,7 +59,9 @@ def main():
     max_timesteps = 2
     dataset = 'yelp_data'
 
-    infor = '10wna_0.001_64_0.1'
+    args = parse_args()
+
+    infor = '10wna_0.001_' + str(args.entity_dim)
     model_name = 'model_' + infor + '.pth'
 
     max_episodes = 10
@@ -66,7 +70,7 @@ def main():
     logger1 = get_logger('log', 'logger_' + infor + '.log')
     logger2 = get_logger('log2', 'logger2_' + infor + '.log')
 
-    env = hgnn_env(logger1, logger2, model_name, dataset=dataset)
+    env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset)
     env.seed(0)
     use_pretrain(env)
 
@@ -108,7 +112,7 @@ def main():
 
     # Testing: Apply meta-policy to train a new GNN
     logger2.info("Training GNNs with learned meta-policy")
-    new_env = hgnn_env(logger1, logger2, model_name, dataset=dataset)
+    new_env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset)
     new_env.seed(0)
     use_pretrain(new_env)
 

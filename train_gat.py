@@ -87,14 +87,14 @@ def main():
 
 
 
-    logger2.info("---------------------------------------------------\nStart the performance testing on test dataset:")
-    new_env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset)
-    new_env.seed(0)
-    use_pretrain(new_env)
-    model_checkpoint = torch.load(model_name)
-    new_env.model.load_state_dict(model_checkpoint['state_dict'])
-    new_env.train_data.x = model_checkpoint['Embedding']
-    new_env.test_batch(logger2)
+    # logger2.info("---------------------------------------------------\nStart the performance testing on test dataset:")
+    # new_env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset)
+    # new_env.seed(0)
+    # use_pretrain(new_env)
+    # model_checkpoint = torch.load(model_name)
+    # new_env.model.load_state_dict(model_checkpoint['state_dict'])
+    # new_env.train_data.x = model_checkpoint['Embedding']
+    # new_env.test_batch(logger2)
 
 
 if __name__ == '__main__':

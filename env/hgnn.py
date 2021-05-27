@@ -594,9 +594,9 @@ class hgnn_env(object):
         # ndcg_accu50 = torch.tensor(0)
 
         if training:
-            batch_neg_of_user = torch.split(batch_nega, NEG_SIZE_TRAIN, dim=0).to(self.device)
+            batch_neg_of_user = torch.split(batch_nega, NEG_SIZE_TRAIN, dim=0)
         else:
-            batch_neg_of_user = torch.split(batch_nega, NEG_SIZE_RANKING, dim=0).to(self.device)
+            batch_neg_of_user = torch.split(batch_nega, NEG_SIZE_RANKING, dim=0)
         if training:
             for i in range(batch_pos.shape[0]):
                 pre_rank_tensor = torch.cat((batch_pos[i].view(1, 1), batch_neg_of_user[i]), dim=0).to(self.device)

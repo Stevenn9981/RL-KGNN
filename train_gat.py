@@ -61,7 +61,7 @@ def main():
 
     args = parse_args()
 
-    infor = 'gat_0.001_' + str(args.entity_dim)
+    infor = 'gat2_0.001_' + str(args.entity_dim)
     model_name = 'model_' + infor + '.pth'
 
     max_episodes = 100
@@ -75,14 +75,15 @@ def main():
     use_pretrain(env)
 
     best = 0
-
-    for i in range(max_timesteps):
+    best_i = 0
+    for i in range(max_episodes):
         env.train_GAT()
         acc = env.test_batch(logger2)
         if acc > best:
             best = acc
-        logger2.info('Best Accuracy: %.5f' % best)
-        print('best: ', best)
+            best_i = i
+        logger2.info('Best Accuracy: %.5f\tBest_i : %d' % (best, best_i))
+        print('Best: ', best, 'Best_i: ', best_i)
 
 
 

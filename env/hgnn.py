@@ -58,6 +58,18 @@ class GAT(torch.nn.Module):
         x = torch.flatten(x, start_dim=1)
         return x
 
+class GAT2(torch.nn.Module):
+    def __init__(self, entity_dim):
+        super(GAT2, self).__init__()
+        self.conv1 = GATConv(entity_dim, entity_dim, 1)
+        self.conv2 = GATConv(entity_dim, entity_dim, 1)
+
+    def forward(self, x, edge_index):
+        x = self.conv1(x, edge_index)
+        x = torch.flatten(x, start_dim=1)
+        x = self.conv2(x, edge_index)
+        x = torch.flatten(x, start_dim=1)
+        return x
 
 class hgnn_env(object):
     def __init__(self, logger1, logger2, model_name, args, dataset='yelp_data', weight_decay=1e-5, policy=None):
@@ -87,7 +99,7 @@ class hgnn_env(object):
         data.train_graph.adj_dist = adj_dist
         data.train_graph.attr_dict = attr_dict
         # print(data.train_graph.adj)
-        self.model, self.train_data = GAT(data.entity_dim).to(self.device), data.train_graph.to(self.device)
+        self.model, self.train_data = GAT2(data.entity_dim).to(self.device), data.train_graph.to(self.device)
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr, weight_decay=weight_decay)
         self.train_data.node_idx = self.train_data.node_idx.to(self.device)
         self.data.test_graph = self.data.test_graph.to(self.device)

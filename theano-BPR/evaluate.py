@@ -48,9 +48,9 @@ def eval_one_rating(idx):
     map_item_score = {}
     # Get the score of the test item first
     maxScore = _model.predict(u, gtItem)
-    map_item_score[gtItem] = maxScore 
     # Early stopping if there are K items larger than maxScore.
     countLarger = 0
+    early_stop = False
     for i in random.sample(range(_model.num_item), 100):
         early_stop = False
         score = _model.predict(u, i)
@@ -62,6 +62,8 @@ def eval_one_rating(idx):
             hr = ndcg = 0
             early_stop = True
             break
+
+    map_item_score[gtItem] = maxScore
     # Generate topK rank list
     if early_stop == False:
         ranklist = heapq.nlargest(_K, map_item_score, key=map_item_score.get)

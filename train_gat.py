@@ -61,7 +61,7 @@ def main():
 
     args = parse_args()
 
-    infor = 'gat_0.001_' + str(args.entity_dim)
+    infor = 'gat3_0.001_' + str(args.entity_dim)
     model_name = 'model_' + infor + '.pth'
 
     max_episodes = 100
@@ -83,8 +83,8 @@ def main():
             if acc > best:
                 best = acc
                 best_i = i
-        logger2.info('Best Accuracy: %.5f\tBest_i : %d' % (best, best_i))
-        print('Best: ', best, 'Best_i: ', best_i)
+            logger2.info('Best Accuracy: %.5f\tBest_i : %d' % (best, best_i))
+            print('Best: ', best, 'Best_i: ', best_i)
 
 
 

@@ -61,7 +61,7 @@ def main():
 
     args = parse_args()
 
-    infor = 'gat_0.001_' + str(args.entity_dim)
+    infor = 'net_0.001_' + str(args.entity_dim)
     model_name = 'model_' + infor + '.pth'
 
     max_episodes = 100

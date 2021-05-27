@@ -122,7 +122,7 @@ class hgnn_env(object):
         data.train_graph.adj_dist = adj_dist
         data.train_graph.attr_dict = attr_dict
         # print(data.train_graph.adj)
-        self.model, self.train_data = GAT3(data.entity_dim).to(self.device), data.train_graph.to(self.device)
+        self.model, self.train_data = GAT(data.entity_dim).to(self.device), data.train_graph.to(self.device)
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr, weight_decay=weight_decay)
         self.train_data.node_idx = self.train_data.node_idx.to(self.device)
         self.data.test_graph = self.data.test_graph.to(self.device)
@@ -496,11 +496,12 @@ class hgnn_env(object):
                 pos_logits = torch.cat([pos_logits, cf_scores[idx][self.data.test_user_dict[u]]])
                 neg_logits = torch.cat([neg_logits, torch.unsqueeze(cf_scores[idx][neg_dict[u]], 1)])
 
-            HR3, HR10, NDCG10, NDCG20 = self.metrics(pos_logits, neg_logits,
-                                                     training=False)
+            HR3, HR10, HR20, NDCG10, NDCG20 = self.metrics(pos_logits, neg_logits,
+                                                           training=False)
             logger2.info(
-                "HR3 : %.4f, HR10 : %.4f, NDCG10 : %.4f, NDCG20 : %.4f" % (HR3, HR10, NDCG10.item(), NDCG20.item()))
-            print("HR3 : %.4f, HR10 : %.4f, NDCG10 : %.4f, NDCG20 : %.4f" % (HR3, HR10, NDCG10.item(), NDCG20.item()))
+                "HR3 : %.4f, HR10 : %.4f, HR20 : %.4f, NDCG10 : %.4f, NDCG20 : %.4f" % (
+                    HR3, HR10, HR20, NDCG10.item(), NDCG20.item()))
+            print(f"HR3 : {HR3:.4f}, HR10 : {HR10:.4f}, NDCG10 : {HR20:.4f}, NDCG20 : {NDCG10.item():.4f}")
 
         return NDCG10.cpu().item()
 
@@ -529,9 +530,9 @@ class hgnn_env(object):
                 pos_logits = torch.cat([pos_logits, cf_scores[idx][self.data.train_user_dict[u]]])
                 neg_logits = torch.cat([neg_logits, torch.unsqueeze(cf_scores[idx][neg_dict[u]], 1)])
 
-            HR3, HR10, NDCG10, NDCG20 = self.metrics(pos_logits, neg_logits, training=False)
-            print("TRAINING DATA: HR3 : %.4f, HR10 : %.4f,"
-                  "NDCG10 : %.4f, NDCG20 : %.4f" % (HR3, HR10, NDCG10.item(), NDCG20.item()))
+            HR3, HR10, HR20, NDCG10, NDCG20 = self.metrics(pos_logits, neg_logits, training=False)
+            print(
+                f"TRAINING DATA: HR3 : {HR3:.4f}, HR10 : {HR10:.4f}, NDCG10 : {HR20:.4f}, NDCG20 : {NDCG10.item():.4f}")
 
         return NDCG10.cpu().item()
 
@@ -582,9 +583,10 @@ class hgnn_env(object):
         return cf_score
 
     def metrics(self, batch_pos, batch_nega, training=True):
-        hit_num1 = 0.0
+        # hit_num1 = 0.0
         hit_num3 = 0.0
         hit_num10 = 0.0
+        hit_num20 = 0.0
         # hit_num50 = 0.0
         # mrr_accu10 = torch.tensor(0)
         # mrr_accu20 = torch.tensor(0)
@@ -621,6 +623,7 @@ class hgnn_env(object):
                 if rank < 20:
                     ndcg_accu20 = ndcg_accu20 + torch.log(torch.tensor([2.0]).to(self.device)) / torch.log(
                         (rank + 2).type(torch.float32))
+                    hit_num20 = hit_num20 + 1
                     # mrr_accu20 = mrr_accu20 + 1 / (rank + 1).type(torch.float32)
                 if rank < 10:
                     ndcg_accu10 = ndcg_accu10 + torch.log(torch.tensor([2.0]).to(self.device)) / torch.log(
@@ -637,5 +640,5 @@ class hgnn_env(object):
             #        batch_pos.shape[0], mrr_accu10 / batch_pos.shape[0], mrr_accu20 / batch_pos.shape[0], mrr_accu50 / \
             #        batch_pos.shape[0], \
             #        ndcg_accu10 / batch_pos.shape[0], ndcg_accu20 / batch_pos.shape[0], ndcg_accu50 / batch_pos.shape[0]
-            return hit_num3 / batch_pos.shape[0], hit_num10 / batch_pos.shape[0], ndcg_accu10 / batch_pos.shape[
-                0], ndcg_accu20 / batch_pos.shape[0]
+            return hit_num3 / batch_pos.shape[0], hit_num10 / batch_pos.shape[0], hit_num20 / batch_pos.shape[
+                0], ndcg_accu10 / batch_pos.shape[0], ndcg_accu20 / batch_pos.shape[0]

@@ -61,7 +61,7 @@ def main():
 
     args = parse_args()
 
-    infor = 'gat3_' + str(args.entity_dim)
+    infor = 'gat_random_' + str(args.entity_dim)
     model_name = 'model_' + infor + '.pth'
 
     max_episodes = 100
@@ -72,13 +72,13 @@ def main():
 
     env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset)
     env.seed(0)
-    use_pretrain(env)
+    # use_pretrain(env)
 
     best = 0
     best_i = 0
     for i in range(max_episodes):
         env.train_GAT()
-        if i % 5 == 0:
+        if i % 2 == 0:
             acc = env.test_batch(logger2)
             if acc > best:
                 best = acc

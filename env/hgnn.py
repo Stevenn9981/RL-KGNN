@@ -48,6 +48,7 @@ class Net(torch.nn.Module):
         x = torch.flatten(x, start_dim=1)
         return x
 
+
 class GAT(torch.nn.Module):
     def __init__(self, entity_dim):
         super(GAT, self).__init__()
@@ -57,6 +58,7 @@ class GAT(torch.nn.Module):
         x = self.conv1(x, edge_index)
         x = torch.flatten(x, start_dim=1)
         return x
+
 
 class GAT2(torch.nn.Module):
     def __init__(self, entity_dim):
@@ -70,6 +72,7 @@ class GAT2(torch.nn.Module):
         x = self.conv2(x, edge_index)
         x = torch.flatten(x, start_dim=1)
         return x
+
 
 class hgnn_env(object):
     def __init__(self, logger1, logger2, model_name, args, dataset='yelp_data', weight_decay=1e-5, policy=None):
@@ -99,7 +102,7 @@ class hgnn_env(object):
         data.train_graph.adj_dist = adj_dist
         data.train_graph.attr_dict = attr_dict
         # print(data.train_graph.adj)
-        self.model, self.train_data = GAT(data.entity_dim).to(self.device), data.train_graph.to(self.device)
+        self.model, self.train_data = Net(data.entity_dim).to(self.device), data.train_graph.to(self.device)
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr, weight_decay=weight_decay)
         self.train_data.node_idx = self.train_data.node_idx.to(self.device)
         self.data.test_graph = self.data.test_graph.to(self.device)
@@ -110,7 +113,7 @@ class hgnn_env(object):
         self.policy = policy
         self.batch_size = args.nd_batch_size
         self.W_R = torch.randn(self.data.n_relations + 1, self.data.entity_dim,
-                                             self.data.relation_dim).to(self.device)
+                               self.data.relation_dim).to(self.device)
         nn.init.xavier_uniform_(self.W_R, gain=nn.init.calculate_gain('relu'))
 
         self.cf_l2loss_lambda = args.cf_l2loss_lambda
@@ -253,7 +256,8 @@ class hgnn_env(object):
             logger1.info("Val acc: %.5f  reward: %.5f" % (val_precision, rew))
             logger1.info("-----------------------------------------------------------------------")
 
-        next_state = F.normalize(self.model(self.train_data.x, self.train_data.edge_index)[index]).cpu().detach().numpy()
+        next_state = F.normalize(
+            self.model(self.train_data.x, self.train_data.edge_index)[index]).cpu().detach().numpy()
         r = np.mean(np.array(reward))
         val_acc = np.mean(val_acc)
         next_state = np.array(next_state)
@@ -339,7 +343,8 @@ class hgnn_env(object):
         cf_total_loss = 0
         for iter in range(1, n_cf_batch + 1):
             cf_batch_user, cf_batch_pos_item, cf_batch_neg_item = self.data.generate_cf_batch(self.data.train_user_dict)
-            cf_batch_loss = self.calc_cf_loss(self.train_data, self.train_data.edge_index, cf_batch_user, cf_batch_pos_item,
+            cf_batch_loss = self.calc_cf_loss(self.train_data, self.train_data.edge_index, cf_batch_user,
+                                              cf_batch_pos_item,
                                               cf_batch_neg_item)
             cf_batch_loss.backward()
             self.optimizer.step()
@@ -475,8 +480,8 @@ class hgnn_env(object):
                                                                                              training=False)
             logger2.info("HR1 : %.4f, HR3 : %.4f, HR10 : %.4f, HR50 : %.4f, MRR10 : %.4f, MRR20 : %.4f, MRR50 : %.4f, "
                          "NDCG10 : %.4f, NDCG20 : %.4f, NDCG50 : %.4f" % (
-                         HR1, HR3, HR10, HR50, MRR10.item(), MRR20.item(),
-                         MRR50.item(), NDCG10.item(), NDCG20.item(), NDCG50.item()))
+                             HR1, HR3, HR10, HR50, MRR10.item(), MRR20.item(),
+                             MRR50.item(), NDCG10.item(), NDCG20.item(), NDCG50.item()))
             print("HR1 : %.4f, HR3 : %.4f, HR10 : %.4f, HR50 : %.4f, MRR10 : %.4f, MRR20 : %.4f, MRR50 : %.4f, "
                   "NDCG10 : %.4f, NDCG20 : %.4f, NDCG50 : %.4f" % (HR1, HR3, HR10, HR50, MRR10.item(), MRR20.item(),
                                                                    MRR50.item(), NDCG10.item(), NDCG20.item(),
@@ -518,7 +523,6 @@ class hgnn_env(object):
                                                                    NDCG50.item()))
 
         return NDCG10.cpu().item()
-
 
     # def evaluate(self, model, train_graph, train_user_dict, test_user_dict, user_ids_batches, item_ids, K):
     #     model.eval()

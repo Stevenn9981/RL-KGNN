@@ -48,6 +48,16 @@ class Net(torch.nn.Module):
         x = torch.flatten(x, start_dim=1)
         return x
 
+class GAT(torch.nn.Module):
+    def __init__(self, entity_dim):
+        super(GAT, self).__init__()
+        self.conv1 = GATConv(entity_dim, entity_dim, 1)
+
+    def forward(self, x, edge_index):
+        x = self.conv1(x, edge_index)
+        x = torch.flatten(x, start_dim=1)
+        return x
+
 
 class hgnn_env(object):
     def __init__(self, logger1, logger2, model_name, args, dataset='yelp_data', weight_decay=1e-5, policy=None):
@@ -134,7 +144,7 @@ class hgnn_env(object):
         self.meta_path_graph_edges = collections.defaultdict(set)
         nodes = range(self.train_data.x.shape[0])
         index = random.sample(nodes, min(self.batch_size, len(nodes)))
-        state = self.model(self.train_data.x, self.train_data.edge_index)[index].cpu().detach().numpy()
+        state = F.normalize(self.model(self.train_data.x, self.train_data.edge_index)[index]).cpu().detach().numpy()
         self.optimizer.zero_grad()
         return index, state
 
@@ -143,7 +153,7 @@ class hgnn_env(object):
         self.meta_path_instances_dict = collections.defaultdict(list)
         nodes = range(self.train_data.x.weight.shape[0])
         index = random.sample(nodes, len(nodes))
-        state = self.model(self.train_data.x, self.train_data.edge_index)[index].cpu().detach().numpy()
+        state = F.normalize(self.model(self.train_data.x, self.train_data.edge_index)[index]).cpu().detach().numpy()
         self.optimizer.zero_grad()
         return index, state
 
@@ -231,7 +241,7 @@ class hgnn_env(object):
             logger1.info("Val acc: %.5f  reward: %.5f" % (val_precision, rew))
             logger1.info("-----------------------------------------------------------------------")
 
-        next_state = self.model(self.train_data.x, self.train_data.edge_index)[index].cpu().detach().numpy()
+        next_state = F.normalize(self.model(self.train_data.x, self.train_data.edge_index)[index]).cpu().detach().numpy()
         r = np.mean(np.array(reward))
         val_acc = np.mean(val_acc)
         next_state = np.array(next_state)
@@ -290,7 +300,7 @@ class hgnn_env(object):
         # self.optimizer.step()
         print("total_cf_loss: ", cf_total_loss.item())
 
-        n_kg_batch = self.data.n_kg_train // self.data.kg_batch_size + 1
+        # n_kg_batch = self.data.n_kg_train // self.data.kg_batch_size + 1
 
         # kg_total_loss = 0
 
@@ -311,6 +321,22 @@ class hgnn_env(object):
 
         # print("total_kg_loss: ", kg_batch_loss.item())
         # print(self.train_data.x(torch.tensor([10,11,12])))
+
+    def train_GAT(self):
+        n_cf_batch = self.data.n_cf_train // self.data.cf_batch_size + 1
+        cf_total_loss = 0
+        for iter in range(1, n_cf_batch + 1):
+            cf_batch_user, cf_batch_pos_item, cf_batch_neg_item = self.data.generate_cf_batch(self.data.train_user_dict)
+            cf_batch_loss = self.calc_cf_loss(self.train_data, self.train_data.edge_index, cf_batch_user, cf_batch_pos_item,
+                                              cf_batch_neg_item)
+            cf_batch_loss.backward()
+            self.optimizer.step()
+            self.optimizer.zero_grad()
+            cf_total_loss += cf_batch_loss
+
+        # cf_total_loss.backward()
+        # self.optimizer.step()
+        print("total_cf_loss: ", cf_total_loss.item())
 
     def calc_kg_loss(self, h, r, pos_t, neg_t):
         """

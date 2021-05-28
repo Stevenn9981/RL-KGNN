@@ -61,7 +61,7 @@ def main():
 
     args = parse_args()
 
-    infor = '10wna_' + str(args.lr) + '_gat3_' + str(args.entity_dim)
+    infor = '10wa_' + str(args.lr) + '_net_' + str(args.entity_dim)
     model_name = 'model_' + infor + '.pth'
 
     max_episodes = 15
@@ -128,7 +128,7 @@ def main():
     for i_episode in range(1, 16):
         index, state = new_env.reset2()
         for t in range(max_timesteps):
-            if i_episode >= 1:
+            if i_episode == 1:
                 action = best_policy.eval_step(state)
                 actions[t] = action
             state, reward, done, (val_acc, reward) = new_env.step2(logger1, logger2, index, actions[t], True)

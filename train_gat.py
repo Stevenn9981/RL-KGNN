@@ -61,7 +61,7 @@ def main():
 
     args = parse_args()
 
-    infor = 'gat_random_' + str(args.entity_dim)
+    infor = 'gat_pretrain_' + str(args.entity_dim)
     model_name = 'model_' + infor + '.pth'
 
     max_episodes = 800
@@ -72,7 +72,7 @@ def main():
 
     env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset)
     env.seed(0)
-    # use_pretrain(env)
+    use_pretrain(env)
 
     best = 0
     best_i = 0

@@ -500,7 +500,7 @@ class hgnn_env(object):
             logger2.info(
                 "HR3 : %.4f, HR10 : %.4f, HR20 : %.4f, NDCG10 : %.4f, NDCG20 : %.4f" % (
                     HR3, HR10, HR20, NDCG10.item(), NDCG20.item()))
-            print(f"HR3 : {HR3:.4f}, HR10 : {HR10:.4f}, NDCG10 : {HR20:.4f}, NDCG20 : {NDCG10.item():.4f}")
+            print(f"HR3 : {HR3:.4f}, HR10 : {HR10:.4f}, NDCG10 : {NDCG10:.4f}, NDCG20 : {NDCG20.item():.4f}")
 
         return NDCG10.cpu().item()
 

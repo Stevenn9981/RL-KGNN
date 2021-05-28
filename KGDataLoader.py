@@ -56,7 +56,7 @@ def parse_args():
 
     parser.add_argument('--kg_l2loss_lambda', type=float, default=0,
                         help='Lambda when calculating KG l2 loss.')
-    parser.add_argument('--cf_l2loss_lambda', type=float, default=1e-3,
+    parser.add_argument('--cf_l2loss_lambda', type=float, default=1e-4,
                         help='Lambda when calculating CF l2 loss.')
 
     parser.add_argument('--lr', type=float, default=0.001,

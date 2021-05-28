@@ -56,10 +56,10 @@ def parse_args():
 
     parser.add_argument('--kg_l2loss_lambda', type=float, default=0,
                         help='Lambda when calculating KG l2 loss.')
-    parser.add_argument('--cf_l2loss_lambda', type=float, default=1e-5,
+    parser.add_argument('--cf_l2loss_lambda', type=float, default=1e-3,
                         help='Lambda when calculating CF l2 loss.')
 
-    parser.add_argument('--lr', type=float, default=0.0005,
+    parser.add_argument('--lr', type=float, default=0.001,
                         help='Learning rate.')
     parser.add_argument('--n_epoch', type=int, default=1000,
                         help='Number of epoch.')

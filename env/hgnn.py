@@ -433,7 +433,7 @@ class hgnn_env(object):
 
         l2_loss = _L2_loss_mean(user_embed) + _L2_loss_mean(item_pos_embed) + _L2_loss_mean(item_neg_embed)
         loss = cf_loss + self.cf_l2loss_lambda * l2_loss
-        # print("cf_loss, l2_loss, loss:", cf_loss.item(), l2_loss.item(), loss.item())
+        print("cf_loss, l2_loss, loss:", cf_loss.item(), l2_loss.item(), loss.item())
         return loss
 
     def eval_batch(self, neg_num=NEG_SIZE_TRAIN):

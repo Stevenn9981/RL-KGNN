@@ -64,7 +64,7 @@ def main():
     infor = 'gat_random_' + str(args.entity_dim)
     model_name = 'model_' + infor + '.pth'
 
-    max_episodes = 100
+    max_episodes = 800
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     logger1 = get_logger('log', 'logger_' + infor + '.log')
@@ -78,7 +78,7 @@ def main():
     best_i = 0
     for i in range(max_episodes):
         env.train_GAT()
-        if i % 2 == 0:
+        if i % 5 == 0:
             acc = env.test_batch(logger2)
             if acc > best:
                 best = acc

@@ -245,7 +245,7 @@ class DataLoaderHGNN(object):
         edge_attr = torch.tensor(kg_data['r'])
         data = Data(x=x, edge_index=edge_index, edge_attr=edge_attr)
         data.relation_embed = torch.randn(self.n_relations + 1, self.relation_dim)
-        nn.init.xavier_uniform_(data.relation_embed, gain=nn.init.calculate_gain('relu'))
+        nn.init.xavier_uniform_(data.x, gain=nn.init.calculate_gain('relu'))
         data.node_idx = torch.arange(n_nodes, dtype=torch.long)
         return data
         # g = dgl.DGLGraph()

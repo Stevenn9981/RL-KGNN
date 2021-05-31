@@ -61,7 +61,7 @@ def main():
 
     args = parse_args()
 
-    infor = '10wna_' + str(args.lr) + '_net_' + str(args.entity_dim)
+    infor = '10wna_' + str(args.lr) + '_net_' + str(args.nd_batch_size)
     model_name = 'model_' + infor + '.pth'
 
     max_episodes = 10
@@ -79,7 +79,7 @@ def main():
                     replay_memory_size=int(1e4),
                     replay_memory_init_size=500,
                     norm_step=10,
-                    batch_size=48,
+                    batch_size=args.nd_batch_size,
                     state_shape = env.observation_space.shape,
                     mlp_layers=[32, 64, 128, 64, 32],
                     learning_rate=0.005,

@@ -81,7 +81,7 @@ def main():
     best_i = 0
     for i in range(max_episodes):
         env.train_GAT()
-        if i % 5 == 0:
+        if i % 10 == 0:
             acc = env.test_batch(logger2)
             if acc > best:
                 best = acc

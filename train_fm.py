@@ -64,7 +64,7 @@ def main():
     infor = '10wna_' + str(args.lr) + '_net_' + str(args.nd_batch_size)
     model_name = 'model_' + infor + '.pth'
 
-    max_episodes = 10
+    max_episodes = 320 // args.nd_batch_size
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     logger1 = get_logger('log', 'logger_' + infor + '.log')

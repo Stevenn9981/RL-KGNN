@@ -240,7 +240,7 @@ class DataLoaderHGNN(object):
 
 
     def create_graph(self, kg_data, n_nodes):
-        x = torch.tensor(n_nodes, self.entity_dim)
+        x = torch.randn(n_nodes, self.entity_dim)
         nn.init.xavier_uniform_(x, gain=nn.init.calculate_gain('relu'))
         edge_index = torch.tensor([kg_data['t'],kg_data['h']],dtype=torch.long)
         edge_attr = torch.tensor(kg_data['r'])

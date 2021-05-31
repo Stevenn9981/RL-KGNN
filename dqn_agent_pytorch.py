@@ -189,6 +189,7 @@ class DQNAgent(object):
             for each in trajectories:
                 self.feed(each)
         loss = self.train()
+        print('DQN loss: ', loss)
         return loss, reward_batch, debug
 
     def feed(self, ts):

@@ -12,7 +12,7 @@ from copy import deepcopy
 import logging
 import torch.nn as nn
 
-from env.hgnn import hgnn_env
+from env.hgnn import hgnn_env, GAT
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '1,2'
 
@@ -71,6 +71,9 @@ def main():
     logger2 = get_logger('log2', 'logger2_' + infor + '.log')
 
     env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset)
+    env.model = GAT(args.entity_dim).to(device)
+    env.optimizer = torch.optim.Adam(self.model.parameters(), args.lr, weight_decay=1e-5)
+    env.optimizer.zero_grad()
     env.seed(0)
     use_pretrain(env)
 

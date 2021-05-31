@@ -64,7 +64,7 @@ def main():
     infor = '10wna_' + str(args.lr) + '_net_' + str(args.nd_batch_size)
     model_name = 'model_' + infor + '.pth'
 
-    max_episodes = 320 // args.nd_batch_size
+    max_episodes = 480 // args.nd_batch_size
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     logger1 = get_logger('log', 'logger_' + infor + '.log')
@@ -78,7 +78,7 @@ def main():
                     action_num = env.action_num,
                     replay_memory_size=int(1e4),
                     replay_memory_init_size=500,
-                    norm_step=8,
+                    norm_step=4,
                     batch_size=args.nd_batch_size,
                     state_shape = env.observation_space.shape,
                     mlp_layers=[32, 64, 128, 64, 32],

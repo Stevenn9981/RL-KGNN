@@ -10,15 +10,14 @@ from MFbpr import MFbpr
 import multiprocessing as mp
 
 if __name__ == '__main__':
-    
     # Load data
     dataset = "data/yelp.rating"
     splitter = "\t"
     hold_k_out = 1
     train, test, num_user, num_item, num_ratings = LoadRatingFile_HoldKOut(dataset, splitter, hold_k_out)
-    print("Load data (%s) done." %(dataset))
-    print("#users: %d, #items: %d, #ratings: %d" %(num_user, num_item, num_ratings))
-    
+    print("Load data (%s) done." % (dataset))
+    print("#users: %d, #items: %d, #ratings: %d" % (num_user, num_item, num_ratings))
+
     # MFbpr parameters
     factors = 64
     learning_rate = 0.3
@@ -27,8 +26,8 @@ if __name__ == '__main__':
     init_stdev = 0.01
     maxIter = 101
     num_thread = 4
-    
+
     # Run model
-    bpr = MFbpr(train, test, num_user, num_item, 
+    bpr = MFbpr(train, test, num_user, num_item,
                 factors, learning_rate, reg, init_mean, init_stdev)
     bpr.build_model(maxIter, num_thread, batch_size=32)

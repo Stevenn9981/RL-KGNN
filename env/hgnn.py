@@ -1,7 +1,7 @@
 import torch.nn as nn
 from gym import spaces
 from gym.spaces import Discrete
-from torch_geometric.nn import GCNConv, GATConv
+from torch_geometric.nn import GCNConv, GATConv, SAGEConv
 from torch_geometric.utils import *
 import torch.nn.functional as F
 import collections
@@ -57,6 +57,16 @@ class GAT(torch.nn.Module):
     def forward(self, x, edge_index):
         x = self.conv1(x, edge_index)
         x = torch.flatten(x, start_dim=1)
+        return x
+
+
+class GraphSAGE(torch.nn.Module):
+    def __init__(self, entity_dim):
+        super(GraphSAGE, self).__init__()
+        self.conv1 = SAGEConv(entity_dim, entity_dim)
+
+    def forward(self, x, edge_index):
+        x = self.conv1(x, edge_index)
         return x
 
 

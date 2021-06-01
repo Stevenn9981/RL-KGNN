@@ -72,7 +72,7 @@ def main():
 
     env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset)
     env.model = GAT(args.entity_dim).to(device)
-    env.optimizer = torch.optim.Adam(env.model.parameters(), args.lr, weight_decay=1e-5)
+    env.optimizer = torch.optim.Adam(env.model.parameters(), args.lr)
     env.optimizer.zero_grad()
     env.seed(0)
     use_pretrain(env)

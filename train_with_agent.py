@@ -71,6 +71,7 @@ def main():
                            batch_size=48,
                            state_shape=new_env.observation_space.shape,
                            mlp_layers=[32, 64, 128, 64, 32],
+                           learning_rate=0.001,
                            device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')
                            )
     best_policy.q_estimator.qnet.load_state_dict(agentCheckpoint['q_estimator_qnet_state_dict'])

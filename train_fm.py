@@ -82,7 +82,7 @@ def main():
                     batch_size=args.nd_batch_size,
                     state_shape = env.observation_space.shape,
                     mlp_layers=[32, 64, 128, 64, 32],
-                    learning_rate=0.0005,
+                    learning_rate=0.001,
                     device=torch.device(device)
             )
     env.policy = agent

@@ -125,7 +125,7 @@ def main():
     actions = dict()
     val_acc = reward = 0
     val_list = [0, 0, 0]
-    for i_episode in range(1, 16):
+    for i_episode in range(1, 500 // args.nd_batch_size):
         index, state = new_env.reset2()
         for t in range(max_timesteps):
             if i_episode >= 1:

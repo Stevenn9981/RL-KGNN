@@ -61,7 +61,7 @@ def main():
 
     args = parse_args()
 
-    infor = 'gat_pretrain_' + str(args.entity_dim)
+    infor = 'graphsage_pretrain_' + str(args.entity_dim)
     model_name = 'model_' + infor + '.pth'
 
     max_episodes = 800

@@ -156,7 +156,7 @@ class hgnn_env(object):
         # buffers for updating
         # self.buffers = {i: [] for i in range(max_layer)}
         self.buffers = collections.defaultdict(list)
-        self.past_performance = [[], []]
+        self.past_performance = []
 
         self.meta_path_dict = collections.defaultdict(list)
         self.meta_path_instances_dict = collections.defaultdict(list)
@@ -279,16 +279,16 @@ class hgnn_env(object):
 
             val_precision = self.eval_batch()
             val_acc.append(val_precision)
-            if idx not in self.meta_path_graph_edges:
-                self.past_performance[0].append(val_precision)
-                baseline = np.mean(np.array(self.past_performance[0][-self.baseline_experience:]))
-                rew = 100 * (val_precision - baseline)
-                reward.append(rew)
-            else:
-                self.past_performance[1].append(val_precision)
-                baseline = np.mean(np.array(self.past_performance[1][-self.baseline_experience:]))
-                rew = 100 * (val_precision - baseline)
-                reward.append(rew)
+            # if idx not in self.meta_path_graph_edges:
+            #     self.past_performance.append(val_precision)
+            #     baseline = np.mean(np.array(self.past_performance[-self.baseline_experience:]))
+            #     rew = 100 * (val_precision - baseline)
+            #     reward.append(rew)
+            # else:
+            self.past_performance.append(val_precision)
+            baseline = np.mean(np.array(self.past_performance[-self.baseline_experience:]))
+            rew = 100 * (val_precision - baseline)
+            reward.append(rew)
 
             logger1.info("Val acc: %.5f  reward: %.5f" % (val_precision, rew))
             logger1.info("-----------------------------------------------------------------------")

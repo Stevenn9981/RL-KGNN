@@ -64,7 +64,7 @@ def main():
     infor = '10wna_' + str(args.lr) + '_net_0.0005_' + str(args.nd_batch_size)
     model_name = 'model_' + infor + '.pth'
 
-    max_episodes = 400 // args.nd_batch_size
+    max_episodes = 10
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     logger1 = get_logger('log', 'logger_' + infor + '.log')
@@ -125,7 +125,7 @@ def main():
     actions = dict()
     val_acc = reward = 0
     val_list = [0, 0, 0]
-    for i_episode in range(1, 500 // args.nd_batch_size):
+    for i_episode in range(1, 16):
         index, state = new_env.reset2()
         for t in range(max_timesteps):
             if i_episode >= 1:

@@ -29,9 +29,9 @@ class Net(torch.nn.Module):
     def __init__(self, entity_dim):
         super(Net, self).__init__()
         dout = 0
-        self.type_weight_dict = collections.defaultdict()
+        self.type_weight_dict = nn.ModuleDict()
         for i in range(5):
-            self.type_weight_dict[i] = nn.Linear(entity_dim, 64)
+            self.type_weight_dict[str(i)] = nn.Linear(entity_dim, 64)
         self.layer1 = nn.Linear(64, 32)
         self.layer2 = nn.Linear(32, 64)
         self.conv1 = GATConv(64, 32, 2, dropout=dout)
@@ -41,7 +41,7 @@ class Net(torch.nn.Module):
     def forward(self, x, edge_index, node_types):
         t = self.type_weight_dict[0](x)
         for i in range(5):
-            t[node_types[i]] = self.type_weight_dict[i](x)[node_types[i]]
+            t[node_types[i]] = self.type_weight_dict[str(i)](x)[node_types[i]]
         x = t
         x = F.relu(self.layer1(x))
         x = F.relu(self.layer2(x))

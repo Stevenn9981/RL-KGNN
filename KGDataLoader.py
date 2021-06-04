@@ -240,6 +240,28 @@ class DataLoaderHGNN(object):
 
 
     def create_graph(self, kg_data, n_nodes):
+        '''
+        Business: 0 (0 - 14263), Category: 1 (14264 - 14794), City: 2 (14795 - 14841),
+        Compliment : 3 (14842 - 14852), User: 4 (14853 - 31091)
+        '''
+
+        type_dict = collections.defaultdict()
+        a = torch.zeros(n_nodes, dtype=torch.bool)
+        a[:14264] = True
+        type_dict[0] = a
+        a = torch.zeros(n_nodes, dtype=torch.bool)
+        a[14264:14795] = True
+        type_dict[1] = a
+        a = torch.zeros(n_nodes, dtype=torch.bool)
+        a[14795:14842] = True
+        type_dict[2] = a
+        a = torch.zeros(n_nodes, dtype=torch.bool)
+        a[14842:14853] = True
+        type_dict[3] = a
+        a = torch.zeros(n_nodes, dtype=torch.bool)
+        a[14853:] = True
+        type_dict[4] = a
+
         x = torch.randn(n_nodes, self.entity_dim)
         nn.init.xavier_uniform_(x, gain=nn.init.calculate_gain('relu'))
         edge_index = torch.tensor([kg_data['t'],kg_data['h']],dtype=torch.long)
@@ -247,6 +269,7 @@ class DataLoaderHGNN(object):
         data = Data(x=x, edge_index=edge_index, edge_attr=edge_attr)
         data.relation_embed = torch.randn(self.n_relations + 1, self.relation_dim)
         data.node_idx = torch.arange(n_nodes, dtype=torch.long)
+        data.node_types = type_dict
         return data
         # g = dgl.DGLGraph()
         # g.add_nodes(n_nodes)

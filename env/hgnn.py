@@ -39,7 +39,7 @@ class Net(torch.nn.Module):
         self.conv3 = GATConv(128, entity_dim, 1, dropout=dout)
 
     def forward(self, x, edge_index, node_types):
-        t = self.type_weight_dict[0](x)
+        t = self.type_weight_dict['0'](x)
         for i in range(5):
             t[node_types[i]] = self.type_weight_dict[str(i)](x)[node_types[i]]
         x = t

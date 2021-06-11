@@ -29,22 +29,24 @@ class Net(torch.nn.Module):
     def __init__(self, entity_dim):
         super(Net, self).__init__()
         dout = 0
-        self.type_weight_dict = nn.ModuleDict()
+        self.entity_dim = entity_dim
+        self.layer1 = nn.Linear(64, 64)
+        self.node_type_dict = nn.ModuleList()
+        self.edge_type_dict = nn.ModuleDict()
         for i in range(5):
-            self.type_weight_dict[str(i)] = nn.Linear(entity_dim, 64)
-        self.layer1 = nn.Linear(64, 32)
-        self.layer2 = nn.Linear(32, 64)
+            self.node_type_dict.append(nn.Linear(entity_dim, 64))
         self.conv1 = GATConv(64, 32, 2, dropout=dout)
         self.conv2 = GATConv(64, 64, 2, dropout=dout)
         self.conv3 = GATConv(128, entity_dim, 1, dropout=dout)
 
     def forward(self, x, edge_index, node_types):
-        t = self.type_weight_dict['0'](x)
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        t = self.node_type_dict[0](x)
         for i in range(5):
-            t[node_types[i]] = self.type_weight_dict[str(i)](x)[node_types[i]]
+            t[node_types == i] = self.node_type_dict[i](x)[node_types == i]
         x = t
+
         x = F.relu(self.layer1(x))
-        x = F.relu(self.layer2(x))
         x = self.conv1(x, edge_index)
         x = torch.flatten(x, start_dim=1)
         x = F.relu(x)
@@ -80,8 +82,8 @@ class GraphSAGE(torch.nn.Module):
 class GAT2(torch.nn.Module):
     def __init__(self, entity_dim):
         super(GAT2, self).__init__()
-        self.conv1 = GATConv(entity_dim, entity_dim, 1)
-        self.conv2 = GATConv(entity_dim, entity_dim, 1)
+        self.conv1 = GATConv(entity_dim, 32, 1)
+        self.conv2 = GATConv(32, entity_dim, 1)
 
     def forward(self, x, edge_index):
         x = self.conv1(x, edge_index)
@@ -138,8 +140,9 @@ class hgnn_env(object):
                 data.train_graph.edge_index[1][i].item())
         data.train_graph.adj_dist = adj_dist
         data.train_graph.attr_dict = attr_dict
-        # print(data.train_graph.adj)
-        self.model, self.train_data = Net(data.entity_dim).to(self.device), data.train_graph.to(self.device)
+
+        self.model, self.train_data = GAT3(data.entity_dim).to(
+            self.device), data.train_graph.to(self.device)
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr, weight_decay=weight_decay)
         self.train_data.node_idx = self.train_data.node_idx.to(self.device)
         self.data.test_graph = self.data.test_graph.to(self.device)
@@ -196,7 +199,8 @@ class hgnn_env(object):
         self.meta_path_graph_edges = collections.defaultdict(set)
         nodes = range(self.train_data.x.shape[0])
         index = random.sample(nodes, min(self.batch_size, len(nodes)))
-        state = F.normalize(self.model(self.train_data.x, self.train_data.edge_index, self.train_data.node_types)[index]).cpu().detach().numpy()
+        state = F.normalize(self.model(self.train_data.x, self.train_data.edge_index)[
+                                index]).cpu().detach().numpy()
         self.optimizer.zero_grad()
         return index, state
 
@@ -205,7 +209,8 @@ class hgnn_env(object):
         self.meta_path_instances_dict = collections.defaultdict(list)
         nodes = range(self.train_data.x.weight.shape[0])
         index = random.sample(nodes, len(nodes))
-        state = F.normalize(self.model(self.train_data.x, self.train_data.edge_index, self.train_data.node_types)[index]).cpu().detach().numpy()
+        state = F.normalize(self.model(self.train_data.x, self.train_data.edge_index)[
+                                index]).cpu().detach().numpy()
         self.optimizer.zero_grad()
         return index, state
 
@@ -301,7 +306,8 @@ class hgnn_env(object):
             logger1.info("-----------------------------------------------------------------------")
 
         next_state = F.normalize(
-            self.model(self.train_data.x, self.train_data.edge_index, self.train_data.node_types)[index]).cpu().detach().numpy()
+            self.model(self.train_data.x, self.train_data.edge_index)[
+                index]).cpu().detach().numpy()
         r = np.mean(np.array(reward))
         val_acc = np.mean(val_acc)
         next_state = np.array(next_state)
@@ -410,7 +416,7 @@ class hgnn_env(object):
 
         W_r = self.W_R[r]  # (kg_batch_size, entity_dim, relation_dim)
 
-        pred = self.model(self.train_data.x, self.train_data.edge_index, self.train_data.node_types).to(self.device)
+        pred = self.model(self.train_data.x, self.train_data.edge_index).to(self.device)
 
         h_embed = pred[h]  # (kg_batch_size, entity_dim)
         pos_t_embed = pred[pos_t]  # (kg_batch_size, entity_dim)
@@ -440,7 +446,7 @@ class hgnn_env(object):
         item_neg_ids:   (cf_batch_size)
         """
 
-        pred = self.model(self.train_data.x, edge_index, self.train_data.node_types).to(self.device)
+        pred = self.model(self.train_data.x, edge_index).to(self.device)
         # self.train_data.x.weight = nn.Parameter(pred)
         all_embed = pred  # (n_users + n_entities, cf_concat_dim)
         user_embed = all_embed[user_ids]  # (cf_batch_size, cf_concat_dim)
@@ -474,7 +480,8 @@ class hgnn_env(object):
         # self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))
 
         with torch.no_grad():
-            all_embed = self.model(self.train_data.x, self.train_data.edge_index, self.train_data.node_types).to(self.device)
+            all_embed = self.model(self.train_data.x, self.train_data.edge_index).to(
+                self.device)
 
             time2 = time.time()
 
@@ -508,7 +515,8 @@ class hgnn_env(object):
                                                                NEG_SIZE_RANKING)
                     neg_dict[u].extend(nl)
             # self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))
-            all_embed = self.model(self.train_data.x, self.train_data.edge_index, self.train_data.node_types).to(self.device)
+            all_embed = self.model(self.train_data.x, self.train_data.edge_index).to(
+                self.device)
 
             pos_logits = torch.tensor([]).to(self.device)
             neg_logits = torch.tensor([]).to(self.device)
@@ -542,7 +550,8 @@ class hgnn_env(object):
                     nl = self.data.sample_neg_items_for_u(self.data.train_user_dict, u, NEG_SIZE_RANKING)
                     neg_dict[u].extend(nl)
             # self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))
-            all_embed = self.model(self.train_data.x, self.train_data.edge_index, self.train_data.node_types).to(self.device)
+            all_embed = self.model(self.train_data.x, self.train_data.edge_index).to(
+                self.device)
 
             pos_logits = torch.tensor([]).to(self.device)
             neg_logits = torch.tensor([]).to(self.device)

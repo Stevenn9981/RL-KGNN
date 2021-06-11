@@ -8,7 +8,9 @@ import torch.nn as nn
 import numpy as np
 import pandas as pd
 from torch_geometric.data import Data
+import time
 import logging
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Run HGNN.")
@@ -85,6 +87,7 @@ def parse_args():
 
     return args
 
+
 class DataLoaderHGNN(object):
 
     def __init__(self, logging, args, dataset):
@@ -125,7 +128,6 @@ class DataLoaderHGNN(object):
         if self.use_pretrain == 1:
             self.load_pretrained_data()
 
-
     def load_cf(self, filename):
         user = []
         item = []
@@ -149,23 +151,22 @@ class DataLoaderHGNN(object):
         item = np.array(item, dtype=np.int32)
         return (user, item), user_dict
 
-
     def statistic_cf(self):
-        self.n_users = max(max(self.cf_train_data[0]), max(self.cf_test_data[0])) - min(min(self.cf_train_data[0]), min(self.cf_test_data[0])) + 1
+        self.n_users = max(max(self.cf_train_data[0]), max(self.cf_test_data[0])) - min(min(self.cf_train_data[0]),
+                                                                                        min(self.cf_test_data[0])) + 1
         self.n_items = max(max(self.cf_train_data[1]), max(self.cf_test_data[1])) + 1
         self.n_cf_train = len(self.cf_train_data[0])
         self.n_cf_test = len(self.cf_test_data[0])
         # print(self.n_users, self.n_items, self.n_cf_train, self.n_cf_test)
-
 
     def load_kg(self, filename):
         kg_data = pd.read_csv(filename, sep=' ', names=['h', 'r', 't'], engine='python')
         kg_data = kg_data.drop_duplicates()
         return kg_data
 
-
     def construct_data(self, kg_data):
-        # plus inverse kg data
+        # plus inverse kg data; relations: 1-12, STOP: 0
+
         n_relations = max(kg_data['r']) + 1
         reverse_kg_data = kg_data.copy()
         reverse_kg_data = reverse_kg_data.rename({'h': 't', 't': 'h'}, axis='columns')
@@ -178,52 +179,78 @@ class DataLoaderHGNN(object):
         self.n_users_entities = max(max(self.cf_train_data[0]), max(self.cf_test_data[0])) + 1
         self.n_entities = self.n_users_entities - self.n_users
 
-        self.cf_train_data = (np.array(list(self.cf_train_data[0])).astype(np.int32), self.cf_train_data[1].astype(np.int32))
-        self.cf_test_data = (np.array(list(self.cf_test_data[0])).astype(np.int32), self.cf_test_data[1].astype(np.int32))
+        # Only for Yelp dataset
+        node_type_list = np.zeros(self.n_users_entities, dtype=np.int32)
+        node_type_list[:14264] = 0
+        node_type_list[14264:14795] = 1
+        node_type_list[14795:14842] = 2
+        node_type_list[14842:14853] = 3
+        node_type_list[14853:] = 4
+        self.node_type_list = node_type_list
+
+        self.n_types = max(node_type_list) + 1
+
+        self.cf_train_data = (
+            np.array(list(self.cf_train_data[0])).astype(np.int32), self.cf_train_data[1].astype(np.int32))
+        self.cf_test_data = (
+            np.array(list(self.cf_test_data[0])).astype(np.int32), self.cf_test_data[1].astype(np.int32))
 
         self.train_user_dict = {k: np.unique(v).astype(np.int32) for k, v in self.train_user_dict.items()}
         self.test_user_dict = {k: np.unique(v).astype(np.int32) for k, v in self.test_user_dict.items()}
 
         # add interactions to kg data
-        cf2kg_train_data = pd.DataFrame(np.full((self.n_cf_train, 3), 2, dtype=np.int32), columns=['h', 'r', 't'])
+        cf2kg_train_data = pd.DataFrame(np.full((self.n_cf_train, 5), 2, dtype=np.int32),
+                                        columns=['h', 'r', 't', 'ht', 'tt'])
         cf2kg_train_data['h'] = self.cf_train_data[0]
         cf2kg_train_data['t'] = self.cf_train_data[1]
+        cf2kg_train_data['ht'] = self.node_type_list[cf2kg_train_data['h']]
+        cf2kg_train_data['tt'] = self.node_type_list[cf2kg_train_data['t']]
 
-        reverse_cf2kg_train_data = pd.DataFrame(np.ones((self.n_cf_train, 3), dtype=np.int32), columns=['h', 'r', 't'])
+        reverse_cf2kg_train_data = pd.DataFrame(np.ones((self.n_cf_train, 5), dtype=np.int32),
+                                                columns=['h', 'r', 't', 'ht', 'tt'])
         reverse_cf2kg_train_data['h'] = self.cf_train_data[1]
         reverse_cf2kg_train_data['t'] = self.cf_train_data[0]
+        reverse_cf2kg_train_data['ht'] = self.node_type_list[reverse_cf2kg_train_data['h']]
+        reverse_cf2kg_train_data['tt'] = self.node_type_list[reverse_cf2kg_train_data['t']]
 
-        cf2kg_test_data = pd.DataFrame(np.full((self.n_cf_test, 3), 2, dtype=np.int32), columns=['h', 'r', 't'])
+        cf2kg_test_data = pd.DataFrame(np.full((self.n_cf_test, 5), 2, dtype=np.int32),
+                                       columns=['h', 'r', 't', 'ht', 'tt'])
         cf2kg_test_data['h'] = self.cf_test_data[0]
         cf2kg_test_data['t'] = self.cf_test_data[1]
+        cf2kg_test_data['ht'] = self.node_type_list[cf2kg_test_data['h']]
+        cf2kg_test_data['tt'] = self.node_type_list[cf2kg_test_data['t']]
 
-        reverse_cf2kg_test_data = pd.DataFrame(np.ones((self.n_cf_test, 3), dtype=np.int32), columns=['h', 'r', 't'])
+        reverse_cf2kg_test_data = pd.DataFrame(np.ones((self.n_cf_test, 5), dtype=np.int32),
+                                               columns=['h', 'r', 't', 'ht', 'tt'])
         reverse_cf2kg_test_data['h'] = self.cf_test_data[1]
         reverse_cf2kg_test_data['t'] = self.cf_test_data[0]
+        reverse_cf2kg_test_data['ht'] = self.node_type_list[reverse_cf2kg_test_data['h']]
+        reverse_cf2kg_test_data['tt'] = self.node_type_list[reverse_cf2kg_test_data['t']]
+
+        kg_data['ht'] = self.node_type_list[kg_data['h']]
+        kg_data['tt'] = self.node_type_list[kg_data['t']]
 
         self.kg_train_data = pd.concat([kg_data, cf2kg_train_data, reverse_cf2kg_train_data], ignore_index=True)
         self.kg_test_data = pd.concat([kg_data, cf2kg_test_data, reverse_cf2kg_test_data], ignore_index=True)
 
         self.n_kg_train = len(self.kg_train_data)
         self.n_kg_test = len(self.kg_test_data)
-
         # construct kg dict
-        self.train_kg_dict = collections.defaultdict(list)
-        self.train_relation_dict = collections.defaultdict(list)
-        # print("#Entites: ", self.n_users_entities)
-        # print(len(self.kg_train_data))
-        for row in self.kg_train_data.iterrows():
-            h, r, t = row[1]
-            self.train_kg_dict[h].append((t, r))
-            self.train_relation_dict[r].append((h, t))
-
-        self.test_kg_dict = collections.defaultdict(list)
-        self.test_relation_dict = collections.defaultdict(list)
-        for row in self.kg_test_data.iterrows():
-            h, r, t = row[1]
-            self.test_kg_dict[h].append((t, r))
-            self.test_relation_dict[r].append((h, t))
-
+        # self.train_kg_dict = collections.defaultdict(list)
+        # self.train_relation_dict = collections.defaultdict(list)
+        # # print("#Entites: ", self.n_users_entities)
+        # # print(len(self.kg_train_data))
+        # print(row[1])
+        # h, r, t = row[1]
+        # self.train_kg_dict[h].append((t, r))
+        # self.train_relation_dict[r].append((h, t))
+        #
+        # self.test_kg_dict = collections.defaultdict(list)
+        # self.test_relation_dict = collections.defaultdict(list)
+        # for row in self.kg_test_data.iterrows():
+        #     h, r, t = row[1]
+        #     self.test_kg_dict[h].append((t, r))
+        #     self.test_relation_dict[r].append((h, t))
 
     def print_info(self, logging):
         logging.info('n_users:            %d' % self.n_users)
@@ -238,38 +265,41 @@ class DataLoaderHGNN(object):
         logging.info('n_kg_train:         %d' % self.n_kg_train)
         logging.info('n_kg_test:          %d' % self.n_kg_test)
 
-
     def create_graph(self, kg_data, n_nodes):
         '''
         Business: 0 (0 - 14263), Category: 1 (14264 - 14794), City: 2 (14795 - 14841),
         Compliment : 3 (14842 - 14852), User: 4 (14853 - 31091)
         '''
 
-        type_dict = collections.defaultdict()
-        a = torch.zeros(n_nodes, dtype=torch.bool)
-        a[:14264] = True
-        type_dict[0] = a
-        a = torch.zeros(n_nodes, dtype=torch.bool)
-        a[14264:14795] = True
-        type_dict[1] = a
-        a = torch.zeros(n_nodes, dtype=torch.bool)
-        a[14795:14842] = True
-        type_dict[2] = a
-        a = torch.zeros(n_nodes, dtype=torch.bool)
-        a[14842:14853] = True
-        type_dict[3] = a
-        a = torch.zeros(n_nodes, dtype=torch.bool)
-        a[14853:] = True
-        type_dict[4] = a
+        node_type_list = torch.from_numpy(self.node_type_list)
+
+        node_feature = collections.defaultdict(lambda: torch.Tensor)
+        '''
+            edge_list: index the adjacancy matrix (time) by 
+            <target_type, source_type, relation_type, target_id, source_id>
+        '''
+        edge_list = collections.defaultdict(  # target_type
+            lambda: collections.defaultdict(  # source_type
+                lambda: collections.defaultdict(  # relation_type
+                    lambda: collections.defaultdict(  # target_id
+                        lambda: []  # source_id
+                    ))))
+
+        for row in zip(*self.kg_train_data.to_dict("list").values()):
+            edge_list[row[4]][row[3]][row[1]][row[2]].append(row[0])
 
         x = torch.randn(n_nodes, self.entity_dim)
         nn.init.xavier_uniform_(x, gain=nn.init.calculate_gain('relu'))
-        edge_index = torch.tensor([kg_data['t'],kg_data['h']],dtype=torch.long)
+        for i in range(5):
+            node_feature[i] = x[node_type_list == i]
+
+        edge_index = torch.tensor([kg_data['t'], kg_data['h']], dtype=torch.long)
         edge_attr = torch.tensor(kg_data['r'])
         data = Data(x=x, edge_index=edge_index, edge_attr=edge_attr)
         data.relation_embed = torch.randn(self.n_relations + 1, self.relation_dim)
         data.node_idx = torch.arange(n_nodes, dtype=torch.long)
-        data.node_types = type_dict
+        data.node_types = node_type_list
+        data.edge_list = edge_list
         return data
         # g = dgl.DGLGraph()
         # g.add_nodes(n_nodes)
@@ -278,7 +308,6 @@ class DataLoaderHGNN(object):
         # g.ndata['id'] = torch.arange(n_nodes, dtype=torch.long)
         # g.edata['type'] = torch.LongTensor(kg_data['r'])
         # return g
-
 
     def sample_pos_items_for_u(self, user_dict, user_id, n_sample_pos_items):
         pos_items = user_dict[user_id]
@@ -294,7 +323,6 @@ class DataLoaderHGNN(object):
             if pos_item_id not in sample_pos_items:
                 sample_pos_items.append(pos_item_id)
         return sample_pos_items
-
 
     def sample_neg_items_for_u(self, user_dict, user_id, n_sample_neg_items):
         pos_items = user_dict[user_id]
@@ -340,7 +368,6 @@ class DataLoaderHGNN(object):
         batch_neg_item = torch.LongTensor(batch_neg_item)
         return batch_user, batch_pos_item, batch_neg_item
 
-
     def sample_pos_triples_for_h(self, kg_dict, head, n_sample_pos_triples):
         pos_triples = kg_dict[head]
         n_pos_triples = len(pos_triples)
@@ -359,7 +386,6 @@ class DataLoaderHGNN(object):
                 sample_pos_tails.append(tail)
         return sample_relations, sample_pos_tails
 
-
     def sample_neg_triples_for_h(self, kg_dict, head, relation, n_sample_neg_triples):
         pos_triples = kg_dict[head]
 
@@ -372,7 +398,6 @@ class DataLoaderHGNN(object):
             if (tail, relation) not in pos_triples and tail not in sample_neg_tails:
                 sample_neg_tails.append(tail)
         return sample_neg_tails
-
 
     def generate_kg_batch(self, kg_dict):
         exist_heads = list(kg_dict.keys())
@@ -395,7 +420,6 @@ class DataLoaderHGNN(object):
         batch_pos_tail = torch.LongTensor(batch_pos_tail)
         batch_neg_tail = torch.LongTensor(batch_neg_tail)
         return batch_head, batch_relation, batch_pos_tail, batch_neg_tail
-
 
     def load_pretrained_data(self):
         pre_model = 'mf'

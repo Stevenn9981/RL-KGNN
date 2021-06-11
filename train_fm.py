@@ -51,7 +51,7 @@ def use_pretrain(env):
         emb[id] = torch.tensor(embedding)
 
     emb.requires_grad = True
-    env.train_data.x = emb.to(device)
+    env.train_data.x = nn.Parameter(emb).to(device)
 
 
 def main():

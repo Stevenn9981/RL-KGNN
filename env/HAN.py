@@ -66,8 +66,8 @@ class HANLayer(nn.Module):
         #                                    allow_zero_in_degree=True))
         self.semantic_attention = SemanticAttention(in_size=out_size * layer_num_heads)
 
-        self._cached_graph = None
-        self._cached_coalesced_graph = {}
+        # self._cached_graph = None
+        # self._cached_coalesced_graph = {}
 
     def forward(self, g, h, meta_paths):
         semantic_embeddings = []
@@ -79,19 +79,20 @@ class HANLayer(nn.Module):
                                                             allow_zero_in_degree=True).to(device))
 
         meta_paths = list(tuple(meta_path) for meta_path in meta_paths)
-        if self._cached_graph is None or self._cached_graph is not g:
-            self._cached_graph = g
-            self._cached_coalesced_graph.clear()
-            for meta_path in meta_paths:
-                graph = dgl.metapath_reachable_graph(g, meta_path).to(device)
-                graph.add_nodes(g.num_nodes() - graph.num_nodes())
-                self._cached_coalesced_graph[meta_path] = graph
+        # if self._cached_graph is None or self._cached_graph is not g:
+        #     self._cached_graph = g
+        #     self._cached_coalesced_graph.clear()
+        #     for meta_path in meta_paths:
+        #         graph = dgl.metapath_reachable_graph(g, meta_path).to(device)
+        #         graph.add_nodes(g.num_nodes() - graph.num_nodes())
+        #         self._cached_coalesced_graph[meta_path] = graph
 
         for i, meta_path in enumerate(meta_paths):
-            new_g = self._cached_coalesced_graph[meta_path]
+            graph = dgl.metapath_reachable_graph(g, meta_path).to(device)
+            graph.add_nodes(g.num_nodes() - graph.num_nodes())
             mp = list(map(str, meta_path))
             semantic_embeddings.append(
-                self.gat_layers[''.join(mp)](new_g, h).flatten(1))
+                self.gat_layers[''.join(mp)](graph, h).flatten(1))
         semantic_embeddings = torch.stack(semantic_embeddings, dim=1)  # (N, M, D * K)
 
         return self.semantic_attention(semantic_embeddings)  # (N, D * K)

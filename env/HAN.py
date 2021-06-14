@@ -15,7 +15,7 @@ from dgl.nn.pytorch import GATConv
 
 
 class SemanticAttention(nn.Module):
-    def __init__(self, in_size, hidden_size=128):
+    def __init__(self, in_size, hidden_size=32):
         super(SemanticAttention, self).__init__()
 
         self.project = nn.Sequential(
@@ -79,13 +79,8 @@ class HANLayer(nn.Module):
                                                             allow_zero_in_degree=True).to(device))
 
         meta_paths = list(tuple(meta_path) for meta_path in meta_paths)
-        # if self._cached_graph is None or self._cached_graph is not g:
-        #     self._cached_graph = g
-        #     self._cached_coalesced_graph.clear()
-        #     for meta_path in meta_paths:
-        #         graph = dgl.metapath_reachable_graph(g, meta_path).to(device)
-        #         graph.add_nodes(g.num_nodes() - graph.num_nodes())
-        #         self._cached_coalesced_graph[meta_path] = graph
+
+        print(len(self.gat_layers))
 
         for i, meta_path in enumerate(meta_paths):
             graph = dgl.metapath_reachable_graph(g, meta_path).to(device)

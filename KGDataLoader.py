@@ -207,6 +207,7 @@ class DataLoaderHGNN(object):
         node_type_list[14842:14853] = 3
         node_type_list[14853:] = 4
         self.node_type_list = node_type_list
+        self.n_id_start_dict = {0: 0, 1: 14284, 2: 14795, 3: 14842, 4: 14853}
 
         self.n_types = max(node_type_list) + 1
 
@@ -308,7 +309,8 @@ class DataLoaderHGNN(object):
         relations = collections.defaultdict(list)
         e_n_dict = collections.defaultdict(tuple)
         for row in zip(*kg_data.to_dict("list").values()):
-            relations[('n' + str(row[3]), str(row[1]), 'n' + str(row[4]))].append((row[0], row[2]))
+            relations[('n' + str(row[3]), str(row[1]), 'n' + str(row[4]))].append(
+                (row[0] - self.n_id_start_dict[row[3]], row[2] - self.n_id_start_dict[row[4]]))
             adjM[row[0], row[2]] = 1
             adjM[row[2], row[0]] = 1
             e_n_dict[row[1]] = [row[3], row[4]]

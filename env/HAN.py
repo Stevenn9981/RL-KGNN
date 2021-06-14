@@ -83,14 +83,15 @@ class HANLayer(nn.Module):
             self._cached_graph = g
             self._cached_coalesced_graph.clear()
             for meta_path in meta_paths:
-                self._cached_coalesced_graph[meta_path] = dgl.metapath_reachable_graph(
-                    g, meta_path).to(device)
+                graph = dgl.metapath_reachable_graph(g, meta_path).to(device)
+                graph.add_nodes(g.num_nodes() - graph.num_nodes())
+                self._cached_coalesced_graph[meta_path] = graph
 
         for i, meta_path in enumerate(meta_paths):
             new_g = self._cached_coalesced_graph[meta_path]
             mp = list(map(str, meta_path))
             semantic_embeddings.append(
-                self.gat_layers[''.join(mp)](new_g, h[:torch.tensor(new_g.num_nodes(), device=device)]).flatten(1))
+                self.gat_layers[''.join(mp)](new_g, h).flatten(1))
         semantic_embeddings = torch.stack(semantic_embeddings, dim=1)  # (N, M, D * K)
 
         return self.semantic_attention(semantic_embeddings)  # (N, D * K)

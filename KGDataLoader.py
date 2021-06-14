@@ -8,6 +8,7 @@ import torch.nn as nn
 import numpy as np
 import pandas as pd
 from torch_geometric.data import Data
+import dgl
 import time
 import logging
 
@@ -77,6 +78,25 @@ def parse_args():
 
     parser.add_argument('--K', type=int, default=20,
                         help='Calculate metric@K when evaluating.')
+
+    parser.add_argument('--feats-type', type=int, default=2,
+                        help='Type of the node features used. ' +
+                             '0 - loaded features; ' +
+                             '1 - only target node features (zero vec for others); ' +
+                             '2 - only target node features (id vec for others); ' +
+                             '3 - all id vec. Default is 2.')
+    parser.add_argument('--layers', type=int, default=2, help='Number of layers. Default is 2.')
+    parser.add_argument('--hidden-dim', type=int, default=64, help='Dimension of the node hidden state. Default is 64.')
+    parser.add_argument('--num-heads', type=int, default=8, help='Number of the attention heads. Default is 8.')
+    parser.add_argument('--attn-vec-dim', type=int, default=128,
+                        help='Dimension of the attention vector. Default is 128.')
+    parser.add_argument('--rnn-type', default='RotatE0', help='Type of the aggregator. Default is RotatE0.')
+    parser.add_argument('--epoch', type=int, default=100, help='Number of epochs. Default is 100.')
+    parser.add_argument('--patience', type=int, default=10, help='Patience. Default is 10.')
+    parser.add_argument('--repeat', type=int, default=1,
+                        help='Repeat the training and testing for N times. Default is 1.')
+    parser.add_argument('--save-postfix', default='Yelp',
+                        help='Postfix for the saved model and result. Default is Yelp.')
 
     args = parser.parse_args()
 
@@ -181,8 +201,8 @@ class DataLoaderHGNN(object):
 
         # Only for Yelp dataset
         node_type_list = np.zeros(self.n_users_entities, dtype=np.int32)
-        node_type_list[:14264] = 0
-        node_type_list[14264:14795] = 1
+        node_type_list[:14284] = 0
+        node_type_list[14284:14795] = 1
         node_type_list[14795:14842] = 2
         node_type_list[14842:14853] = 3
         node_type_list[14853:] = 4
@@ -278,15 +298,21 @@ class DataLoaderHGNN(object):
             edge_list: index the adjacancy matrix (time) by 
             <target_type, source_type, relation_type, target_id, source_id>
         '''
-        edge_list = collections.defaultdict(  # target_type
-            lambda: collections.defaultdict(  # source_type
-                lambda: collections.defaultdict(  # relation_type
-                    lambda: collections.defaultdict(  # target_id
-                        lambda: []  # source_id
-                    ))))
-
-        for row in zip(*self.kg_train_data.to_dict("list").values()):
-            edge_list[row[4]][row[3]][row[1]][row[2]].append(row[0])
+        # edge_list = collections.defaultdict(  # target_type
+        #     lambda: collections.defaultdict(  # source_type
+        #         lambda: collections.defaultdict(  # relation_type
+        #             lambda: collections.defaultdict(  # target_id
+        #                 lambda: []  # source_id
+        #             ))))
+        adjM = np.zeros((n_nodes, n_nodes), dtype=int)
+        relations = collections.defaultdict(list)
+        e_n_dict = collections.defaultdict(tuple)
+        for row in zip(*kg_data.to_dict("list").values()):
+            relations[('n' + str(row[3]), str(row[1]), 'n' + str(row[4]))].append((row[0], row[2]))
+            adjM[row[0], row[2]] = 1
+            adjM[row[2], row[0]] = 1
+            e_n_dict[row[1]] = [row[3], row[4]]
+        graph = dgl.heterograph(relations)
 
         x = torch.randn(n_nodes, self.entity_dim)
         nn.init.xavier_uniform_(x, gain=nn.init.calculate_gain('relu'))
@@ -295,12 +321,15 @@ class DataLoaderHGNN(object):
 
         edge_index = torch.tensor([kg_data['t'], kg_data['h']], dtype=torch.long)
         edge_attr = torch.tensor(kg_data['r'])
-        data = Data(x=x, edge_index=edge_index, edge_attr=edge_attr)
-        data.relation_embed = torch.randn(self.n_relations + 1, self.relation_dim)
-        data.node_idx = torch.arange(n_nodes, dtype=torch.long)
-        data.node_types = node_type_list
-        data.edge_list = edge_list
-        return data
+        graph.adjM = adjM
+        graph.e_n_dict = e_n_dict
+        graph.x = x
+        graph.edge_index = edge_index
+        graph.edge_attr = edge_attr
+        graph.relation_embed = torch.randn(self.n_relations + 1, self.relation_dim)
+        graph.node_idx = torch.arange(n_nodes, dtype=torch.long)
+        graph.node_types = node_type_list
+        return graph
         # g = dgl.DGLGraph()
         # g.add_nodes(n_nodes)
         # g.add_edges(kg_data['t'], kg_data['h'])

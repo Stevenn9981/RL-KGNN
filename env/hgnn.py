@@ -472,7 +472,7 @@ class hgnn_env(object):
             cf_batch_loss.backward()
             self.optimizer.step()
             self.optimizer.zero_grad()
-            cf_total_loss += cf_batch_loss
+            cf_total_loss += float(cf_batch_loss)
 
         # cf_total_loss.backward()
         # self.optimizer.step()

@@ -6,6 +6,8 @@ from torch_geometric.utils import *
 import torch.nn.functional as F
 import collections
 import numpy as np
+
+from env.HAN import HAN
 from metrics import *
 import time
 import torch
@@ -14,8 +16,6 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import host_subplot
 
 from KGDataLoader import *
-from model import MAGNN_nc
-from utils.preprocess import get_metapath_neighbor_pairs, get_networkx_graph, get_edge_metapath_idx_array
 
 STOP = 0
 
@@ -142,18 +142,18 @@ class hgnn_env(object):
                 data.train_graph.edge_index[1][i].item())
         data.train_graph.adj_dist = adj_dist
         data.train_graph.attr_dict = attr_dict
-        self.etypes_lists = [[[1, 2], [3, 7]],
-                        [[2, 1], [6]]]
+        self.etypes_lists = [['1', '2'], ['3', '7'], ['2', '1'], ['6']]
 
-        self.model, self.train_data = MAGNN_nc(args.layers, 10, self.etypes_lists, [64] * 5, args.hidden_dim,
-                                               data.entity_dim, args.num_heads, args.attn_vec_dim,
-                                               args.rnn_type, 0.3).to(
+        self.model, self.train_data = HAN(
+            in_size=data.entity_dim,
+            hidden_size=args.hidden_dim,
+            out_size=data.entity_dim,
+            num_heads=args.num_heads,
+            dropout=0.3).to(
             self.device), data.train_graph.to(self.device)
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr, weight_decay=weight_decay)
         self.train_data.node_idx = self.train_data.node_idx.to(self.device)
         self.data.test_graph = self.data.test_graph.to(self.device)
-
-        self.input = self.get_input(self.etypes_lists)
 
         self._set_action_space(data.n_relations + 1)
         obs = self.reset()
@@ -182,48 +182,46 @@ class hgnn_env(object):
         logger1.info('Data initialization done')
         print("finish")
 
-    def get_input(self, etypes_lists):
-        g_list = []
-        expected_mp = []
-        for e_metapath in etypes_lists:
-            l2 = []
-            for metapath in e_metapath:
-                n_metapath = [self.train_data.e_n_dict[metapath[0]][0]]
-                for e in metapath:
-                    if self.train_data.e_n_dict[e][0] == n_metapath[-1]:
-                        n_metapath.append(self.train_data.e_n_dict[e][1])
-                    else:
-                        n_metapath = None
-                        break
-                l2.append(tuple(n_metapath))
-            expected_mp.append(l2)
-        print(expected_mp)
-        adjM = self.train_data.adjM
-        type_mask = self.data.node_type_list
-        edge_metapath_array = []
-        g_lists = []
-        for i in range(len(etypes_lists)):
-            # get metapath based neighbor pairs
-            neighbor_pairs = get_metapath_neighbor_pairs(adjM, type_mask, expected_mp[i])
-            # construct and save metapath-based networks
-            G_list = get_networkx_graph(neighbor_pairs, type_mask, i)
-            for nx_G_list in G_list:
-                g_lists.append([])
-                for nx_G in nx_G_list:
-                    g = dgl.DGLGraph(multigraph=True)
-                    g.add_nodes(nx_G.number_of_nodes())
-                    g.add_edges(*list(zip(*sorted(map(lambda tup: (int(tup[0]), int(tup[1])), nx_G.edges())))))
-                    g_lists[-1].append(g)
-            l3 = []
-            # node indices of edge metapaths
-            all_edge_metapath_idx_array = get_edge_metapath_idx_array(neighbor_pairs)
-            for metapath, edge_metapath_idx_array in zip(expected_mp[i], all_edge_metapath_idx_array):
-                l3.append(edge_metapath_idx_array)
-            edge_metapath_array.append(l3)
-        print(edge_metapath_array)
-        return g_list, self.train_data.x, type_mask, edge_metapath_array
-
-
+    # def get_input(self, etypes_lists):
+    #     g_list = []
+    #     expected_mp = []
+    #     for e_metapath in etypes_lists:
+    #         l2 = []
+    #         for metapath in e_metapath:
+    #             n_metapath = [self.train_data.e_n_dict[metapath[0]][0]]
+    #             for e in metapath:
+    #                 if self.train_data.e_n_dict[e][0] == n_metapath[-1]:
+    #                     n_metapath.append(self.train_data.e_n_dict[e][1])
+    #                 else:
+    #                     n_metapath = None
+    #                     break
+    #             l2.append(tuple(n_metapath))
+    #         expected_mp.append(l2)
+    #     print(expected_mp)
+    #     adjM = self.train_data.adjM
+    #     type_mask = self.data.node_type_list
+    #     edge_metapath_array = []
+    #     g_lists = []
+    #     for i in range(len(etypes_lists)):
+    #         # get metapath based neighbor pairs
+    #         neighbor_pairs = get_metapath_neighbor_pairs(adjM, type_mask, expected_mp[i])
+    #         # construct and save metapath-based networks
+    #         G_list = get_networkx_graph(neighbor_pairs, type_mask, i)
+    #         for nx_G_list in G_list:
+    #             g_lists.append([])
+    #             for nx_G in nx_G_list:
+    #                 g = dgl.DGLGraph(multigraph=True)
+    #                 g.add_nodes(nx_G.number_of_nodes())
+    #                 g.add_edges(*list(zip(*sorted(map(lambda tup: (int(tup[0]), int(tup[1])), nx_G.edges())))))
+    #                 g_lists[-1].append(g)
+    #         l3 = []
+    #         # node indices of edge metapaths
+    #         all_edge_metapath_idx_array = get_edge_metapath_idx_array(neighbor_pairs)
+    #         for metapath, edge_metapath_idx_array in zip(expected_mp[i], all_edge_metapath_idx_array):
+    #             l3.append(edge_metapath_idx_array)
+    #         edge_metapath_array.append(l3)
+    #     print(edge_metapath_array)
+    #     return g_list, self.train_data.x, type_mask, edge_metapath_array
 
     def _set_action_space(self, _max):
         self.action_num = _max
@@ -250,7 +248,7 @@ class hgnn_env(object):
         self.meta_path_graph_edges = collections.defaultdict(set)
         nodes = range(self.train_data.x.shape[0])
         index = random.sample(nodes, min(self.batch_size, len(nodes)))
-        state = F.normalize(self.model(self.input)[
+        state = F.normalize(self.model(self.train_data, self.train_data.x, self.etypes_lists)[
                                 index]).cpu().detach().numpy()
         self.optimizer.zero_grad()
         return index, state
@@ -260,7 +258,7 @@ class hgnn_env(object):
         self.meta_path_instances_dict = collections.defaultdict(list)
         nodes = range(self.train_data.x.weight.shape[0])
         index = random.sample(nodes, len(nodes))
-        state = F.normalize(self.model(self.input)[
+        state = F.normalize(self.model(self.train_data, self.train_data.x, self.etypes_lists)[
                                 index]).cpu().detach().numpy()
         self.optimizer.zero_grad()
         return index, state
@@ -280,7 +278,6 @@ class hgnn_env(object):
                     done_list[idx] = True
                 elif act not in self.train_data.attr_dict:
                     self.meta_path_dict[idx].append(STOP)
-                    pass
                 else:
                     self.meta_path_dict[idx].append(act)
                     for start_node in self.train_data.attr_dict[act]:
@@ -357,7 +354,7 @@ class hgnn_env(object):
             logger1.info("-----------------------------------------------------------------------")
 
         next_state = F.normalize(
-            self.model(self.input)[
+            self.model(self.train_data, self.train_data.x, self.etypes_lists)[
                 index]).cpu().detach().numpy()
         r = np.mean(np.array(reward))
         val_acc = np.mean(val_acc)
@@ -467,7 +464,7 @@ class hgnn_env(object):
 
         W_r = self.W_R[r]  # (kg_batch_size, entity_dim, relation_dim)
 
-        pred = self.model(self.input).to(self.device)
+        pred = self.model(self.train_data, self.train_data.x, self.etypes_lists).to(self.device)
 
         h_embed = pred[h]  # (kg_batch_size, entity_dim)
         pos_t_embed = pred[pos_t]  # (kg_batch_size, entity_dim)
@@ -497,7 +494,7 @@ class hgnn_env(object):
         item_neg_ids:   (cf_batch_size)
         """
 
-        pred = self.model(self.input).to(self.device)
+        pred = self.model(self.train_data, self.train_data.x, self.etypes_lists).to(self.device)
         # self.train_data.x.weight = nn.Parameter(pred)
         all_embed = pred  # (n_users + n_entities, cf_concat_dim)
         user_embed = all_embed[user_ids]  # (cf_batch_size, cf_concat_dim)
@@ -531,7 +528,7 @@ class hgnn_env(object):
         # self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))
 
         with torch.no_grad():
-            all_embed = self.model(self.input).to(
+            all_embed = self.model(self.train_data, self.train_data.x, self.etypes_lists).to(
                 self.device)
 
             time2 = time.time()
@@ -566,7 +563,7 @@ class hgnn_env(object):
                                                                NEG_SIZE_RANKING)
                     neg_dict[u].extend(nl)
             # self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))
-            all_embed = self.model(self.input).to(
+            all_embed = self.model(self.train_data, self.train_data.x, self.etypes_lists).to(
                 self.device)
 
             pos_logits = torch.tensor([]).to(self.device)
@@ -601,7 +598,7 @@ class hgnn_env(object):
                     nl = self.data.sample_neg_items_for_u(self.data.train_user_dict, u, NEG_SIZE_RANKING)
                     neg_dict[u].extend(nl)
             # self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))
-            all_embed = self.model(self.input).to(
+            all_embed = self.model(self.train_data, self.train_data.x, self.etypes_lists).to(
                 self.device)
 
             pos_logits = torch.tensor([]).to(self.device)

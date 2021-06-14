@@ -85,7 +85,7 @@ class HANLayer(nn.Module):
             # graph.add_nodes(g.num_nodes() - graph.num_nodes())
             mp = list(map(str, meta_path))
             semantic_embeddings.append(
-                self.gat_layers[''.join(mp)](g, h).flatten(1))
+                self.gat_layers[''.join(mp)](dgl.to_homogeneous(g), h).flatten(1))
         semantic_embeddings = torch.stack(semantic_embeddings, dim=1)  # (N, M, D * K)
 
         return self.semantic_attention(semantic_embeddings)  # (N, D * K)

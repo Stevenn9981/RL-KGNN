@@ -313,7 +313,7 @@ class DataLoaderHGNN(object):
                 (row[0] - self.n_id_start_dict[row[3]], row[2] - self.n_id_start_dict[row[4]]))
             adjM[row[0], row[2]] = 1
             adjM[row[2], row[0]] = 1
-            e_n_dict[row[1]] = [row[3], row[4]]
+            e_n_dict[str(row[1])] = [row[3], row[4]]
         graph = dgl.heterograph(relations)
 
         x = torch.randn(n_nodes, self.entity_dim)

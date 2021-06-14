@@ -76,16 +76,16 @@ class HANLayer(nn.Module):
             mp = list(map(str, mp))
             self.gat_layers.add_module(''.join(mp), GATConv(self.in_size, self.out_size, self.layer_num_heads,
                                                             self.dropout, self.dropout, activation=F.elu,
-                                                            allow_zero_in_degree=True).to(device))
+                                                            allow_zero_in_degree=True))
 
         meta_paths = list(tuple(meta_path) for meta_path in meta_paths)
 
         for i, meta_path in enumerate(meta_paths):
-            # graph = dgl.metapath_reachable_graph(g, meta_path).to(device)
-            # graph.add_nodes(g.num_nodes() - graph.num_nodes())
+            graph = dgl.metapath_reachable_graph(g, meta_path)
+            graph.add_nodes(g.num_nodes() - graph.num_nodes())
             mp = list(map(str, meta_path))
             semantic_embeddings.append(
-                self.gat_layers[''.join(mp)](dgl.to_homogeneous(g), h).flatten(1))
+                self.gat_layers[''.join(mp)](graph, h).flatten(1))
         semantic_embeddings = torch.stack(semantic_embeddings, dim=1)  # (N, M, D * K)
 
         return self.semantic_attention(semantic_embeddings)  # (N, D * K)

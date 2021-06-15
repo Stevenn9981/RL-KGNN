@@ -71,6 +71,10 @@ def main():
     logger2 = get_logger('log2', 'logger2_' + infor + '.log')
 
     env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset)
+
+    import pdb
+    pdb.set_trace()
+
     # env.model = GraphSAGE(args.entity_dim).to(device)
     # env.optimizer = torch.optim.Adam(env.model.parameters(), args.lr)
     # env.optimizer.zero_grad()

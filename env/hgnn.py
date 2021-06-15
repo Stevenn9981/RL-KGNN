@@ -464,13 +464,30 @@ class hgnn_env(object):
     def train_GNN(self):
         n_cf_batch = self.data.n_cf_train // self.data.cf_batch_size + 1
         cf_total_loss = 0
+
         for iter in range(1, n_cf_batch + 1):
+            print("current iter: ", iter, " ", n_cf_batch)
+            time1 = time.time()
             cf_batch_user, cf_batch_pos_item, cf_batch_neg_item = self.data.generate_cf_batch(self.data.train_user_dict)
+            time2 = time.time()
+            print("generate batch: ", time2 - time1)
             cf_batch_loss = self.calc_cf_loss(self.train_data, self.train_data.edge_index, cf_batch_user,
                                               cf_batch_pos_item,
                                               cf_batch_neg_item)
+
+            time3 = time.time()
+            print("calculate loss: ", time3 - time2)
+
             cf_batch_loss.backward()
+
+            time4 = time.time()
+            print("backward: ", time4 - time3)
+
             self.optimizer.step()
+
+            time5 = time.time()
+            print("step: ", time5 - time4)
+
             self.optimizer.zero_grad()
             cf_total_loss += float(cf_batch_loss)
 

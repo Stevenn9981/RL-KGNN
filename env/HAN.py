@@ -94,7 +94,6 @@ class HANLayer(nn.Module):
 class HAN(nn.Module):
     def __init__(self, in_size, hidden_size, out_size, num_heads, dropout):
         super(HAN, self).__init__()
-        print(in_size, hidden_size, out_size, num_heads, dropout)
         self.layers = nn.ModuleList()
         self.layers.append(HANLayer(in_size, hidden_size, num_heads[0], dropout))
         for l in range(1, len(num_heads)):

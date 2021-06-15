@@ -80,7 +80,7 @@ class HANLayer(nn.Module):
 
         meta_paths = list(tuple(meta_path) for meta_path in meta_paths)
 
-        for i, meta_path in enumerate(meta_paths):
+        for meta_path in meta_paths:
             graph = dgl.metapath_reachable_graph(g, meta_path).to(device)
             graph.add_nodes(g.num_nodes() - graph.num_nodes())
             mp = list(map(str, meta_path))
@@ -94,7 +94,7 @@ class HANLayer(nn.Module):
 class HAN(nn.Module):
     def __init__(self, in_size, hidden_size, out_size, num_heads, dropout):
         super(HAN, self).__init__()
-
+        print(in_size, hidden_size, out_size, num_heads, dropout)
         self.layers = nn.ModuleList()
         self.layers.append(HANLayer(in_size, hidden_size, num_heads[0], dropout))
         for l in range(1, len(num_heads)):

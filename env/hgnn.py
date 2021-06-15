@@ -535,8 +535,10 @@ class hgnn_env(object):
         item_pos_ids:   (cf_batch_size)
         item_neg_ids:   (cf_batch_size)
         """
-
+        tim1 = time.time()
         pred = self.model(self.train_data, self.train_data.x, self.etypes_lists).to(self.device)
+        tim2 = time.time()
+        print("get embedding: ", tim2 - tim1)
         # self.train_data.x.weight = nn.Parameter(pred)
         all_embed = pred  # (n_users + n_entities, cf_concat_dim)
         user_embed = all_embed[user_ids]  # (cf_batch_size, cf_concat_dim)

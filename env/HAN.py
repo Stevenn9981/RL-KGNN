@@ -68,7 +68,7 @@ class HANLayer(nn.Module):
         self.semantic_attention = SemanticAttention(in_size=out_size * layer_num_heads)
 
         self.project = nn.Sequential(
-            nn.Linear(in_size, hidden_size),
+            nn.Linear(out_size * layer_num_heads, hidden_size),
             nn.Tanh(),
             nn.Linear(hidden_size, 1, bias=False)
         )

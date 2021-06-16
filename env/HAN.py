@@ -12,7 +12,6 @@ import torch.nn.functional as F
 
 import dgl
 from dgl.nn.pytorch import GATConv
-from gpu_memory_log import gpu_memory_log
 
 
 class SemanticAttention(nn.Module):

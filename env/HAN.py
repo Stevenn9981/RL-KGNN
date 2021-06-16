@@ -77,7 +77,8 @@ class HANLayer(nn.Module):
         # self._cached_coalesced_graph = {}
 
     def forward(self, g, h, meta_paths):
-        semantic_embeddings = []
+        # semantic_embeddings = []
+
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         for mp in meta_paths:
             mp = list(map(str, mp))
@@ -97,13 +98,15 @@ class HANLayer(nn.Module):
             emb = self.gat_layers[''.join(mp)](graph, h).flatten(1)
             w_i = self.project(emb).mean(0)
             print(w_i)
+            del emb
+            del graph
             weight_vec[torch.tensor(i)] = w_i
         print(weight_vec)
         print(F.softmax(weight_vec))
             # semantic_embeddings.append(emb)
         # semantic_embeddings = torch.stack(semantic_embeddings, dim=1)  # (N, M, D * K)
 
-        return self.semantic_attention(semantic_embeddings)  # (N, D * K)
+        return None #self.semantic_attention(semantic_embeddings)  # (N, D * K)
 
 
 class HAN(nn.Module):

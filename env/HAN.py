@@ -100,9 +100,7 @@ class HANLayer(nn.Module):
             w_i = self.project(emb).mean(0)
             print(w_i)
             weight_vec[torch.tensor(i)] = w_i
-            del emb
-            del graph
-            gc.collect()
+            torch.cuda.empty_cache()
         print(weight_vec)
         print(F.softmax(weight_vec))
             # semantic_embeddings.append(emb)

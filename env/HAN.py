@@ -12,6 +12,7 @@ import torch.nn.functional as F
 
 import dgl
 from dgl.nn.pytorch import GATConv
+import gc
 
 
 class SemanticAttention(nn.Module):
@@ -98,9 +99,10 @@ class HANLayer(nn.Module):
             emb = self.gat_layers[''.join(mp)](graph, h).flatten(1)
             w_i = self.project(emb).mean(0)
             print(w_i)
+            weight_vec[torch.tensor(i)] = w_i
             del emb
             del graph
-            weight_vec[torch.tensor(i)] = w_i
+            gc.collect()
         print(weight_vec)
         print(F.softmax(weight_vec))
             # semantic_embeddings.append(emb)

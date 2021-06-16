@@ -95,7 +95,7 @@ class HANLayer(nn.Module):
             graph = dgl.metapath_reachable_graph(g, meta_path).to(device)
             graph.add_nodes(g.num_nodes() - graph.num_nodes())
             mp = list(map(str, meta_path))
-            emb = self.gat_layers['12'](graph, h).flatten(1)
+            emb = self.gat_layers[''.join(mp)](graph, h).flatten(1)
             weight_vec[torch.tensor(i)] = self.project(emb).mean(0)
             del emb
             del graph

@@ -79,6 +79,8 @@ class HANLayer(nn.Module):
     def forward(self, g, h, meta_paths):
         # semantic_embeddings = []
 
+        import pdb
+        pdb.set_trace()
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         for mp in meta_paths:
             mp = list(map(str, mp))
@@ -97,6 +99,8 @@ class HANLayer(nn.Module):
             mp = list(map(str, meta_path))
             emb = self.gat_layers['12'](graph, h).flatten(1)
             weight_vec[torch.tensor(i)] = self.project(emb).mean(0)
+            del emb
+            del graph
             torch.cuda.empty_cache()
         print(weight_vec)
         print(F.softmax(weight_vec))

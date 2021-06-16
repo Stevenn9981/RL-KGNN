@@ -96,9 +96,10 @@ class HANLayer(nn.Module):
             graph = dgl.metapath_reachable_graph(g, meta_path).to(device)
             graph.add_nodes(g.num_nodes() - graph.num_nodes())
             mp = list(map(str, meta_path))
-            w_i = self.project(self.gat_layers[''.join(mp)](graph, h).flatten(1)).mean(0)
-            print(w_i)
-            weight_vec[torch.tensor(i)] = w_i
+            emb = self.gat_layers[''.join(mp)](graph, h).flatten(1)
+            weight_vec[torch.tensor(i)] = self.project(emb).mean(0)
+            del graph
+            del emb
             torch.cuda.empty_cache()
         print(weight_vec)
         print(F.softmax(weight_vec))

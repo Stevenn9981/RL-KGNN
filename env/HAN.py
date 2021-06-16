@@ -54,17 +54,24 @@ class HANLayer(nn.Module):
         The output feature
     """
 
-    def __init__(self, in_size, out_size, layer_num_heads, dropout):
+    def __init__(self, in_size, out_size, layer_num_heads, dropout, hidden_size=32):
         super(HANLayer, self).__init__()
 
         # One GAT layer for each meta path based adjacency matrix
         self.gat_layers = nn.ModuleDict()
+        self.mp_weights = nn.ParameterDict()
         self.in_size, self.out_size, self.layer_num_heads, self.dropout = in_size, out_size, layer_num_heads, dropout
         # for i in range(len(meta_paths)):
         #     self.gat_layers.append(GATConv(in_size, out_size, layer_num_heads,
         #                                    dropout, dropout, activation=F.elu,
         #                                    allow_zero_in_degree=True))
         self.semantic_attention = SemanticAttention(in_size=out_size * layer_num_heads)
+
+        self.project = nn.Sequential(
+            nn.Linear(in_size, hidden_size),
+            nn.Tanh(),
+            nn.Linear(hidden_size, 1, bias=False)
+        )
 
         # self._cached_graph = None
         # self._cached_coalesced_graph = {}
@@ -79,17 +86,22 @@ class HANLayer(nn.Module):
                                                             allow_zero_in_degree=True).to(device))
 
         meta_paths = list(tuple(meta_path) for meta_path in meta_paths)
+        weight_vec = torch.randn(len(meta_paths))
 
-        for meta_path in meta_paths:
+        for i, meta_path in enumerate(meta_paths):
             import pdb
             pdb.set_trace()
             graph = dgl.metapath_reachable_graph(g, meta_path).to(device)
             graph.add_nodes(g.num_nodes() - graph.num_nodes())
             mp = list(map(str, meta_path))
             emb = self.gat_layers[''.join(mp)](graph, h).flatten(1)
-            del graph
-            semantic_embeddings.append(emb)
-        semantic_embeddings = torch.stack(semantic_embeddings, dim=1)  # (N, M, D * K)
+            w_i = self.project(emb).mean(0)
+            print(w_i)
+            weight_vec[torch.tensor(i)] = w_i
+        print(weight_vec)
+        print(F.softmax(weight_vec))
+            # semantic_embeddings.append(emb)
+        # semantic_embeddings = torch.stack(semantic_embeddings, dim=1)  # (N, M, D * K)
 
         return self.semantic_attention(semantic_embeddings)  # (N, D * K)
 

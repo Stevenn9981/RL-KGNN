@@ -89,8 +89,8 @@ class HANLayer(nn.Module):
         weight_vec = torch.randn(len(meta_paths))
 
         for i, meta_path in enumerate(meta_paths):
-            import pdb
-            pdb.set_trace()
+            # import pdb
+            # pdb.set_trace()
             graph = dgl.metapath_reachable_graph(g, meta_path).to(device)
             graph.add_nodes(g.num_nodes() - graph.num_nodes())
             mp = list(map(str, meta_path))

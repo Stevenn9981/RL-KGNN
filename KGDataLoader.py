@@ -290,7 +290,7 @@ class DataLoaderHGNN(object):
 
     def create_graph(self, kg_data, n_nodes):
         '''
-        Business: 0 (0 - 14263), Category: 1 (14264 - 14794), City: 2 (14795 - 14841),
+        Business: 0 (0 - 14283), Category: 1 (14284 - 14794), City: 2 (14795 - 14841),
         Compliment : 3 (14842 - 14852), User: 4 (14853 - 31091)
         '''
 

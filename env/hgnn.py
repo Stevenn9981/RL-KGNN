@@ -226,13 +226,9 @@ class hgnn_env(object):
     def update_embedding(self):
         emb = self.train_data.x.clone()
         for metapaths in self.etypes_lists:
-            if self.train_data.e_n_dict[metapaths[0][0]][0] == 0:
-                user_emb = emb[:self.data.n_id_start_dict[1]]
-                emb[:self.data.n_id_start_dict[1]] = self.model(self.train_data, user_emb, metapaths)
-
-            elif self.train_data.e_n_dict[metapaths[0][0]][0] == 4:
-                item_emb = emb[self.data.n_id_start_dict[4]:]
-                emb[self.data.n_id_start_dict[4]:] = self.model(self.train_data, item_emb, metapaths)
+            start_type = self.train_data.e_n_dict[metapaths[0][0]][0]
+            item_emb = emb[self.data.node_type_list == start_type]
+            emb[self.data.node_type_list == start_type] = self.model(self.train_data, item_emb, metapaths)
         return emb
 
     def _set_action_space(self, _max):

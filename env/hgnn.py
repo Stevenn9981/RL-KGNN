@@ -566,7 +566,7 @@ class hgnn_env(object):
         # user_embed = all_embed[user_ids]  # (cf_batch_size, cf_concat_dim)
         # item_pos_embed = all_embed[item_pos_ids]  # (cf_batch_size, cf_concat_dim)
         # item_neg_embed = all_embed[item_neg_ids]  # (cf_batch_size, cf_concat_dim)
-        user_embed = u_embeds[user_ids - self.data.n_id_start_dict[4]]
+        user_embed = u_embeds[[user_id - self.data.n_id_start_dict[4] for user_id in user_ids]]
         item_pos_embed = i_embeds[item_pos_ids]  # (cf_batch_size, cf_concat_dim)
         item_neg_embed = i_embeds[item_neg_ids]  # (cf_batch_size, cf_concat_dim)
 
@@ -598,16 +598,16 @@ class hgnn_env(object):
         # self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))
 
         with torch.no_grad():
-            all_embed = self.update_embedding().to(
-                self.device)
+            u_embeds = self.get_user_embedding()
+            i_embeds = self.get_item_embedding()
 
             time2 = time.time()
 
             pos_logits = torch.tensor([]).to(self.device)
             neg_logits = torch.tensor([]).to(self.device)
 
-            cf_scores = torch.matmul(all_embed[user_ids_batch],
-                                     all_embed[torch.arange(self.data.n_items, dtype=torch.long)].transpose(0, 1))
+            cf_scores = torch.matmul(u_embeds[[user_id - self.data.n_id_start_dict[4] for user_id in user_ids_batch]],
+                                     i_embeds.transpose(0, 1))
             for idx, u in enumerate(user_ids_batch):
                 pos_logits = torch.cat([pos_logits, cf_scores[idx][self.data.train_user_dict[u]]])
                 neg_logits = torch.cat([neg_logits, torch.unsqueeze(cf_scores[idx][neg_dict[u]], 1)])
@@ -635,13 +635,15 @@ class hgnn_env(object):
                                                                NEG_SIZE_RANKING)
                     neg_dict[u].extend(nl)
             # self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))
-            all_embed = self.update_embedding().to(self.device)
+            # all_embed = self.update_embedding().to(self.device)
+            u_embeds = self.get_user_embedding()
+            i_embeds = self.get_item_embedding()
 
             pos_logits = torch.tensor([]).to(self.device)
             neg_logits = torch.tensor([]).to(self.device)
 
-            cf_scores = torch.matmul(all_embed[user_ids_batch],
-                                     all_embed[torch.arange(self.data.n_items, dtype=torch.long)].transpose(0, 1))
+            cf_scores = torch.matmul(u_embeds[[user_id - self.data.n_id_start_dict[4] for user_id in user_ids_batch]],
+                                     i_embeds.transpose(0, 1))
             for idx, u in enumerate(user_ids_batch):
                 pos_logits = torch.cat([pos_logits, cf_scores[idx][self.data.test_user_dict[u]]])
                 neg_logits = torch.cat([neg_logits, torch.unsqueeze(cf_scores[idx][neg_dict[u]], 1)])

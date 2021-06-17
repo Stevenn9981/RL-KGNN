@@ -559,6 +559,7 @@ class hgnn_env(object):
         # print("user_embedding: ", user_embed)
         cf_loss = (-1.0) * F.logsigmoid(pos_score - neg_score)
         cf_loss = torch.mean(cf_loss)
+        print("cf_loss: ", float(cf_loss))
 
         l2_loss = _L2_loss_mean(user_embed) + _L2_loss_mean(item_pos_embed) + _L2_loss_mean(item_neg_embed)
         loss = cf_loss + self.cf_l2loss_lambda * l2_loss
@@ -614,8 +615,7 @@ class hgnn_env(object):
                                                                NEG_SIZE_RANKING)
                     neg_dict[u].extend(nl)
             # self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))
-            all_embed = self.update_embedding().to(
-                self.device)
+            all_embed = self.update_embedding().to(self.device)
 
             pos_logits = torch.tensor([]).to(self.device)
             neg_logits = torch.tensor([]).to(self.device)

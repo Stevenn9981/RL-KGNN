@@ -473,7 +473,6 @@ class hgnn_env(object):
         # print(self.train_data.x(torch.tensor([10,11,12])))
 
     def train_GNN(self):
-        self.update_embedding()
         n_cf_batch = self.data.n_cf_train // self.data.cf_batch_size + 1
         cf_total_loss = 0
 

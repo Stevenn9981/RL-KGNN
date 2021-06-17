@@ -15,7 +15,7 @@ from dgl.nn.pytorch import GATConv
 
 
 class SemanticAttention(nn.Module):
-    def __init__(self, in_size, hidden_size=32):
+    def __init__(self, in_size, hidden_size=64):
         super(SemanticAttention, self).__init__()
 
         self.project = nn.Sequential(
@@ -69,7 +69,7 @@ class HANLayer(nn.Module):
 
         self.project = nn.Sequential(
             nn.Linear(out_size * layer_num_heads, hidden_size),
-            nn.Tanh(),
+            nn.ReLU(),
             nn.Linear(hidden_size, 1, bias=False)
         )
 

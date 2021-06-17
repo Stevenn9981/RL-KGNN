@@ -149,7 +149,7 @@ class hgnn_env(object):
             hidden_size=args.hidden_dim,
             out_size=data.entity_dim,
             num_heads=args.num_heads,
-            dropout=0.3).to(
+            dropout=0.1).to(
             self.device), data.train_graph.to(self.device)
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr, weight_decay=weight_decay)
         self.train_data.node_idx = self.train_data.node_idx.to(self.device)
@@ -230,6 +230,18 @@ class hgnn_env(object):
             item_emb = emb[self.data.node_type_list == start_type]
             emb[self.data.node_type_list == start_type] = self.model(self.train_data, item_emb, metapaths)
         return emb
+
+    def get_user_embedding(self):
+        for metapaths in self.etypes_lists:
+            start_type = self.train_data.e_n_dict[metapaths[0][0]][0]
+            if start_type == 4:
+                return self.model(self.train_data, self.train_data.x[self.data.node_type_list == start_type], metapaths)
+
+    def get_item_embedding(self):
+        for metapaths in self.etypes_lists:
+            start_type = self.train_data.e_n_dict[metapaths[0][0]][0]
+            if start_type == 0:
+                return self.model(self.train_data, self.train_data.x[self.data.node_type_list == start_type], metapaths)
 
     def _set_action_space(self, _max):
         self.action_num = _max
@@ -478,7 +490,7 @@ class hgnn_env(object):
         cf_batch_user, cf_batch_pos_item, cf_batch_neg_item = self.data.generate_cf_batch(self.data.train_user_dict)
         time2 = time.time()
         print("generate batch: ", time2 - time1)
-        cf_batch_loss = self.calc_cf_loss(self.train_data, self.train_data.edge_index, cf_batch_user,
+        cf_batch_loss = self.calc_cf_loss(cf_batch_user,
                                           cf_batch_pos_item,
                                           cf_batch_neg_item)
 
@@ -536,21 +548,27 @@ class hgnn_env(object):
         loss = kg_loss + self.kg_l2loss_lambda * l2_loss
         return loss
 
-    def calc_cf_loss(self, g, edge_index, user_ids, item_pos_ids, item_neg_ids, test=False):
+    def calc_cf_loss(self, user_ids, item_pos_ids, item_neg_ids, test=False):
         """
         user_ids:       (cf_batch_size)
         item_pos_ids:   (cf_batch_size)
         item_neg_ids:   (cf_batch_size)
         """
         tim1 = time.time()
-        pred = self.update_embedding().to(self.device)
+        # pred = self.update_embedding().to(self.device)
+        u_embeds = self.get_user_embedding()
+        i_embeds = self.get_item_embedding()
+        print(u_embeds.shape, i_embeds.shape)
         tim2 = time.time()
         # print("get embedding: ", tim2 - tim1)
         # self.train_data.x.weight = nn.Parameter(pred)
-        all_embed = pred  # (n_users + n_entities, cf_concat_dim)
-        user_embed = all_embed[user_ids]  # (cf_batch_size, cf_concat_dim)
-        item_pos_embed = all_embed[item_pos_ids]  # (cf_batch_size, cf_concat_dim)
-        item_neg_embed = all_embed[item_neg_ids]  # (cf_batch_size, cf_concat_dim)
+        # all_embed = pred  # (n_users + n_entities, cf_concat_dim)
+        # user_embed = all_embed[user_ids]  # (cf_batch_size, cf_concat_dim)
+        # item_pos_embed = all_embed[item_pos_ids]  # (cf_batch_size, cf_concat_dim)
+        # item_neg_embed = all_embed[item_neg_ids]  # (cf_batch_size, cf_concat_dim)
+        user_embed = u_embeds[user_ids - self.data.n_id_start_dict[4]]
+        item_pos_embed = i_embeds[item_pos_ids]  # (cf_batch_size, cf_concat_dim)
+        item_neg_embed = i_embeds[item_neg_ids]  # (cf_batch_size, cf_concat_dim)
 
         pos_score = torch.sum(user_embed * item_pos_embed, dim=1)  # (cf_batch_size)
         neg_score = torch.sum(user_embed * item_neg_embed, dim=1)  # (cf_batch_size)

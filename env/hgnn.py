@@ -142,7 +142,7 @@ class hgnn_env(object):
                 data.train_graph.edge_index[1][i].item())
         data.train_graph.adj_dist = adj_dist
         data.train_graph.attr_dict = attr_dict
-        self.etypes_lists = [['5', '9'], ['1', '2'], ['3', '7'], ['2', '1'], ['6', '10'], ['4', '8']]
+        self.etypes_lists = [[['6', '10'], ['5', '9'], ['2', '1']], [['1', '2'], ['3', '7'], ['4', '8']]]
 
         self.model, self.train_data = HAN(
             in_size=data.entity_dim,
@@ -223,6 +223,18 @@ class hgnn_env(object):
     #     print(edge_metapath_array)
     #     return g_list, self.train_data.x, type_mask, edge_metapath_array
 
+    def update_embedding(self):
+        emb = self.train_data.x.clone()
+        for metapaths in self.etypes_lists:
+            if self.train_data.e_n_dict[metapaths[0][0]][0] == 0:
+                user_emb = emb[:self.data.n_id_start_dict[1]]
+                emb[:self.data.n_id_start_dict[1]] = self.model(self.train_data, user_emb, metapaths)
+
+            elif self.train_data.e_n_dict[metapaths[0][0]][0] == 4:
+                item_emb = emb[self.data.n_id_start_dict[4]:]
+                emb[self.data.n_id_start_dict[4]:] = self.model(self.train_data, item_emb, metapaths)
+        return emb
+
     def _set_action_space(self, _max):
         self.action_num = _max
         self.action_space = Discrete(_max)
@@ -248,7 +260,7 @@ class hgnn_env(object):
         self.meta_path_graph_edges = collections.defaultdict(set)
         nodes = range(self.train_data.x.shape[0])
         index = random.sample(nodes, min(self.batch_size, len(nodes)))
-        state = F.normalize(self.model(self.train_data, self.train_data.x, self.etypes_lists)[
+        state = F.normalize(self.update_embedding()[
                                 index]).cpu().detach().numpy()
         self.optimizer.zero_grad()
         return index, state
@@ -258,7 +270,7 @@ class hgnn_env(object):
         self.meta_path_instances_dict = collections.defaultdict(list)
         nodes = range(self.train_data.x.weight.shape[0])
         index = random.sample(nodes, len(nodes))
-        state = F.normalize(self.model(self.train_data, self.train_data.x, self.etypes_lists)[
+        state = F.normalize(self.update_embedding()[
                                 index]).cpu().detach().numpy()
         self.optimizer.zero_grad()
         return index, state
@@ -377,9 +389,8 @@ class hgnn_env(object):
             logger1.info("Val acc: %.5f  reward: %.5f" % (val_precision, rew))
             logger1.info("-----------------------------------------------------------------------")
 
-
         next_state = F.normalize(
-            self.model(self.train_data, self.train_data.x, self.etypes_lists)[
+            self.update_embedding()[
                 index]).cpu().detach().numpy()
         r = np.mean(np.array(reward))
         val_acc = np.mean(val_acc)
@@ -462,6 +473,7 @@ class hgnn_env(object):
         # print(self.train_data.x(torch.tensor([10,11,12])))
 
     def train_GNN(self):
+        self.update_embedding()
         n_cf_batch = self.data.n_cf_train // self.data.cf_batch_size + 1
         cf_total_loss = 0
 
@@ -506,7 +518,7 @@ class hgnn_env(object):
 
         W_r = self.W_R[r]  # (kg_batch_size, entity_dim, relation_dim)
 
-        pred = self.model(self.train_data, self.train_data.x, self.etypes_lists).to(self.device)
+        pred = self.update_embedding().to(self.device)
 
         h_embed = pred[h]  # (kg_batch_size, entity_dim)
         pos_t_embed = pred[pos_t]  # (kg_batch_size, entity_dim)
@@ -536,7 +548,7 @@ class hgnn_env(object):
         item_neg_ids:   (cf_batch_size)
         """
         tim1 = time.time()
-        pred = self.model(self.train_data, self.train_data.x, self.etypes_lists).to(self.device)
+        pred = self.update_embedding().to(self.device)
         tim2 = time.time()
         print("get embedding: ", tim2 - tim1)
         # self.train_data.x.weight = nn.Parameter(pred)
@@ -572,7 +584,7 @@ class hgnn_env(object):
         # self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))
 
         with torch.no_grad():
-            all_embed = self.model(self.train_data, self.train_data.x, self.etypes_lists).to(
+            all_embed = self.update_embedding().to(
                 self.device)
 
             time2 = time.time()
@@ -607,7 +619,7 @@ class hgnn_env(object):
                                                                NEG_SIZE_RANKING)
                     neg_dict[u].extend(nl)
             # self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))
-            all_embed = self.model(self.train_data, self.train_data.x, self.etypes_lists).to(
+            all_embed = self.update_embedding().to(
                 self.device)
 
             pos_logits = torch.tensor([]).to(self.device)
@@ -642,7 +654,7 @@ class hgnn_env(object):
                     nl = self.data.sample_neg_items_for_u(self.data.train_user_dict, u, NEG_SIZE_RANKING)
                     neg_dict[u].extend(nl)
             # self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))
-            all_embed = self.model(self.train_data, self.train_data.x, self.etypes_lists).to(
+            all_embed = self.update_embedding().to(
                 self.device)
 
             pos_logits = torch.tensor([]).to(self.device)

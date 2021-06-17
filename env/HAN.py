@@ -77,7 +77,7 @@ class HANLayer(nn.Module):
         # self._cached_coalesced_graph = {}
 
     def forward(self, g, h, meta_paths):
-        # semantic_embeddings = []
+        semantic_embeddings = []
 
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         for mp in meta_paths:
@@ -87,26 +87,19 @@ class HANLayer(nn.Module):
                                                             allow_zero_in_degree=True).to(device))
 
         meta_paths = list(tuple(meta_path) for meta_path in meta_paths)
-        weight_vec = torch.randn(len(meta_paths))
+        # weight_vec = torch.randn(len(meta_paths))
 
         for i, meta_path in enumerate(meta_paths):
             import pdb
             pdb.set_trace()
             graph = dgl.metapath_reachable_graph(g, meta_path).to(device)
             print(graph)
-            graph.add_nodes(g.num_nodes() - graph.num_nodes())
             mp = list(map(str, meta_path))
             emb = self.gat_layers[''.join(mp)](graph, h).flatten(1)
-            weight_vec[torch.tensor(i)] = self.project(emb).mean(0)
-            del emb
-            del graph
-            torch.cuda.empty_cache()
-        print(weight_vec)
-        print(F.softmax(weight_vec))
-            # semantic_embeddings.append(emb)
-        # semantic_embeddings = torch.stack(semantic_embeddings, dim=1)  # (N, M, D * K)
+            semantic_embeddings.append(emb)
+        semantic_embeddings = torch.stack(semantic_embeddings, dim=1)  # (N, M, D * K)
 
-        return None #self.semantic_attention(semantic_embeddings)  # (N, D * K)
+        return self.semantic_attention(semantic_embeddings)  # (N, D * K)
 
 
 class HAN(nn.Module):

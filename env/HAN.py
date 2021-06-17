@@ -92,6 +92,7 @@ class HANLayer(nn.Module):
         for i, meta_path in enumerate(meta_paths):
             import pdb
             pdb.set_trace()
+            print(meta_path)
             graph = dgl.metapath_reachable_graph(g, meta_path).to(device)
             print(graph)
             mp = list(map(str, meta_path))

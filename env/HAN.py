@@ -93,6 +93,7 @@ class HANLayer(nn.Module):
             import pdb
             pdb.set_trace()
             graph = dgl.metapath_reachable_graph(g, meta_path).to(device)
+            print(graph)
             graph.add_nodes(g.num_nodes() - graph.num_nodes())
             mp = list(map(str, meta_path))
             emb = self.gat_layers[''.join(mp)](graph, h).flatten(1)

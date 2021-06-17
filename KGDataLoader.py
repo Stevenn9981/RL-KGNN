@@ -199,6 +199,8 @@ class DataLoaderHGNN(object):
         self.n_users_entities = max(max(self.cf_train_data[0]), max(self.cf_test_data[0])) + 1
         self.n_entities = self.n_users_entities - self.n_users
 
+        # 3: B-Ca 4: B-Ci 5: U-Co 6: U-U 7: Ca-B 8: Ci-B 9: Co-U 10: U-U
+
         # Only for Yelp dataset
         node_type_list = np.zeros(self.n_users_entities, dtype=np.int32)
         node_type_list[:14284] = 0

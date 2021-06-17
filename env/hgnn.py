@@ -594,7 +594,8 @@ class hgnn_env(object):
                 pos_logits = torch.cat([pos_logits, cf_scores[idx][self.data.train_user_dict[u]]])
                 neg_logits = torch.cat([neg_logits, torch.unsqueeze(cf_scores[idx][neg_dict[u]], 1)])
             time3 = time.time()
-            NDCG10 = self.metrics(pos_logits, neg_logits).cpu()
+            HR3, HR10, HR20, NDCG10, NDCG20 = self.metrics(pos_logits, neg_logits).cpu()
+            print(f"HR3 : {HR3:.4f}, HR10 : {HR10:.4f}, NDCG10 : {NDCG10.item():.4f}, NDCG20 : {NDCG20.item():.4f}")
             time4 = time.time()
             # print("ALL time: ", time4 - time1)
 

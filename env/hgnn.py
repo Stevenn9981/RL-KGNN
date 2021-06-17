@@ -555,7 +555,7 @@ class hgnn_env(object):
         pos_score = torch.sum(user_embed * item_pos_embed, dim=1)  # (cf_batch_size)
         neg_score = torch.sum(user_embed * item_neg_embed, dim=1)  # (cf_batch_size)
 
-        # print("pos, neg: ", pos_score, neg_score)
+        print("pos, neg: ", pos_score, neg_score)
         # print("user_embedding: ", user_embed)
         cf_loss = (-1.0) * F.logsigmoid(pos_score - neg_score)
         cf_loss = torch.mean(cf_loss)

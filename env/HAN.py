@@ -61,10 +61,6 @@ class HANLayer(nn.Module):
         self.gat_layers = nn.ModuleDict()
         self.mp_weights = nn.ParameterDict()
         self.in_size, self.out_size, self.layer_num_heads, self.dropout = in_size, out_size, layer_num_heads, dropout
-        # for i in range(len(meta_paths)):
-        #     self.gat_layers.append(GATConv(in_size, out_size, layer_num_heads,
-        #                                    dropout, dropout, activation=F.elu,
-        #                                    allow_zero_in_degree=True))
         self.semantic_attention = SemanticAttention(in_size=out_size * layer_num_heads)
 
         self.project = nn.Sequential(
@@ -72,9 +68,6 @@ class HANLayer(nn.Module):
             nn.ReLU(),
             nn.Linear(hidden_size, 1, bias=False)
         )
-
-        # self._cached_graph = None
-        # self._cached_coalesced_graph = {}
 
     def forward(self, g, h, meta_paths, optimizer):
         semantic_embeddings = []
@@ -84,14 +77,13 @@ class HANLayer(nn.Module):
             mp = list(map(str, mp))
             if ''.join(mp) not in self.gat_layers:
                 gatconv = nn.ModuleDict({''.join(mp): GATConv(self.in_size, self.out_size, self.layer_num_heads,
-                                                        self.dropout, self.dropout, activation=F.elu,
+                                                        self.dropout, self.dropout,
                                                         allow_zero_in_degree=True).to(device)})
                 self.gat_layers.update(gatconv)
                 optimizer.add_param_group({'params': gatconv.parameters()})
 
 
         meta_paths = list(tuple(meta_path) for meta_path in meta_paths)
-        # weight_vec = torch.randn(len(meta_paths))
 
         for i, meta_path in enumerate(meta_paths):
             graph = dgl.metapath_reachable_graph(g, meta_path).to(device)

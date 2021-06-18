@@ -142,7 +142,7 @@ class hgnn_env(object):
                 data.train_graph.edge_index[1][i].item())
         data.train_graph.adj_dist = adj_dist
         data.train_graph.attr_dict = attr_dict
-        self.etypes_lists = [[['2', '4', '8', '1'], ['2', '3', '7', '1']], [['1', '2'], ['4', '8']]]
+        self.etypes_lists = [[['2', '1'], ['6']], [['1', '2'], ['4', '8']]]
 
         self.model, self.train_data = HAN(
             in_size=data.entity_dim,
@@ -495,17 +495,17 @@ class hgnn_env(object):
                                           cf_batch_neg_item)
 
         time3 = time.time()
-        # print("calculate loss: ", time3 - time2)
+        print("calculate loss: ", time3 - time2)
 
         cf_batch_loss.backward()
 
         time4 = time.time()
-        # print("backward: ", time4 - time3)
+        print("backward: ", time4 - time3)
 
         self.optimizer.step()
 
         time5 = time.time()
-        # print("step: ", time5 - time4)
+        print("step: ", time5 - time4)
 
         self.optimizer.zero_grad()
         # cf_total_loss += float(cf_batch_loss)

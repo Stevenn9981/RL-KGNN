@@ -489,23 +489,23 @@ class hgnn_env(object):
         time1 = time.time()
         cf_batch_user, cf_batch_pos_item, cf_batch_neg_item = self.data.generate_cf_batch(self.data.train_user_dict)
         time2 = time.time()
-        print("generate batch: ", time2 - time1)
+        # print("generate batch: ", time2 - time1)
         cf_batch_loss = self.calc_cf_loss(cf_batch_user,
                                           cf_batch_pos_item,
                                           cf_batch_neg_item)
 
         time3 = time.time()
-        print("calculate loss: ", time3 - time2)
+        # print("calculate loss: ", time3 - time2)
 
         cf_batch_loss.backward()
 
         time4 = time.time()
-        print("backward: ", time4 - time3)
+        # print("backward: ", time4 - time3)
 
         self.optimizer.step()
 
         time5 = time.time()
-        print("step: ", time5 - time4)
+        # print("step: ", time5 - time4)
 
         self.optimizer.zero_grad()
         # cf_total_loss += float(cf_batch_loss)
@@ -558,7 +558,7 @@ class hgnn_env(object):
         # pred = self.update_embedding().to(self.device)
         u_embeds = self.get_user_embedding()
         i_embeds = self.get_item_embedding()
-        print(u_embeds.shape, i_embeds.shape)
+        # print(u_embeds.shape, i_embeds.shape)
         tim2 = time.time()
         # print("get embedding: ", tim2 - tim1)
         # self.train_data.x.weight = nn.Parameter(pred)
@@ -573,7 +573,7 @@ class hgnn_env(object):
         pos_score = torch.sum(user_embed * item_pos_embed, dim=1)  # (cf_batch_size)
         neg_score = torch.sum(user_embed * item_neg_embed, dim=1)  # (cf_batch_size)
 
-        print("pos, neg: ", pos_score, neg_score)
+        # print("pos, neg: ", pos_score, neg_score)
         # print("user_embedding: ", user_embed)
         cf_loss = (-1.0) * F.logsigmoid(pos_score - neg_score)
         cf_loss = torch.mean(cf_loss)

@@ -62,7 +62,7 @@ def parse_args():
     parser.add_argument('--cf_l2loss_lambda', type=float, default=1e-5,
                         help='Lambda when calculating CF l2 loss.')
 
-    parser.add_argument('--lr', type=float, default=0.01,
+    parser.add_argument('--lr', type=float, default=0.001,
                         help='Learning rate.')
     parser.add_argument('--n_epoch', type=int, default=1000,
                         help='Number of epoch.')
@@ -87,7 +87,7 @@ def parse_args():
                              '3 - all id vec. Default is 2.')
     parser.add_argument('--layers', type=int, default=2, help='Number of layers. Default is 2.')
     parser.add_argument('--hidden-dim', type=int, default=128, help='Dimension of the node hidden state. Default is 64.')
-    parser.add_argument('--num-heads', type=list, default=[2], help='Number of the attention heads. Default is 8.')
+    parser.add_argument('--num-heads', type=list, default=[8], help='Number of the attention heads. Default is 8.')
     parser.add_argument('--attn-vec-dim', type=int, default=128,
                         help='Dimension of the attention vector. Default is 128.')
     parser.add_argument('--rnn-type', default='RotatE0', help='Type of the aggregator. Default is RotatE0.')

@@ -149,7 +149,7 @@ class hgnn_env(object):
             hidden_size=args.hidden_dim,
             out_size=data.entity_dim,
             num_heads=args.num_heads,
-            dropout=0.1).to(
+            dropout=0.3).to(
             self.device)
         self.train_data = data.train_graph.to(self.device)
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr, weight_decay=weight_decay)

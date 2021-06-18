@@ -83,10 +83,10 @@ class HANLayer(nn.Module):
         for mp in meta_paths:
             mp = list(map(str, mp))
             if ''.join(mp) not in self.gat_layers:
-                gatconv = GATConv(self.in_size, self.out_size, self.layer_num_heads,
+                gatconv = nn.ModuleDict({''.join(mp): GATConv(self.in_size, self.out_size, self.layer_num_heads,
                                                         self.dropout, self.dropout, activation=F.elu,
-                                                        allow_zero_in_degree=True).to(device)
-                self.gat_layers.update(nn.ModuleDict({''.join(mp): gatconv}))
+                                                        allow_zero_in_degree=True).to(device)})
+                self.gat_layers.update(gatconv)
                 optimizer.add_param_group({'params': gatconv.parameters()})
 
 

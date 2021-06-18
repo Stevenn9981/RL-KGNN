@@ -112,8 +112,8 @@ class HAN(nn.Module):
                                         hidden_size, num_heads[l], dropout))
         self.predict = nn.Linear(hidden_size * num_heads[-1], out_size)
 
-    def forward(self, g, h, meta_paths):
+    def forward(self, g, h, meta_paths, optimizer):
         for gnn in self.layers:
-            h = gnn(g, h, meta_paths)
+            h = gnn(g, h, meta_paths, optimizer)
 
         return self.predict(h)

@@ -86,9 +86,7 @@ def main():
     for i in range(max_episodes):
         env.train_GNN()
         if i % 10 == 0:
-            print("Evaluate: ")
             env.eval_batch(100)
-            print("Test: ")
             acc = env.test_batch(logger2)
             if acc > best:
                 best = acc

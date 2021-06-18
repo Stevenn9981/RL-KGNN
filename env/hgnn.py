@@ -623,7 +623,7 @@ class hgnn_env(object):
             time3 = time.time()
             # =NDCG10= = self.metrics(pos_logits, neg_logits)
             HR3, HR10, HR20, NDCG10, NDCG20 = self.metrics(pos_logits, neg_logits, training=False)
-            print(f"HR3 : {HR3:.4f}, HR10 : {HR10:.4f}, NDCG10 : {NDCG10.item():.4f}, NDCG20 : {NDCG20.item():.4f}")
+            print(f"Evaluate: HR3 : {HR3:.4f}, HR10 : {HR10:.4f}, NDCG10 : {NDCG10.item():.4f}, NDCG20 : {NDCG20.item():.4f}")
             time4 = time.time()
             # print("ALL time: ", time4 - time1)
 
@@ -662,7 +662,7 @@ class hgnn_env(object):
             logger2.info(
                 "HR3 : %.4f, HR10 : %.4f, HR20 : %.4f, NDCG10 : %.4f, NDCG20 : %.4f" % (
                     HR3, HR10, HR20, NDCG10.item(), NDCG20.item()))
-            print(f"HR3 : {HR3:.4f}, HR10 : {HR10:.4f}, NDCG10 : {NDCG10.item():.4f}, NDCG20 : {NDCG20.item():.4f}")
+            print(f"Test: HR3 : {HR3:.4f}, HR10 : {HR10:.4f}, NDCG10 : {NDCG10.item():.4f}, NDCG20 : {NDCG20.item():.4f}")
 
         return NDCG10.cpu().item()
 

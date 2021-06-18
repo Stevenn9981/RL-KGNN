@@ -82,9 +82,11 @@ class HANLayer(nn.Module):
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         for mp in meta_paths:
             mp = list(map(str, mp))
-            self.gat_layers.add_module(''.join(mp), GATConv(self.in_size, self.out_size, self.layer_num_heads,
-                                                            self.dropout, self.dropout, activation=F.elu,
-                                                            allow_zero_in_degree=True).to(device))
+            if ''.join(mp) not in self.gat_layers:
+                self.gat_layers.update(
+                    nn.ModuleDict({''.join(mp): GATConv(self.in_size, self.out_size, self.layer_num_heads,
+                                                        self.dropout, self.dropout, activation=F.elu,
+                                                        allow_zero_in_degree=True).to(device)}))
 
         meta_paths = list(tuple(meta_path) for meta_path in meta_paths)
         # weight_vec = torch.randn(len(meta_paths))

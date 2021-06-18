@@ -87,7 +87,7 @@ class HANLayer(nn.Module):
                                                         self.dropout, self.dropout, activation=F.elu,
                                                         allow_zero_in_degree=True).to(device)
                 self.gat_layers.update(nn.ModuleDict({''.join(mp): gatconv}))
-                optimizer.add_param_group(gatconv.parameters())
+                optimizer.add_param_group({'params': gatconv.parameters()})
 
         meta_paths = list(tuple(meta_path) for meta_path in meta_paths)
         # weight_vec = torch.randn(len(meta_paths))

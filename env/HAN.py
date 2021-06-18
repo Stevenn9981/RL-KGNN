@@ -81,8 +81,6 @@ class HANLayer(nn.Module):
 
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         for mp in meta_paths:
-            import pdb
-            pdb.set_trace()
             mp = list(map(str, mp))
             if ''.join(mp) not in self.gat_layers:
                 self.gat_layers.update(

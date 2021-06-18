@@ -144,13 +144,14 @@ class hgnn_env(object):
         data.train_graph.attr_dict = attr_dict
         self.etypes_lists = [[['2', '1'], ['6']], [['1', '2'], ['4', '8']]]
 
-        self.model, self.train_data = HAN(
+        self.model = HAN(
             in_size=data.entity_dim,
             hidden_size=args.hidden_dim,
             out_size=data.entity_dim,
             num_heads=args.num_heads,
             dropout=0.1).to(
-            self.device), data.train_graph.to(self.device)
+            self.device)
+        self.train_data = data.train_graph.to(self.device)
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr, weight_decay=weight_decay)
         self.train_data.node_idx = self.train_data.node_idx.to(self.device)
         self.data.test_graph = self.data.test_graph.to(self.device)
@@ -228,20 +229,23 @@ class hgnn_env(object):
         for metapaths in self.etypes_lists:
             start_type = self.train_data.e_n_dict[metapaths[0][0]][0]
             item_emb = emb[self.data.node_type_list == start_type]
-            emb[self.data.node_type_list == start_type] = self.model(self.train_data, item_emb, metapaths)
+            emb[self.data.node_type_list == start_type] = self.model(self.train_data, item_emb, metapaths,
+                                                                     self.optimizer)
         return emb
 
     def get_user_embedding(self):
         for metapaths in self.etypes_lists:
             start_type = self.train_data.e_n_dict[metapaths[0][0]][0]
             if start_type == 4:
-                return self.model(self.train_data, self.train_data.x[self.data.node_type_list == start_type], metapaths)
+                return self.model(self.train_data, self.train_data.x[self.data.node_type_list == start_type], metapaths,
+                                  self.optimizer)
 
     def get_item_embedding(self):
         for metapaths in self.etypes_lists:
             start_type = self.train_data.e_n_dict[metapaths[0][0]][0]
             if start_type == 0:
-                return self.model(self.train_data, self.train_data.x[self.data.node_type_list == start_type], metapaths)
+                return self.model(self.train_data, self.train_data.x[self.data.node_type_list == start_type], metapaths,
+                                  self.optimizer)
 
     def _set_action_space(self, _max):
         self.action_num = _max

@@ -76,17 +76,18 @@ class HANLayer(nn.Module):
         # self._cached_graph = None
         # self._cached_coalesced_graph = {}
 
-    def forward(self, g, h, meta_paths):
+    def forward(self, g, h, meta_paths, optimizer):
         semantic_embeddings = []
 
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         for mp in meta_paths:
             mp = list(map(str, mp))
             if ''.join(mp) not in self.gat_layers:
-                self.gat_layers.update(
-                    nn.ModuleDict({''.join(mp): GATConv(self.in_size, self.out_size, self.layer_num_heads,
+                gatconv = GATConv(self.in_size, self.out_size, self.layer_num_heads,
                                                         self.dropout, self.dropout, activation=F.elu,
-                                                        allow_zero_in_degree=True).to(device)}))
+                                                        allow_zero_in_degree=True).to(device)
+                self.gat_layers.update(nn.ModuleDict({''.join(mp): gatconv}))
+                optimizer.add_param_group(gatconv.parameters())
 
         meta_paths = list(tuple(meta_path) for meta_path in meta_paths)
         # weight_vec = torch.randn(len(meta_paths))

@@ -83,8 +83,7 @@ def main():
 
     best = 0
     best_i = 0
-    for i in range(max_episodes):
-        env.train_GNN()
+    for i in range(max_episodes + 1):
         if i % 40 == 0:
             env.eval_batch(100)
             acc = env.test_batch(logger2)
@@ -93,6 +92,7 @@ def main():
                 best_i = i
             logger2.info('Best Accuracy: %.5f\tBest_i : %d' % (best, best_i))
             print('Best: ', best, 'Best_i: ', best_i)
+        env.train_GNN()
 
 
 

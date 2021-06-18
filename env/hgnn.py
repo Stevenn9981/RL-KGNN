@@ -142,7 +142,7 @@ class hgnn_env(object):
                 data.train_graph.edge_index[1][i].item())
         data.train_graph.adj_dist = adj_dist
         data.train_graph.attr_dict = attr_dict
-        self.etypes_lists = [[['2', '1'], ['6']], [['1', '2'], ['4', '8']]]
+        self.etypes_lists = [[['6']], [['4', '8']]]
 
         self.model = HAN(
             in_size=data.entity_dim,
@@ -495,6 +495,8 @@ class hgnn_env(object):
         time1 = time.time()
         cf_batch_user, cf_batch_pos_item, cf_batch_neg_item = self.data.generate_cf_batch(self.data.train_user_dict)
         time2 = time.time()
+
+        self.optimizer.zero_grad()
         # print("generate batch: ", time2 - time1)
         cf_batch_loss = self.calc_cf_loss(cf_batch_user,
                                           cf_batch_pos_item,
@@ -516,7 +518,6 @@ class hgnn_env(object):
         time5 = time.time()
         # print("step: ", time5 - time4)
 
-        self.optimizer.zero_grad()
         # cf_total_loss += float(cf_batch_loss)
 
         # cf_total_loss.backward()

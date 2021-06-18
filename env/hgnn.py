@@ -155,6 +155,8 @@ class hgnn_env(object):
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr, weight_decay=weight_decay)
         self.train_data.node_idx = self.train_data.node_idx.to(self.device)
         self.data.test_graph = self.data.test_graph.to(self.device)
+        import pdb
+        pdb.set_trace()
 
         self._set_action_space(data.n_relations + 1)
         obs = self.reset()

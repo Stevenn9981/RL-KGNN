@@ -497,6 +497,9 @@ class hgnn_env(object):
         time3 = time.time()
         # print("calculate loss: ", time3 - time2)
 
+        import pdb
+        pdb.set_trace()
+
         cf_batch_loss.backward()
 
         time4 = time.time()

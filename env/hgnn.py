@@ -581,8 +581,8 @@ class hgnn_env(object):
         item_pos_ids = [i_id for i_id in item_pos_ids]
         item_neg_ids = [i_id for i_id in item_neg_ids]
 
-        import pdb
-        pdb.set_trace()
+        # import pdb
+        # pdb.set_trace()
 
         user_embed = self.get_user_embedding(unode_ids)
         item_pos_embed = self.get_item_embedding(item_pos_ids)

@@ -600,11 +600,18 @@ class hgnn_env(object):
         # pdb.set_trace()
 
         user_embed = self.get_user_embedding(unode_ids)
-        item_pos_embed = self.get_item_embedding(item_pos_ids)
-        item_neg_embed = self.get_item_embedding(item_neg_ids)
-        # print(u_embeds.shape, i_embeds.shape)
         tim2 = time.time()
-        # print("get embedding: ", tim2 - tim1)
+        print("get user embedding: ", tim2 - tim1)
+
+        item_pos_embed = self.get_item_embedding(item_pos_ids)
+        tim3 = time.time()
+        print("get pos item embedding: ", tim3 - tim2)
+
+        item_neg_embed = self.get_item_embedding(item_neg_ids)
+        tim4 = time.time()
+        print("get neg item embedding: ", tim4 - tim3)
+        # print(u_embeds.shape, i_embeds.shape)
+        # tim2 = time.time()
         # self.train_data.x.weight = nn.Parameter(pred)
         # all_embed = pred  # (n_users + n_entities, cf_concat_dim)
         # user_embed = all_embed[user_ids]  # (cf_batch_size, cf_concat_dim)

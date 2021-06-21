@@ -579,6 +579,9 @@ class hgnn_env(object):
         # pred = self.update_embedding().to(self.device)
         unode_ids = [user_id - self.data.n_id_start_dict[4] for user_id in user_ids]
 
+        import pdb
+        pdb.set_trace()
+
         user_embed = self.get_user_embedding(unode_ids)
         item_pos_embed = self.get_item_embedding(item_pos_ids)
         item_neg_embed = self.get_item_embedding(item_neg_ids)

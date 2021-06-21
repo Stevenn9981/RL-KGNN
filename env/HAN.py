@@ -89,8 +89,9 @@ class HANLayer(nn.Module):
         for i, meta_path in enumerate(meta_paths):
             import pdb
             pdb.set_trace()
-            graph = dgl.metapath_reachable_graph(g, meta_path).to(device)
-            mp = list(map(str, meta_path))
+            with torch.no_grad:
+                graph = dgl.metapath_reachable_graph(g, meta_path).to(device)
+                mp = list(map(str, meta_path))
             emb = self.gat_layers[''.join(mp)](graph, h).flatten(1)
             semantic_embeddings.append(emb)
         semantic_embeddings = torch.stack(semantic_embeddings, dim=1)  # (N, M, D * K)

@@ -235,10 +235,13 @@ class hgnn_env(object):
                                                                      self.optimizer)
         return emb
 
-    def get_user_embedding(self):
+    def get_user_embedding(self, u_ids):
         for metapaths in self.etypes_lists:
             start_type = self.train_data.e_n_dict[metapaths[0][0]][0]
             if start_type == 4:
+                import pdb
+                pdb.set_trace()
+                new_g = dgl.node_subgraph(self.train_data, {'4': u_ids})
                 return self.model(self.train_data, self.train_data.x[self.data.node_type_list == start_type], metapaths,
                                   self.optimizer)
 
@@ -497,6 +500,7 @@ class hgnn_env(object):
         time2 = time.time()
 
         self.optimizer.zero_grad()
+
         # print("generate batch: ", time2 - time1)
         cf_batch_loss = self.calc_cf_loss(cf_batch_user,
                                           cf_batch_pos_item,
@@ -566,6 +570,8 @@ class hgnn_env(object):
         """
         tim1 = time.time()
         # pred = self.update_embedding().to(self.device)
+        unode_ids = [user_id - self.data.n_id_start_dict[4] for user_id in user_ids]
+
         u_embeds = self.get_user_embedding()
         i_embeds = self.get_item_embedding()
         # print(u_embeds.shape, i_embeds.shape)
@@ -576,7 +582,7 @@ class hgnn_env(object):
         # user_embed = all_embed[user_ids]  # (cf_batch_size, cf_concat_dim)
         # item_pos_embed = all_embed[item_pos_ids]  # (cf_batch_size, cf_concat_dim)
         # item_neg_embed = all_embed[item_neg_ids]  # (cf_batch_size, cf_concat_dim)
-        user_embed = u_embeds[[user_id - self.data.n_id_start_dict[4] for user_id in user_ids]]
+        user_embed = u_embeds[unode_ids]
         item_pos_embed = i_embeds[item_pos_ids]  # (cf_batch_size, cf_concat_dim)
         item_neg_embed = i_embeds[item_neg_ids]  # (cf_batch_size, cf_concat_dim)
 

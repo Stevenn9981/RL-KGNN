@@ -34,7 +34,7 @@ def parse_args():
     parser.add_argument('--pretrain_model_path', nargs='?', default='trained_model/model.pth',
                         help='Path of stored model.')
 
-    parser.add_argument('--cf_batch_size', type=int, default=100000,
+    parser.add_argument('--cf_batch_size', type=int, default=1024,
                         help='CF batch size.')
     parser.add_argument('--kg_batch_size', type=int, default=10000,
                         help='KG batch size.')
@@ -387,7 +387,7 @@ class DataLoaderHGNN(object):
     def generate_cf_batch(self, user_dict):
         exist_users = list(user_dict.keys())
         if self.cf_batch_size <= len(exist_users):
-            batch_user = exist_users
+            batch_user = random.sample(exist_users, self.cf_batch_size)
         else:
             batch_user = [random.choice(exist_users) for _ in range(self.cf_batch_size)]
 

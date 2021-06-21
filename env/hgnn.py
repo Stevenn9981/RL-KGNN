@@ -147,7 +147,7 @@ class hgnn_env(object):
         self.model = HAN(
             in_size=data.entity_dim,
             hidden_size=args.hidden_dim,
-            out_size=data.entity_dim,
+            out_size=8,
             num_heads=args.num_heads,
             dropout=0.3).to(
             self.device)

@@ -572,7 +572,7 @@ class hgnn_env(object):
         # pred = self.update_embedding().to(self.device)
         unode_ids = [user_id - self.data.n_id_start_dict[4] for user_id in user_ids]
 
-        u_embeds = self.get_user_embedding()
+        u_embeds = self.get_user_embedding(unode_ids)
         i_embeds = self.get_item_embedding()
         # print(u_embeds.shape, i_embeds.shape)
         tim2 = time.time()

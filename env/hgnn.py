@@ -239,14 +239,12 @@ class hgnn_env(object):
         for metapaths in self.etypes_lists:
             start_type = self.train_data.e_n_dict[metapaths[0][0]][0]
             if start_type == 4:
-                import pdb
-                pdb.set_trace()
                 new_g = dgl.node_subgraph(self.train_data, {'n0': range(self.train_data.num_nodes('n0')),
                                                             'n1': range(self.train_data.num_nodes('n1')),
                                                             'n2': range(self.train_data.num_nodes('n2')),
                                                             'n3': range(self.train_data.num_nodes('n3')),
                                                             'n4': u_ids})
-                return self.model(self.train_data, self.train_data.x[self.data.node_type_list == start_type], metapaths,
+                return self.model(new_g, self.train_data.x[self.data.node_type_list == start_type][u_ids], metapaths,
                                   self.optimizer)
 
     def get_item_embedding(self):
@@ -576,6 +574,8 @@ class hgnn_env(object):
         # pred = self.update_embedding().to(self.device)
         unode_ids = [user_id - self.data.n_id_start_dict[4] for user_id in user_ids]
 
+        import pdb
+        pdb.set_trace()
         u_embeds = self.get_user_embedding(unode_ids)
         i_embeds = self.get_item_embedding()
         # print(u_embeds.shape, i_embeds.shape)

@@ -247,11 +247,16 @@ class hgnn_env(object):
                 return self.model(new_g, self.train_data.x[self.data.node_type_list == start_type][u_ids], metapaths,
                                   self.optimizer)
 
-    def get_item_embedding(self):
+    def get_item_embedding(self, i_ids):
         for metapaths in self.etypes_lists:
             start_type = self.train_data.e_n_dict[metapaths[0][0]][0]
             if start_type == 0:
-                return self.model(self.train_data, self.train_data.x[self.data.node_type_list == start_type], metapaths,
+                new_g = dgl.node_subgraph(self.train_data, {'n0': i_ids,
+                                                            'n1': range(self.train_data.num_nodes('n1')),
+                                                            'n2': range(self.train_data.num_nodes('n2')),
+                                                            'n3': range(self.train_data.num_nodes('n3')),
+                                                            'n4': range(self.train_data.num_nodes('n4'))})
+                return self.model(new_g, self.train_data.x[self.data.node_type_list == start_type][i_ids], metapaths,
                                   self.optimizer)
 
     def _set_action_space(self, _max):
@@ -576,8 +581,9 @@ class hgnn_env(object):
 
         import pdb
         pdb.set_trace()
-        u_embeds = self.get_user_embedding(unode_ids)
-        i_embeds = self.get_item_embedding()
+        user_embed = self.get_user_embedding(unode_ids)
+        item_pos_embed = self.get_item_embedding(item_pos_ids)
+        item_neg_embed = self.get_item_embedding(item_neg_ids)
         # print(u_embeds.shape, i_embeds.shape)
         tim2 = time.time()
         # print("get embedding: ", tim2 - tim1)
@@ -586,9 +592,9 @@ class hgnn_env(object):
         # user_embed = all_embed[user_ids]  # (cf_batch_size, cf_concat_dim)
         # item_pos_embed = all_embed[item_pos_ids]  # (cf_batch_size, cf_concat_dim)
         # item_neg_embed = all_embed[item_neg_ids]  # (cf_batch_size, cf_concat_dim)
-        user_embed = u_embeds[unode_ids]
-        item_pos_embed = i_embeds[item_pos_ids]  # (cf_batch_size, cf_concat_dim)
-        item_neg_embed = i_embeds[item_neg_ids]  # (cf_batch_size, cf_concat_dim)
+        # user_embed = u_embeds[unode_ids]
+        # item_pos_embed = i_embeds[item_pos_ids]  # (cf_batch_size, cf_concat_dim)
+        # item_neg_embed = i_embeds[item_neg_ids]  # (cf_batch_size, cf_concat_dim)
 
         pos_score = torch.sum(user_embed * item_pos_embed, dim=1)  # (cf_batch_size)
         neg_score = torch.sum(user_embed * item_neg_embed, dim=1)  # (cf_batch_size)

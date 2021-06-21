@@ -241,7 +241,7 @@ class hgnn_env(object):
             if start_type == 4:
                 import pdb
                 pdb.set_trace()
-                new_g = dgl.node_subgraph(self.train_data, {'4': u_ids})
+                new_g = dgl.node_subgraph(self.train_data, {'n4': u_ids})
                 return self.model(self.train_data, self.train_data.x[self.data.node_type_list == start_type], metapaths,
                                   self.optimizer)
 

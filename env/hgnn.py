@@ -253,11 +253,13 @@ class hgnn_env(object):
         for metapaths in self.etypes_lists:
             start_type = self.train_data.e_n_dict[metapaths[0][0]][0]
             if start_type == 0:
+                tim1 = time.time()
                 new_g = dgl.node_subgraph(self.train_data, {'n0': i_ids,
                                                             'n1': range(self.train_data.num_nodes('n1')),
                                                             'n2': range(self.train_data.num_nodes('n2')),
                                                             'n3': range(self.train_data.num_nodes('n3')),
                                                             'n4': range(self.train_data.num_nodes('n4'))})
+                print("Get subgraph: ", time.time() - tim1)
                 return self.model(new_g, self.train_data.x[self.data.node_type_list == start_type][i_ids], metapaths,
                                   self.optimizer)
 

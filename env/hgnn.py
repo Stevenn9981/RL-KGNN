@@ -241,7 +241,11 @@ class hgnn_env(object):
             if start_type == 4:
                 import pdb
                 pdb.set_trace()
-                new_g = dgl.node_subgraph(self.train_data, {'n4': u_ids})
+                new_g = dgl.node_subgraph(self.train_data, {'n0': range(self.train_data.num_nodes('n0')),
+                                                            'n1': range(self.train_data.num_nodes('n1')),
+                                                            'n2': range(self.train_data.num_nodes('n2')),
+                                                            'n3': range(self.train_data.num_nodes('n3')),
+                                                            'n4': u_ids})
                 return self.model(self.train_data, self.train_data.x[self.data.node_type_list == start_type], metapaths,
                                   self.optimizer)
 

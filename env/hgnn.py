@@ -259,6 +259,21 @@ class hgnn_env(object):
                 return self.model(new_g, self.train_data.x[self.data.node_type_list == start_type][i_ids], metapaths,
                                   self.optimizer)
 
+    def get_all_user_embedding(self):
+        for metapaths in self.etypes_lists:
+            start_type = self.train_data.e_n_dict[metapaths[0][0]][0]
+            if start_type == 4:
+                return self.model(self.train_data, self.train_data.x[self.data.node_type_list == start_type], metapaths,
+                                  self.optimizer)
+
+    def get_all_item_embedding(self):
+        for metapaths in self.etypes_lists:
+            start_type = self.train_data.e_n_dict[metapaths[0][0]][0]
+            if start_type == 0:
+                return self.model(self.train_data, self.train_data.x[self.data.node_type_list == start_type], metapaths,
+                                  self.optimizer)
+
+
     def _set_action_space(self, _max):
         self.action_num = _max
         self.action_space = Discrete(_max)
@@ -497,43 +512,43 @@ class hgnn_env(object):
         # print(self.train_data.x(torch.tensor([10,11,12])))
 
     def train_GNN(self):
-        # n_cf_batch = self.data.n_cf_train // self.data.cf_batch_size + 1
+        n_cf_batch = self.data.n_cf_train // self.data.cf_batch_size + 1
         cf_total_loss = 0
 
-        # for iter in range(1, n_cf_batch + 1):
-        # print("current iter: ", iter, " ", n_cf_batch)
-        time1 = time.time()
-        cf_batch_user, cf_batch_pos_item, cf_batch_neg_item = self.data.generate_cf_batch(self.data.train_user_dict)
-        time2 = time.time()
+        for iter in range(1, n_cf_batch + 1):
+            print("current iter: ", iter, " ", n_cf_batch)
+            time1 = time.time()
+            cf_batch_user, cf_batch_pos_item, cf_batch_neg_item = self.data.generate_cf_batch(self.data.train_user_dict)
+            time2 = time.time()
 
-        self.optimizer.zero_grad()
+            self.optimizer.zero_grad()
 
-        # print("generate batch: ", time2 - time1)
-        cf_batch_loss = self.calc_cf_loss(cf_batch_user,
-                                          cf_batch_pos_item,
-                                          cf_batch_neg_item)
+            print("generate batch: ", time2 - time1)
+            cf_batch_loss = self.calc_cf_loss(cf_batch_user,
+                                              cf_batch_pos_item,
+                                              cf_batch_neg_item)
 
-        time3 = time.time()
-        # print("calculate loss: ", time3 - time2)
+            time3 = time.time()
+            print("calculate loss: ", time3 - time2)
 
-        # import pdb
-        # pdb.set_trace()
+            # import pdb
+            # pdb.set_trace()
 
-        cf_batch_loss.backward()
+            cf_batch_loss.backward()
 
-        time4 = time.time()
-        # print("backward: ", time4 - time3)
+            time4 = time.time()
+            print("backward: ", time4 - time3)
 
-        self.optimizer.step()
+            self.optimizer.step()
 
-        time5 = time.time()
-        # print("step: ", time5 - time4)
+            time5 = time.time()
+            print("step: ", time5 - time4)
 
-        # cf_total_loss += float(cf_batch_loss)
+            cf_total_loss += float(cf_batch_loss)
 
-        # cf_total_loss.backward()
-        # self.optimizer.step()
-        print("total_cf_loss: ", float(cf_batch_loss))
+            # cf_total_loss.backward()
+            # self.optimizer.step()
+        print("total_cf_loss: ", float(cf_total_loss))
 
     def calc_kg_loss(self, h, r, pos_t, neg_t):
         """
@@ -627,8 +642,8 @@ class hgnn_env(object):
         # self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))
 
         with torch.no_grad():
-            u_embeds = self.get_user_embedding()
-            i_embeds = self.get_item_embedding()
+            u_embeds = self.get_all_user_embedding()
+            i_embeds = self.get_all_item_embedding()
 
             time2 = time.time()
 
@@ -666,8 +681,8 @@ class hgnn_env(object):
                     neg_dict[u].extend(nl)
             # self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))
             # all_embed = self.update_embedding().to(self.device)
-            u_embeds = self.get_user_embedding()
-            i_embeds = self.get_item_embedding()
+            u_embeds = self.get_all_user_embedding()
+            i_embeds = self.get_all_item_embedding()
 
             pos_logits = torch.tensor([]).to(self.device)
             neg_logits = torch.tensor([]).to(self.device)

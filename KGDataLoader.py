@@ -354,7 +354,7 @@ class DataLoaderHGNN(object):
             pos_item_idx = np.random.randint(low=0, high=n_pos_items, size=1)[0]
             pos_item_id = pos_items[pos_item_idx]
             if pos_item_id not in sample_pos_items:
-                sample_pos_items.append(torch.LongTensor(pos_item_id))
+                sample_pos_items.append(pos_item_id)
         return sample_pos_items
 
     def sample_neg_items_for_u(self, user_dict, user_id, n_sample_neg_items):
@@ -367,7 +367,7 @@ class DataLoaderHGNN(object):
 
             neg_item_id = np.random.randint(low=0, high=self.n_items, size=1)[0]
             if neg_item_id not in pos_items and neg_item_id not in sample_neg_items:
-                sample_neg_items.append(torch.LongTensor(neg_item_id))
+                sample_neg_items.append(neg_item_id)
         return sample_neg_items
 
     def sample_neg_items_for_u_test(self, user_dict, test_dict, user_id, n_sample_neg_items):
@@ -381,7 +381,7 @@ class DataLoaderHGNN(object):
 
             neg_item_id = np.random.randint(low=0, high=self.n_items, size=1)[0]
             if neg_item_id not in pos_items and neg_item_id not in pos_items_2 and neg_item_id not in sample_neg_items:
-                sample_neg_items.append(torch.LongTensor(neg_item_id))
+                sample_neg_items.append(neg_item_id)
         return sample_neg_items
 
     def generate_cf_batch(self, user_dict):

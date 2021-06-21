@@ -11,7 +11,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 import dgl
-from dgl.nn.pytorch import GATConv
+from dgl.nn.pytorch import GATConv, GraphConv
 
 
 class SemanticAttention(nn.Module):
@@ -76,9 +76,12 @@ class HANLayer(nn.Module):
         for mp in meta_paths:
             mp = list(map(str, mp))
             if ''.join(mp) not in self.gat_layers:
-                gatconv = nn.ModuleDict({''.join(mp): GATConv(self.in_size, self.out_size, self.layer_num_heads,
-                                                        self.dropout, self.dropout,
-                                                        allow_zero_in_degree=True).to(device)})
+                # gatconv = nn.ModuleDict({''.join(mp): GATConv(self.in_size, self.out_size, self.layer_num_heads,
+                #                                         self.dropout, self.dropout,
+                #                                         allow_zero_in_degree=True).to(device)})
+
+                gatconv = nn.ModuleDict({''.join(mp): GraphConv(self.in_size, self.out_size).to(device)})
+
                 self.gat_layers.update(gatconv)
                 optimizer.add_param_group({'params': gatconv.parameters()})
 

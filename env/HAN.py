@@ -88,12 +88,13 @@ class HANLayer(nn.Module):
 
         for i, meta_path in enumerate(meta_paths):
             graph = dgl.metapath_reachable_graph(g, meta_path)
-            import pdb
-            pdb.set_trace()
             sampler = dgl.dataloading.MultiLayerFullNeighborSampler(1)
             dataloader = dgl.dataloading.NodeDataLoader(
                 graph, b_ids, sampler, batch_size=1024, drop_last=False)
-            input_nodes, output_nodes, blocks = next(iter(dataloader))
+            import pdb
+            pdb.set_trace()
+            for input_nodes, output_nodes, blocks in dataloader:
+                print(blocks)
 
             mp = list(map(str, meta_path))
             emb = self.gat_layers[''.join(mp)](graph, h).flatten(1)

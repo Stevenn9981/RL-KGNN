@@ -84,8 +84,8 @@ def main():
     best = 0
     best_i = 0
     for i in range(max_episodes + 1):
+        print('Current Iter: ', i)
         if i % 40 == 0:
-            print('Current Iter: ', i)
             # env.eval_batch(100)
             acc = env.test_batch(logger2)
             if acc > best:

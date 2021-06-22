@@ -250,6 +250,8 @@ class hgnn_env(object):
                                   self.optimizer, i_ids)
 
     def get_all_user_embedding(self):
+        import pdb
+        pdb.set_trace()
         user_emb = torch.tensor([]).to(self.device)
         all_user_ids = torch.tensor(range(len(self.data.node_type_list == 4)))
         batch_ids = torch.split(all_user_ids, 1024)

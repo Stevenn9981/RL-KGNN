@@ -76,10 +76,10 @@ class HANLayer(nn.Module):
         semantic_embeddings = []
 
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        tim1 = time.time()
         for meta_path in meta_paths:
             mp = list(map(str, meta_path))
             if ''.join(mp) not in self.gat_layers:
+                tim1 = time.time()
                 self.sg_dict[''.join(mp)] = dgl.metapath_reachable_graph(g, meta_path)
                 gatconv = nn.ModuleDict({''.join(mp): GATConv(self.in_size, self.out_size, self.layer_num_heads,
                                                               self.dropout, self.dropout,
@@ -87,8 +87,8 @@ class HANLayer(nn.Module):
 
                 self.gat_layers.update(gatconv)
                 optimizer.add_param_group({'params': gatconv.parameters()})
+                print("Prepare meta-path graph: ", time.time() - tim1)
 
-        print("Prepare meta-path graph: ", time.time() - tim1)
 
         for i, meta_path in enumerate(meta_paths):
             mp = list(map(str, meta_path))

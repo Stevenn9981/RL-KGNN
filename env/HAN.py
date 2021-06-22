@@ -90,15 +90,13 @@ class HANLayer(nn.Module):
             graph = dgl.metapath_reachable_graph(g, meta_path)
             sampler = dgl.dataloading.MultiLayerFullNeighborSampler(1)
             dataloader = dgl.dataloading.NodeDataLoader(
-                graph, b_ids, sampler, batch_size=1024, drop_last=False)
+                graph, b_ids, sampler, torch.device(device), batch_size=len(b_ids), drop_last=False)
             import pdb
             pdb.set_trace()
             for input_nodes, output_nodes, blocks in dataloader:
-                print(blocks)
-
-            mp = list(map(str, meta_path))
-            emb = self.gat_layers[''.join(mp)](graph, h).flatten(1)
-            semantic_embeddings.append(emb)
+                mp = list(map(str, meta_path))
+                emb = self.gat_layers[''.join(mp)](blocks[0], h[b_ids]).flatten(1)
+                semantic_embeddings.append(emb)
         semantic_embeddings = torch.stack(semantic_embeddings, dim=1)  # (N, M, D * K)
 
         return self.semantic_attention(semantic_embeddings)  # (N, D * K)

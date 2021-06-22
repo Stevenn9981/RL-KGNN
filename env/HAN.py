@@ -89,8 +89,14 @@ class HANLayer(nn.Module):
         for i, meta_path in enumerate(meta_paths):
             import pdb
             pdb.set_trace()
-            # graph = dgl.metapath_reachable_graph(g, meta_path).to(device)
-            graph = dgl.node_subgraph(dgl.metapath_reachable_graph(g, meta_path), b_ids).to(device)
+            graph = dgl.metapath_reachable_graph(g, meta_path).to(device)
+            sampler = dgl.dataloading.MultiLayerFullNeighborSampler(1)
+            dataloader = dgl.dataloading.NodeDataLoader(
+                g, b_ids, sampler,
+                batch_size=len(b_ids),
+                drop_last=False)
+            input_nodes, output_nodes, blocks = next(iter(dataloader))
+
             mp = list(map(str, meta_path))
             emb = self.gat_layers[''.join(mp)](graph, h).flatten(1)
             semantic_embeddings.append(emb)

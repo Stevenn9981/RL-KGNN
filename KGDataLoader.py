@@ -86,7 +86,7 @@ def parse_args():
                              '2 - only target node features (id vec for others); ' +
                              '3 - all id vec. Default is 2.')
     parser.add_argument('--layers', type=int, default=2, help='Number of layers. Default is 2.')
-    parser.add_argument('--hidden-dim', type=int, default=32, help='Dimension of the node hidden state. Default is 64.')
+    parser.add_argument('--hidden-dim', type=int, default=64, help='Dimension of the node hidden state. Default is 64.')
     parser.add_argument('--num-heads', type=list, default=[1], help='Number of the attention heads. Default is 8.')
     parser.add_argument('--attn-vec-dim', type=int, default=128,
                         help='Dimension of the attention vector. Default is 128.')

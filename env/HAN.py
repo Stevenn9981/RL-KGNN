@@ -88,6 +88,7 @@ class HANLayer(nn.Module):
         meta_paths = list(tuple(meta_path) for meta_path in meta_paths)
 
         for i, meta_path in enumerate(meta_paths):
+            c = h.clone()
             mp = list(map(str, meta_path))
             graph = self.sg_dict[''.join(mp)]
             sampler = dgl.dataloading.MultiLayerFullNeighborSampler(1)
@@ -99,7 +100,6 @@ class HANLayer(nn.Module):
                 import pdb
                 pdb.set_trace()
                 emb = self.gat_layers[''.join(mp)](blocks[0], h[input_nodes]).flatten(1)
-                c = h.clone()
                 c[output_nodes] = emb
                 emb = c[b_ids]
                 semantic_embeddings.append(emb)

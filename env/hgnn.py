@@ -511,7 +511,7 @@ class hgnn_env(object):
             cf_batch_user, cf_batch_pos_item, cf_batch_neg_item = self.data.generate_cf_batch(self.data.train_user_dict)
             time2 = time.time()
 
-            print(len(set(cf_batch_pos_item)))
+            print(len(set(cf_batch_pos_item.tolist())))
 
             self.optimizer.zero_grad()
 

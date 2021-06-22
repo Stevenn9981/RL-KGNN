@@ -87,14 +87,12 @@ class HANLayer(nn.Module):
         meta_paths = list(tuple(meta_path) for meta_path in meta_paths)
 
         for i, meta_path in enumerate(meta_paths):
+            graph = dgl.metapath_reachable_graph(g, meta_path).to(device)
             import pdb
             pdb.set_trace()
-            graph = dgl.metapath_reachable_graph(g, meta_path).to(device)
             sampler = dgl.dataloading.MultiLayerFullNeighborSampler(1)
             dataloader = dgl.dataloading.NodeDataLoader(
-                graph, b_ids, sampler,
-                batch_size=len(b_ids),
-                drop_last=False)
+                graph, b_ids, sampler)
             input_nodes, output_nodes, blocks = next(iter(dataloader))
 
             mp = list(map(str, meta_path))

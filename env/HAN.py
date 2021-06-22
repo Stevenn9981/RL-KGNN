@@ -89,8 +89,8 @@ class HANLayer(nn.Module):
         for i, meta_path in enumerate(meta_paths):
             # import pdb
             # pdb.set_trace()
-            graph = dgl.metapath_reachable_graph(g, meta_path).to(device)
-            graph = dgl.node_subgraph(graph, b_ids)
+            # graph = dgl.metapath_reachable_graph(g, meta_path).to(device)
+            graph = dgl.node_subgraph(dgl.metapath_reachable_graph(g, meta_path), b_ids).to(device)
             import pdb
             pdb.set_trace()
             mp = list(map(str, meta_path))

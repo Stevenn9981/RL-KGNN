@@ -143,10 +143,10 @@ class DataLoaderHGNN(object):
 
         self.print_info(logging)
         self.train_graph = self.create_graph(self.kg_train_data, self.n_users_entities)
-        self.test_graph = self.create_graph(self.kg_test_data, self.n_users_entities)
+        # self.test_graph = self.create_graph(self.kg_test_data, self.n_users_entities)
 
-        if self.use_pretrain == 1:
-            self.load_pretrained_data()
+        # if self.use_pretrain == 1:
+        #     self.load_pretrained_data()
 
     def load_cf(self, filename):
         user = []
@@ -454,14 +454,14 @@ class DataLoaderHGNN(object):
         batch_neg_tail = torch.LongTensor(batch_neg_tail)
         return batch_head, batch_relation, batch_pos_tail, batch_neg_tail
 
-    def load_pretrained_data(self):
-        pre_model = 'mf'
-        pretrain_path = '%s/%s/%s.npz' % (self.pretrain_embedding_dir, self.data_name, pre_model)
-        pretrain_data = np.load(pretrain_path)
-        self.user_pre_embed = pretrain_data['user_embed']
-        self.item_pre_embed = pretrain_data['item_embed']
-
-        assert self.user_pre_embed.shape[0] == self.n_users
-        assert self.item_pre_embed.shape[0] == self.n_items
-        assert self.user_pre_embed.shape[1] == self.args.entity_dim
-        assert self.item_pre_embed.shape[1] == self.args.entity_dim
+    # def load_pretrained_data(self):
+    #     pre_model = 'mf'
+    #     pretrain_path = '%s/%s/%s.npz' % (self.pretrain_embedding_dir, self.data_name, pre_model)
+    #     pretrain_data = np.load(pretrain_path)
+    #     self.user_pre_embed = pretrain_data['user_embed']
+    #     self.item_pre_embed = pretrain_data['item_embed']
+    #
+    #     assert self.user_pre_embed.shape[0] == self.n_users
+    #     assert self.item_pre_embed.shape[0] == self.n_items
+    #     assert self.user_pre_embed.shape[1] == self.args.entity_dim
+    #     assert self.item_pre_embed.shape[1] == self.args.entity_dim

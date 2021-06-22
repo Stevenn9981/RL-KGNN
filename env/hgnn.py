@@ -154,7 +154,7 @@ class hgnn_env(object):
         self.train_data = data.train_graph.to(self.device)
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr, weight_decay=weight_decay)
         self.train_data.node_idx = self.train_data.node_idx.to(self.device)
-        self.data.test_graph = self.data.test_graph.to(self.device)
+        # self.data.test_graph = self.data.test_graph.to(self.device)
         # import pdb
         # pdb.set_trace()
 

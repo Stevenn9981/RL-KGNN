@@ -591,13 +591,13 @@ class hgnn_env(object):
         # import pdb
         # pdb.set_trace()
 
-        user_embed = self.get_user_embedding(unode_ids)
-        tim2 = time.time()
-        print("get user embedding: ", tim2 - tim1)
-
         item_pos_embed = self.get_item_embedding(item_pos_ids)
+        tim2 = time.time()
+        print("get pos item embedding: ", tim2 - tim1)
+
+        user_embed = self.get_user_embedding(unode_ids)
         tim3 = time.time()
-        print("get pos item embedding: ", tim3 - tim2)
+        print("get user embedding: ", tim3 - tim2)
 
         item_neg_embed = self.get_item_embedding(item_neg_ids)
         tim4 = time.time()

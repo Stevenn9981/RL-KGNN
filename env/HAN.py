@@ -95,6 +95,8 @@ class HANLayer(nn.Module):
             dataloader = dgl.dataloading.NodeDataLoader(
                 graph, b_ids, sampler, torch.device(device), batch_size=len(b_ids), drop_last=False)
             for input_nodes, output_nodes, blocks in dataloader:
+                import pdb
+                pdb.set_trace()
                 emb = self.gat_layers[''.join(mp)](blocks[0], h[input_nodes]).flatten(1)
                 semantic_embeddings.append(emb)
         semantic_embeddings = torch.stack(semantic_embeddings, dim=1)  # (N, M, D * K)

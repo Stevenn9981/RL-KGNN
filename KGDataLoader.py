@@ -387,8 +387,7 @@ class DataLoaderHGNN(object):
     def generate_cf_batch(self, user_dict):
         exist_users = list(user_dict.keys())
         if self.cf_batch_size <= len(exist_users):
-            batch_user = exist_users
-            # batch_user = random.sample(exist_users, self.cf_batch_size)
+            batch_user = random.sample(exist_users, self.cf_batch_size)
         else:
             batch_user = [random.choice(exist_users) for _ in range(self.cf_batch_size)]
 

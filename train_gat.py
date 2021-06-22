@@ -12,7 +12,7 @@ from copy import deepcopy
 import logging
 import torch.nn as nn
 
-from env.hgnn import hgnn_env, GAT, GraphSAGE
+from env.hgnn import hgnn_env
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '1,2'
 

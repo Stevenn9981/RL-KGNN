@@ -151,7 +151,7 @@ class hgnn_env(object):
             num_heads=args.num_heads,
             dropout=0.3).to(
             self.device)
-        self.train_data = data.train_graph.to(self.device)
+        self.train_data = data.train_graph
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr, weight_decay=weight_decay)
         self.train_data.node_idx = self.train_data.node_idx.to(self.device)
         # self.data.test_graph = self.data.test_graph.to(self.device)
@@ -510,8 +510,6 @@ class hgnn_env(object):
             time1 = time.time()
             cf_batch_user, cf_batch_pos_item, cf_batch_neg_item = self.data.generate_cf_batch(self.data.train_user_dict)
             time2 = time.time()
-
-            print(len(set(cf_batch_pos_item.tolist())))
 
             self.optimizer.zero_grad()
 

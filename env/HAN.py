@@ -87,7 +87,7 @@ class HANLayer(nn.Module):
         meta_paths = list(tuple(meta_path) for meta_path in meta_paths)
 
         for i, meta_path in enumerate(meta_paths):
-            graph = dgl.metapath_reachable_graph(g, meta_path).to(device)
+            graph = dgl.metapath_reachable_graph(g, meta_path)
             import pdb
             pdb.set_trace()
             sampler = dgl.dataloading.MultiLayerFullNeighborSampler(1)
@@ -115,6 +115,6 @@ class HAN(nn.Module):
 
     def forward(self, g, h, meta_paths, optimizer, b_ids):
         for gnn in self.layers:
-            h = gnn(g, h, meta_paths, optimizer, b_ids)
+            h = gnn(g.cpu(), h, meta_paths, optimizer, b_ids)
 
         return self.predict(h)

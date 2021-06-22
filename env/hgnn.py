@@ -597,19 +597,17 @@ class hgnn_env(object):
         # import pdb
         # pdb.set_trace()
 
-        # user_embed = self.get_user_embedding(unode_ids)
-        u_embeds = self.get_all_user_embedding()
+        user_embed = self.get_user_embedding(unode_ids)
         tim2 = time.time()
         print("get user embedding: ", tim2 - tim1)
 
-        # item_pos_embed = self.get_item_embedding(item_pos_ids)
+        item_pos_embed = self.get_item_embedding(item_pos_ids)
         tim3 = time.time()
-        i_embeds = self.get_all_item_embedding()
-        print("get item embedding: ", tim3 - tim2)
+        print("get pos item embedding: ", tim3 - tim2)
 
-        # item_neg_embed = self.get_item_embedding(item_neg_ids)
-        # tim4 = time.time()
-        # print("get neg item embedding: ", tim4 - tim3)
+        item_neg_embed = self.get_item_embedding(item_neg_ids)
+        tim4 = time.time()
+        print("get neg item embedding: ", tim4 - tim3)
         # print(u_embeds.shape, i_embeds.shape)
         # tim2 = time.time()
         # self.train_data.x.weight = nn.Parameter(pred)
@@ -617,10 +615,9 @@ class hgnn_env(object):
         # user_embed = all_embed[user_ids]  # (cf_batch_size, cf_concat_dim)
         # item_pos_embed = all_embed[item_pos_ids]  # (cf_batch_size, cf_concat_dim)
         # item_neg_embed = all_embed[item_neg_ids]  # (cf_batch_size, cf_concat_dim)
-
-        user_embed = u_embeds[unode_ids]
-        item_pos_embed = i_embeds[item_pos_ids]  # (cf_batch_size, cf_concat_dim)
-        item_neg_embed = i_embeds[item_neg_ids]  # (cf_batch_size, cf_concat_dim)
+        # user_embed = u_embeds[unode_ids]
+        # item_pos_embed = i_embeds[item_pos_ids]  # (cf_batch_size, cf_concat_dim)
+        # item_neg_embed = i_embeds[item_neg_ids]  # (cf_batch_size, cf_concat_dim)
 
         pos_score = torch.sum(user_embed * item_pos_embed, dim=1)  # (cf_batch_size)
         neg_score = torch.sum(user_embed * item_neg_embed, dim=1)  # (cf_batch_size)

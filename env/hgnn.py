@@ -252,7 +252,7 @@ class hgnn_env(object):
     def get_all_user_embedding(self):
         user_emb = torch.tensor([]).to(self.device)
         all_user_ids = torch.tensor(range(self.train_data.x[self.data.node_type_list == 4].shape[0]))
-        batch_ids = torch.split(all_user_ids, 1024)
+        batch_ids = torch.split(all_user_ids, self.args.kg_batch_size)
         for metapaths in self.etypes_lists:
             start_type = self.train_data.e_n_dict[metapaths[0][0]][0]
             if start_type == 4:
@@ -265,7 +265,7 @@ class hgnn_env(object):
     def get_all_item_embedding(self):
         item_emb = torch.tensor([]).to(self.device)
         all_item_ids = torch.tensor(range(self.train_data.x[self.data.node_type_list == 0].shape[0]))
-        batch_ids = torch.split(all_item_ids, 1024)
+        batch_ids = torch.split(all_item_ids, self.args.kg_batch_size)
         for metapaths in self.etypes_lists:
             start_type = self.train_data.e_n_dict[metapaths[0][0]][0]
             if start_type == 0:

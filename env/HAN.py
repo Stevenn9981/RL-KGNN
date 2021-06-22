@@ -92,7 +92,7 @@ class HANLayer(nn.Module):
             pdb.set_trace()
             sampler = dgl.dataloading.MultiLayerFullNeighborSampler(1)
             dataloader = dgl.dataloading.NodeDataLoader(
-                graph, b_ids, sampler)
+                graph, b_ids, sampler, batch_size=1024, drop_last=False)
             input_nodes, output_nodes, blocks = next(iter(dataloader))
 
             mp = list(map(str, meta_path))

@@ -79,12 +79,11 @@ class HANLayer(nn.Module):
             if ''.join(mp) not in self.gat_layers:
                 self.sg_dict[''.join(mp)] = dgl.metapath_reachable_graph(g, meta_path)
                 gatconv = nn.ModuleDict({''.join(mp): GATConv(self.in_size, self.out_size, self.layer_num_heads,
-                                                        self.dropout, self.dropout,
-                                                        allow_zero_in_degree=True).to(device)})
+                                                              self.dropout, self.dropout,
+                                                              allow_zero_in_degree=True).to(device)})
 
                 self.gat_layers.update(gatconv)
                 optimizer.add_param_group({'params': gatconv.parameters()})
-
 
         meta_paths = list(tuple(meta_path) for meta_path in meta_paths)
 
@@ -93,7 +92,8 @@ class HANLayer(nn.Module):
             graph = self.sg_dict[''.join(mp)]
             sampler = dgl.dataloading.MultiLayerFullNeighborSampler(1)
             dataloader = dgl.dataloading.NodeDataLoader(
-                graph, b_ids, sampler, torch.device(device), batch_size=len(b_ids), drop_last=False)
+                graph, torch.LongTensor(list(set(b_ids))), sampler, torch.device(device), batch_size=len(b_ids),
+                drop_last=False)
             for input_nodes, output_nodes, blocks in dataloader:
                 import pdb
                 pdb.set_trace()

@@ -62,6 +62,7 @@ class HANLayer(nn.Module):
         self.mp_weights = nn.ParameterDict()
         self.in_size, self.out_size, self.layer_num_heads, self.dropout = in_size, out_size, layer_num_heads, dropout
         self.semantic_attention = SemanticAttention(in_size=out_size * layer_num_heads)
+        self.sg_dict = dict()
 
         self.project = nn.Sequential(
             nn.Linear(out_size * layer_num_heads, hidden_size),
@@ -73,9 +74,10 @@ class HANLayer(nn.Module):
         semantic_embeddings = []
 
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        for mp in meta_paths:
-            mp = list(map(str, mp))
+        for meta_path in meta_paths:
+            mp = list(map(str, meta_path))
             if ''.join(mp) not in self.gat_layers:
+                self.sg_dict[''.join(mp)] = dgl.metapath_reachable_graph(g, meta_path)
                 gatconv = nn.ModuleDict({''.join(mp): GATConv(self.in_size, self.out_size, self.layer_num_heads,
                                                         self.dropout, self.dropout,
                                                         allow_zero_in_degree=True).to(device)})
@@ -87,15 +89,13 @@ class HANLayer(nn.Module):
         meta_paths = list(tuple(meta_path) for meta_path in meta_paths)
 
         for i, meta_path in enumerate(meta_paths):
-            graph = dgl.metapath_reachable_graph(g, meta_path)
+            mp = list(map(str, meta_path))
+            graph = self.sg_dict[''.join(mp)]
             sampler = dgl.dataloading.MultiLayerFullNeighborSampler(1)
             dataloader = dgl.dataloading.NodeDataLoader(
                 graph, b_ids, sampler, torch.device(device), batch_size=len(b_ids), drop_last=False)
-            import pdb
-            pdb.set_trace()
             for input_nodes, output_nodes, blocks in dataloader:
-                mp = list(map(str, meta_path))
-                emb = self.gat_layers[''.join(mp)](blocks[0], h[b_ids]).flatten(1)
+                emb = self.gat_layers[''.join(mp)](blocks[0], h[input_nodes]).flatten(1)
                 semantic_embeddings.append(emb)
         semantic_embeddings = torch.stack(semantic_embeddings, dim=1)  # (N, M, D * K)
 

@@ -27,92 +27,92 @@ def _L2_loss_mean(x):
     return torch.mean(torch.sum(torch.pow(x, 2), dim=1, keepdim=False) / 2.)
 
 
-class Net(torch.nn.Module):
-    def __init__(self, entity_dim):
-        super(Net, self).__init__()
-        dout = 0
-        self.entity_dim = entity_dim
-        self.layer1 = nn.Linear(64, 64)
-        self.node_type_dict = nn.ModuleList()
-        self.edge_type_dict = nn.ModuleDict()
-        for i in range(5):
-            self.node_type_dict.append(nn.Linear(entity_dim, 64))
-        self.conv1 = GATConv(64, 32, 2, dropout=dout)
-        self.conv2 = GATConv(64, 64, 2, dropout=dout)
-        self.conv3 = GATConv(128, entity_dim, 1, dropout=dout)
-
-    def forward(self, x, edge_index, node_types):
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        t = self.node_type_dict[0](x)
-        for i in range(5):
-            t[node_types == i] = self.node_type_dict[i](x)[node_types == i]
-        x = t
-
-        x = F.relu(self.layer1(x))
-        x = self.conv1(x, edge_index)
-        x = torch.flatten(x, start_dim=1)
-        x = F.relu(x)
-        x = self.conv2(x, edge_index)
-        x = torch.flatten(x, start_dim=1)
-        x = F.relu(x)
-        x = self.conv3(x, edge_index)
-        x = torch.flatten(x, start_dim=1)
-        return x
-
-
-class GAT(torch.nn.Module):
-    def __init__(self, entity_dim):
-        super(GAT, self).__init__()
-        self.conv1 = GATConv(entity_dim, entity_dim, 1)
-
-    def forward(self, x, edge_index):
-        x = self.conv1(x, edge_index)
-        x = torch.flatten(x, start_dim=1)
-        return x
+# class Net(torch.nn.Module):
+#     def __init__(self, entity_dim):
+#         super(Net, self).__init__()
+#         dout = 0
+#         self.entity_dim = entity_dim
+#         self.layer1 = nn.Linear(64, 64)
+#         self.node_type_dict = nn.ModuleList()
+#         self.edge_type_dict = nn.ModuleDict()
+#         for i in range(5):
+#             self.node_type_dict.append(nn.Linear(entity_dim, 64))
+#         self.conv1 = GATConv(64, 32, 2, dropout=dout)
+#         self.conv2 = GATConv(64, 64, 2, dropout=dout)
+#         self.conv3 = GATConv(128, entity_dim, 1, dropout=dout)
+#
+#     def forward(self, x, edge_index, node_types):
+#         device = 'cuda' if torch.cuda.is_available() else 'cpu'
+#         t = self.node_type_dict[0](x)
+#         for i in range(5):
+#             t[node_types == i] = self.node_type_dict[i](x)[node_types == i]
+#         x = t
+#
+#         x = F.relu(self.layer1(x))
+#         x = self.conv1(x, edge_index)
+#         x = torch.flatten(x, start_dim=1)
+#         x = F.relu(x)
+#         x = self.conv2(x, edge_index)
+#         x = torch.flatten(x, start_dim=1)
+#         x = F.relu(x)
+#         x = self.conv3(x, edge_index)
+#         x = torch.flatten(x, start_dim=1)
+#         return x
 
 
-class GraphSAGE(torch.nn.Module):
-    def __init__(self, entity_dim):
-        super(GraphSAGE, self).__init__()
-        self.conv1 = SAGEConv(entity_dim, entity_dim)
-
-    def forward(self, x, edge_index):
-        x = self.conv1(x, edge_index)
-        return x
-
-
-class GAT2(torch.nn.Module):
-    def __init__(self, entity_dim):
-        super(GAT2, self).__init__()
-        self.conv1 = GATConv(entity_dim, 32, 1)
-        self.conv2 = GATConv(32, entity_dim, 1)
-
-    def forward(self, x, edge_index):
-        x = self.conv1(x, edge_index)
-        x = torch.flatten(x, start_dim=1)
-        x = F.relu(x)
-        x = self.conv2(x, edge_index)
-        x = torch.flatten(x, start_dim=1)
-        return x
+# class GAT(torch.nn.Module):
+#     def __init__(self, entity_dim):
+#         super(GAT, self).__init__()
+#         self.conv1 = GATConv(entity_dim, entity_dim, 1)
+#
+#     def forward(self, x, edge_index):
+#         x = self.conv1(x, edge_index)
+#         x = torch.flatten(x, start_dim=1)
+#         return x
 
 
-class GAT3(torch.nn.Module):
-    def __init__(self, entity_dim):
-        super(GAT3, self).__init__()
-        self.conv1 = GATConv(entity_dim, entity_dim, 1)
-        self.conv2 = GATConv(entity_dim, entity_dim, 1)
-        self.conv3 = GATConv(entity_dim, entity_dim, 1)
+# class GraphSAGE(torch.nn.Module):
+#     def __init__(self, entity_dim):
+#         super(GraphSAGE, self).__init__()
+#         self.conv1 = SAGEConv(entity_dim, entity_dim)
+#
+#     def forward(self, x, edge_index):
+#         x = self.conv1(x, edge_index)
+#         return x
 
-    def forward(self, x, edge_index):
-        x = self.conv1(x, edge_index)
-        x = torch.flatten(x, start_dim=1)
-        x = F.relu(x)
-        x = self.conv2(x, edge_index)
-        x = torch.flatten(x, start_dim=1)
-        x = F.relu(x)
-        x = self.conv3(x, edge_index)
-        x = torch.flatten(x, start_dim=1)
-        return x
+
+# class GAT2(torch.nn.Module):
+#     def __init__(self, entity_dim):
+#         super(GAT2, self).__init__()
+#         self.conv1 = GATConv(entity_dim, 32, 1)
+#         self.conv2 = GATConv(32, entity_dim, 1)
+#
+#     def forward(self, x, edge_index):
+#         x = self.conv1(x, edge_index)
+#         x = torch.flatten(x, start_dim=1)
+#         x = F.relu(x)
+#         x = self.conv2(x, edge_index)
+#         x = torch.flatten(x, start_dim=1)
+#         return x
+
+
+# class GAT3(torch.nn.Module):
+#     def __init__(self, entity_dim):
+#         super(GAT3, self).__init__()
+#         self.conv1 = GATConv(entity_dim, entity_dim, 1)
+#         self.conv2 = GATConv(entity_dim, entity_dim, 1)
+#         self.conv3 = GATConv(entity_dim, entity_dim, 1)
+#
+#     def forward(self, x, edge_index):
+#         x = self.conv1(x, edge_index)
+#         x = torch.flatten(x, start_dim=1)
+#         x = F.relu(x)
+#         x = self.conv2(x, edge_index)
+#         x = torch.flatten(x, start_dim=1)
+#         x = F.relu(x)
+#         x = self.conv3(x, edge_index)
+#         x = torch.flatten(x, start_dim=1)
+#         return x
 
 
 class hgnn_env(object):
@@ -239,29 +239,15 @@ class hgnn_env(object):
         for metapaths in self.etypes_lists:
             start_type = self.train_data.e_n_dict[metapaths[0][0]][0]
             if start_type == 4:
-                tim1 = time.time()
-                new_g = dgl.node_subgraph(self.train_data, {'n0': range(self.train_data.num_nodes('n0')),
-                                                            'n1': range(self.train_data.num_nodes('n1')),
-                                                            'n2': range(self.train_data.num_nodes('n2')),
-                                                            'n3': range(self.train_data.num_nodes('n3')),
-                                                            'n4': u_ids})
-                print("Get subgraph: ", time.time() - tim1)
-                return self.model(new_g, self.train_data.x[self.data.node_type_list == start_type][u_ids], metapaths,
-                                  self.optimizer)
+                return self.model(self.train_data, self.train_data.x[self.data.node_type_list == start_type], metapaths,
+                                  self.optimizer, u_ids)
 
     def get_item_embedding(self, i_ids):
         for metapaths in self.etypes_lists:
             start_type = self.train_data.e_n_dict[metapaths[0][0]][0]
             if start_type == 0:
-                tim1 = time.time()
-                new_g = dgl.node_subgraph(self.train_data, {'n0': i_ids,
-                                                            'n1': range(self.train_data.num_nodes('n1')),
-                                                            'n2': range(self.train_data.num_nodes('n2')),
-                                                            'n3': range(self.train_data.num_nodes('n3')),
-                                                            'n4': range(self.train_data.num_nodes('n4'))})
-                print("Get subgraph: ", time.time() - tim1)
-                return self.model(new_g, self.train_data.x[self.data.node_type_list == start_type][i_ids], metapaths,
-                                  self.optimizer)
+                return self.model(self.train_data, self.train_data.x[self.data.node_type_list == start_type], metapaths,
+                                  self.optimizer, i_ids)
 
     def get_all_user_embedding(self):
         for metapaths in self.etypes_lists:
@@ -554,39 +540,39 @@ class hgnn_env(object):
             # self.optimizer.step()
         print("total_cf_loss: ", float(cf_total_loss))
 
-    def calc_kg_loss(self, h, r, pos_t, neg_t):
-        """
-        h:      (kg_batch_size)
-        r:      (kg_batch_size)
-        pos_t:  (kg_batch_size)
-        neg_t:  (kg_batch_size)
-        """
-        r_embed = self.train_data.relation_embed[r]  # (kg_batch_size, relation_dim)
-
-        W_r = self.W_R[r]  # (kg_batch_size, entity_dim, relation_dim)
-
-        pred = self.update_embedding().to(self.device)
-
-        h_embed = pred[h]  # (kg_batch_size, entity_dim)
-        pos_t_embed = pred[pos_t]  # (kg_batch_size, entity_dim)
-        neg_t_embed = pred[neg_t]  # (kg_batch_size, entity_dim)
-
-        r_mul_h = torch.bmm(h_embed.unsqueeze(1), W_r).squeeze(1)  # (kg_batch_size, relation_dim)
-        r_mul_pos_t = torch.bmm(pos_t_embed.unsqueeze(1), W_r).squeeze(1)  # (kg_batch_size, relation_dim)
-        r_mul_neg_t = torch.bmm(neg_t_embed.unsqueeze(1), W_r).squeeze(1)  # (kg_batch_size, relation_dim)
-
-        # Equation (1)
-        pos_score = torch.sum(torch.pow(r_mul_h + r_embed - r_mul_pos_t, 2), dim=1)  # (kg_batch_size)
-        neg_score = torch.sum(torch.pow(r_mul_h + r_embed - r_mul_neg_t, 2), dim=1)  # (kg_batch_size)
-
-        # Equation (2)
-        kg_loss = (-1.0) * F.logsigmoid(neg_score - pos_score)
-        kg_loss = torch.mean(kg_loss)
-
-        l2_loss = _L2_loss_mean(r_mul_h) + _L2_loss_mean(r_embed) + _L2_loss_mean(r_mul_pos_t) + _L2_loss_mean(
-            r_mul_neg_t)
-        loss = kg_loss + self.kg_l2loss_lambda * l2_loss
-        return loss
+    # def calc_kg_loss(self, h, r, pos_t, neg_t):
+    #     """
+    #     h:      (kg_batch_size)
+    #     r:      (kg_batch_size)
+    #     pos_t:  (kg_batch_size)
+    #     neg_t:  (kg_batch_size)
+    #     """
+    #     r_embed = self.train_data.relation_embed[r]  # (kg_batch_size, relation_dim)
+    #
+    #     W_r = self.W_R[r]  # (kg_batch_size, entity_dim, relation_dim)
+    #
+    #     pred = self.update_embedding().to(self.device)
+    #
+    #     h_embed = pred[h]  # (kg_batch_size, entity_dim)
+    #     pos_t_embed = pred[pos_t]  # (kg_batch_size, entity_dim)
+    #     neg_t_embed = pred[neg_t]  # (kg_batch_size, entity_dim)
+    #
+    #     r_mul_h = torch.bmm(h_embed.unsqueeze(1), W_r).squeeze(1)  # (kg_batch_size, relation_dim)
+    #     r_mul_pos_t = torch.bmm(pos_t_embed.unsqueeze(1), W_r).squeeze(1)  # (kg_batch_size, relation_dim)
+    #     r_mul_neg_t = torch.bmm(neg_t_embed.unsqueeze(1), W_r).squeeze(1)  # (kg_batch_size, relation_dim)
+    #
+    #     # Equation (1)
+    #     pos_score = torch.sum(torch.pow(r_mul_h + r_embed - r_mul_pos_t, 2), dim=1)  # (kg_batch_size)
+    #     neg_score = torch.sum(torch.pow(r_mul_h + r_embed - r_mul_neg_t, 2), dim=1)  # (kg_batch_size)
+    #
+    #     # Equation (2)
+    #     kg_loss = (-1.0) * F.logsigmoid(neg_score - pos_score)
+    #     kg_loss = torch.mean(kg_loss)
+    #
+    #     l2_loss = _L2_loss_mean(r_mul_h) + _L2_loss_mean(r_embed) + _L2_loss_mean(r_mul_pos_t) + _L2_loss_mean(
+    #         r_mul_neg_t)
+    #     loss = kg_loss + self.kg_l2loss_lambda * l2_loss
+    #     return loss
 
     def calc_cf_loss(self, user_ids, item_pos_ids, item_neg_ids, test=False):
         """
@@ -714,37 +700,37 @@ class hgnn_env(object):
 
         return NDCG10.cpu().item()
 
-    def test_train_batch(self):
-        self.model.eval()
-        user_ids = list(self.data.train_user_dict.keys())
-        user_ids_batch = user_ids
-
-        neg_dict = collections.defaultdict(list)
-        NDCG10 = 0
-
-        with torch.no_grad():
-            for u in user_ids_batch:
-                for _ in self.data.train_user_dict[u]:
-                    nl = self.data.sample_neg_items_for_u(self.data.train_user_dict, u, NEG_SIZE_RANKING)
-                    neg_dict[u].extend(nl)
-            # self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))
-            all_embed = self.update_embedding().to(
-                self.device)
-
-            pos_logits = torch.tensor([]).to(self.device)
-            neg_logits = torch.tensor([]).to(self.device)
-
-            cf_scores = torch.matmul(all_embed[user_ids_batch],
-                                     all_embed[torch.arange(self.data.n_items, dtype=torch.long)].transpose(0, 1))
-            for idx, u in enumerate(user_ids_batch):
-                pos_logits = torch.cat([pos_logits, cf_scores[idx][self.data.train_user_dict[u]]])
-                neg_logits = torch.cat([neg_logits, torch.unsqueeze(cf_scores[idx][neg_dict[u]], 1)])
-
-            HR3, HR10, HR20, NDCG10, NDCG20 = self.metrics(pos_logits, neg_logits, training=False)
-            print(
-                f"TRAINING DATA: HR3 : {HR3:.4f}, HR10 : {HR10:.4f}, NDCG10 : {HR20:.4f}, NDCG20 : {NDCG10.item():.4f}")
-
-        return NDCG10.cpu().item()
+    # def test_train_batch(self):
+    #     self.model.eval()
+    #     user_ids = list(self.data.train_user_dict.keys())
+    #     user_ids_batch = user_ids
+    #
+    #     neg_dict = collections.defaultdict(list)
+    #     NDCG10 = 0
+    #
+    #     with torch.no_grad():
+    #         for u in user_ids_batch:
+    #             for _ in self.data.train_user_dict[u]:
+    #                 nl = self.data.sample_neg_items_for_u(self.data.train_user_dict, u, NEG_SIZE_RANKING)
+    #                 neg_dict[u].extend(nl)
+    #         # self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))
+    #         all_embed = self.update_embedding().to(
+    #             self.device)
+    #
+    #         pos_logits = torch.tensor([]).to(self.device)
+    #         neg_logits = torch.tensor([]).to(self.device)
+    #
+    #         cf_scores = torch.matmul(all_embed[user_ids_batch],
+    #                                  all_embed[torch.arange(self.data.n_items, dtype=torch.long)].transpose(0, 1))
+    #         for idx, u in enumerate(user_ids_batch):
+    #             pos_logits = torch.cat([pos_logits, cf_scores[idx][self.data.train_user_dict[u]]])
+    #             neg_logits = torch.cat([neg_logits, torch.unsqueeze(cf_scores[idx][neg_dict[u]], 1)])
+    #
+    #         HR3, HR10, HR20, NDCG10, NDCG20 = self.metrics(pos_logits, neg_logits, training=False)
+    #         print(
+    #             f"TRAINING DATA: HR3 : {HR3:.4f}, HR10 : {HR10:.4f}, NDCG10 : {HR20:.4f}, NDCG20 : {NDCG10.item():.4f}")
+    #
+    #     return NDCG10.cpu().item()
 
     # def evaluate(self, model, train_graph, train_user_dict, test_user_dict, user_ids_batches, item_ids, K):
     #     model.eval()

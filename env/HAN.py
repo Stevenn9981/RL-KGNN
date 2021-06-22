@@ -69,7 +69,7 @@ class HANLayer(nn.Module):
             nn.Linear(hidden_size, 1, bias=False)
         )
 
-    def forward(self, g, h, meta_paths, optimizer):
+    def forward(self, g, h, meta_paths, optimizer, b_ids):
         semantic_embeddings = []
 
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -90,6 +90,9 @@ class HANLayer(nn.Module):
             # import pdb
             # pdb.set_trace()
             graph = dgl.metapath_reachable_graph(g, meta_path).to(device)
+            graph = dgl.node_subgraph(graph, b_ids)
+            import pdb
+            pdb.set_trace()
             mp = list(map(str, meta_path))
             emb = self.gat_layers[''.join(mp)](graph, h).flatten(1)
             semantic_embeddings.append(emb)
@@ -108,8 +111,8 @@ class HAN(nn.Module):
                                         hidden_size, num_heads[l], dropout))
         self.predict = nn.Linear(hidden_size * num_heads[-1], out_size)
 
-    def forward(self, g, h, meta_paths, optimizer):
+    def forward(self, g, h, meta_paths, optimizer, b_ids):
         for gnn in self.layers:
-            h = gnn(g, h, meta_paths, optimizer)
+            h = gnn(g, h, meta_paths, optimizer, b_ids)
 
         return self.predict(h)

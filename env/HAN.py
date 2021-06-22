@@ -92,7 +92,7 @@ class HANLayer(nn.Module):
             graph = dgl.metapath_reachable_graph(g, meta_path).to(device)
             sampler = dgl.dataloading.MultiLayerFullNeighborSampler(1)
             dataloader = dgl.dataloading.NodeDataLoader(
-                g, b_ids, sampler,
+                graph, b_ids, sampler,
                 batch_size=len(b_ids),
                 drop_last=False)
             input_nodes, output_nodes, blocks = next(iter(dataloader))

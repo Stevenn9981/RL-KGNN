@@ -88,7 +88,6 @@ class HANLayer(nn.Module):
         meta_paths = list(tuple(meta_path) for meta_path in meta_paths)
 
         for i, meta_path in enumerate(meta_paths):
-            c = h.clone()
             mp = list(map(str, meta_path))
             graph = self.sg_dict[''.join(mp)]
             sampler = dgl.dataloading.MultiLayerFullNeighborSampler(1)
@@ -98,8 +97,10 @@ class HANLayer(nn.Module):
                 drop_last=False)
             for input_nodes, output_nodes, blocks in dataloader:
                 emb = self.gat_layers[''.join(mp)](blocks[0], h[input_nodes]).flatten(1)
-                c[output_nodes] = emb
-                emb = c[b_ids]
+                if emb.shape[0] != len(b_ids):
+                    c = torch.zeros((h.shape[0], self.out_size)).to(device)
+                    c[output_nodes] = emb
+                    emb = c[b_ids]
                 semantic_embeddings.append(emb)
         semantic_embeddings = torch.stack(semantic_embeddings, dim=1)  # (N, M, D * K)
 

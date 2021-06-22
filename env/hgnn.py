@@ -250,19 +250,29 @@ class hgnn_env(object):
                                   self.optimizer, i_ids)
 
     def get_all_user_embedding(self):
+        user_emb = torch.tensor([]).to(self.device)
+        all_user_ids = torch.tensor(range(len(self.data.node_type_list == 4)))
+        batch_ids = torch.split(all_user_ids, 1024)
         for metapaths in self.etypes_lists:
             start_type = self.train_data.e_n_dict[metapaths[0][0]][0]
             if start_type == 4:
-                return self.model(self.train_data, self.train_data.x[self.data.node_type_list == start_type], metapaths,
-                                  self.optimizer)
+                for b_ids in batch_ids:
+                    emb = self.get_user_embedding(b_ids)
+                    user_emb = torch.cat([user_emb, emb], 0)
+        return user_emb
+
 
     def get_all_item_embedding(self):
+        item_emb = torch.tensor([]).to(self.device)
+        all_item_ids = torch.tensor(range(len(self.data.node_type_list == 0)))
+        batch_ids = torch.split(all_item_ids, 1024)
         for metapaths in self.etypes_lists:
             start_type = self.train_data.e_n_dict[metapaths[0][0]][0]
             if start_type == 0:
-                return self.model(self.train_data, self.train_data.x[self.data.node_type_list == start_type], metapaths,
-                                  self.optimizer)
-
+                for b_ids in batch_ids:
+                    emb = self.get_item_embedding(b_ids)
+                    item_emb = torch.cat([item_emb, emb], 0)
+        return item_emb
 
     def _set_action_space(self, _max):
         self.action_num = _max
@@ -589,13 +599,13 @@ class hgnn_env(object):
         # import pdb
         # pdb.set_trace()
 
-        item_pos_embed = self.get_item_embedding(item_pos_ids)
-        tim2 = time.time()
-        print("get pos item embedding: ", tim2 - tim1)
-
         user_embed = self.get_user_embedding(unode_ids)
+        tim2 = time.time()
+        print("get user embedding: ", tim2 - tim1)
+
+        item_pos_embed = self.get_item_embedding(item_pos_ids)
         tim3 = time.time()
-        print("get user embedding: ", tim3 - tim2)
+        print("get pos item embedding: ", tim3 - tim2)
 
         item_neg_embed = self.get_item_embedding(item_neg_ids)
         tim4 = time.time()

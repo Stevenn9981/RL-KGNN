@@ -257,6 +257,8 @@ class hgnn_env(object):
             start_type = self.train_data.e_n_dict[metapaths[0][0]][0]
             if start_type == 4:
                 for b_ids in batch_ids:
+                    import pdb
+                    pdb.set_trace()
                     emb = self.get_user_embedding(b_ids)
                     user_emb = torch.cat([user_emb, emb], 0)
         return user_emb
@@ -687,8 +689,6 @@ class hgnn_env(object):
             # self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))
             # all_embed = self.update_embedding().to(self.device)
 
-            import pdb
-            pdb.set_trace()
             u_embeds = self.get_all_user_embedding()
             i_embeds = self.get_all_item_embedding()
 

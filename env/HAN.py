@@ -9,6 +9,7 @@ labels.
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import time
 
 import dgl
 from dgl.nn.pytorch import GATConv, GraphConv
@@ -71,9 +72,11 @@ class HANLayer(nn.Module):
         )
 
     def forward(self, g, h, meta_paths, optimizer, b_ids):
+        meta_paths = list(tuple(meta_path) for meta_path in meta_paths)
         semantic_embeddings = []
 
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        tim1 = time.time()
         for meta_path in meta_paths:
             mp = list(map(str, meta_path))
             if ''.join(mp) not in self.gat_layers:
@@ -85,7 +88,7 @@ class HANLayer(nn.Module):
                 self.gat_layers.update(gatconv)
                 optimizer.add_param_group({'params': gatconv.parameters()})
 
-        meta_paths = list(tuple(meta_path) for meta_path in meta_paths)
+        print("Prepare meta-path graph: ", time.time() - tim1)
 
         for i, meta_path in enumerate(meta_paths):
             mp = list(map(str, meta_path))

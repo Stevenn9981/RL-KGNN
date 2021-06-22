@@ -592,9 +592,7 @@ class hgnn_env(object):
         """
         tim1 = time.time()
         # pred = self.update_embedding().to(self.device)
-        unode_ids = [user_id - self.data.n_id_start_dict[4] for user_id in user_ids]
-        item_pos_ids = [i_id for i_id in item_pos_ids]
-        item_neg_ids = [i_id for i_id in item_neg_ids]
+        unode_ids = torch.tensor([user_id - self.data.n_id_start_dict[4] for user_id in user_ids])
 
         # import pdb
         # pdb.set_trace()

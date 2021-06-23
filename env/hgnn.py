@@ -523,13 +523,13 @@ class hgnn_env(object):
 
         self.optimizer.zero_grad()
 
-        print("generate batch: ", time2 - time1)
+        # print("generate batch: ", time2 - time1)
         cf_batch_loss = self.calc_cf_loss(cf_batch_user,
                                           cf_batch_pos_item,
                                           cf_batch_neg_item)
 
         time3 = time.time()
-        print("calculate loss: ", time3 - time2)
+        # print("calculate loss: ", time3 - time2)
 
         # import pdb
         # pdb.set_trace()
@@ -537,12 +537,12 @@ class hgnn_env(object):
         cf_batch_loss.backward()
 
         time4 = time.time()
-        print("backward: ", time4 - time3)
+        # print("backward: ", time4 - time3)
 
         self.optimizer.step()
 
         time5 = time.time()
-        print("step: ", time5 - time4)
+        # print("step: ", time5 - time4)
 
         cf_total_loss += float(cf_batch_loss)
 

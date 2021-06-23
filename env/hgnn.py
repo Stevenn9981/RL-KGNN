@@ -621,8 +621,8 @@ class hgnn_env(object):
         item_pos_embed = i_embeds[item_pos_ids]  # (cf_batch_size, cf_concat_dim)
         item_neg_embed = i_embeds[item_neg_ids]  # (cf_batch_size, cf_concat_dim)
 
-        pos_score = F.sigmoid(torch.sum(user_embed * item_pos_embed, dim=1))  # (cf_batch_size)
-        neg_score = F.sigmoid(torch.sum(user_embed * item_neg_embed, dim=1))  # (cf_batch_size)
+        pos_score = torch.sigmoid(torch.sum(user_embed * item_pos_embed, dim=1))  # (cf_batch_size)
+        neg_score = torch.sigmoid(torch.sum(user_embed * item_neg_embed, dim=1))  # (cf_batch_size)
 
         print("pos, neg: ", pos_score, neg_score)
         # print("user_embedding: ", user_embed)

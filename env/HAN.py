@@ -74,7 +74,7 @@ class HANLayer(nn.Module):
     def forward(self, g, h, meta_paths, optimizer, b_ids):
         meta_paths = list(tuple(meta_path) for meta_path in meta_paths)
         semantic_embeddings = []
-        sampler = dgl.dataloading.MultiLayerNeighborSampler([-1])
+        sampler = dgl.dataloading.MultiLayerNeighborSampler([1500])
 
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         for meta_path in meta_paths:
@@ -98,6 +98,8 @@ class HANLayer(nn.Module):
                 graph, torch.LongTensor(list(set(b_ids.tolist()))), sampler, torch.device(device),
                 batch_size=len(b_ids),
                 drop_last=False)
+            import pdb
+            pdb.set_trace()
             for input_nodes, output_nodes, blocks in dataloader:
                 emb = self.gat_layers[''.join(mp)](blocks[0], h[input_nodes]).flatten(1)
                 if emb.shape[0] != len(b_ids):

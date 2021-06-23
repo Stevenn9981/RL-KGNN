@@ -74,7 +74,7 @@ class HANLayer(nn.Module):
     def forward(self, g, h, meta_paths, optimizer, b_ids):
         meta_paths = list(tuple(meta_path) for meta_path in meta_paths)
         semantic_embeddings = []
-        sampler = dgl.dataloading.MultiLayerNeighborSampler([1000])
+        sampler = dgl.dataloading.MultiLayerNeighborSampler([-1])
 
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         for meta_path in meta_paths:

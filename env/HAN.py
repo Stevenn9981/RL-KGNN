@@ -100,6 +100,8 @@ class HANLayer(nn.Module):
                 batch_size=len(b_ids),
                 drop_last=False)
             for input_nodes, output_nodes, blocks in dataloader:
+                import pdb
+                pdb.set_trace()
                 emb = self.gat_layers[''.join(mp)](blocks[0], h[input_nodes]).flatten(1)
                 if emb.shape[0] != len(b_ids):
                     c = torch.zeros((h.shape[0], self.out_size)).to(device)

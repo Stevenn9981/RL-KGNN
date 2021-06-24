@@ -97,7 +97,7 @@ class HANLayer(nn.Module):
             sampler = dgl.dataloading.MultiLayerNeighborSampler([1000])
             dataloader = dgl.dataloading.NodeDataLoader(
                 graph, torch.LongTensor(list(set(b_ids.tolist()))), sampler, torch.device(device),
-                batch_size=len(b_ids)
+                batch_size=len(b_ids),
                 drop_last=False)
             for input_nodes, output_nodes, blocks in dataloader:
                 emb = self.gat_layers[''.join(mp)](blocks[0], h[input_nodes]).flatten(1)

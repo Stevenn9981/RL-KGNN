@@ -515,36 +515,36 @@ class hgnn_env(object):
         n_cf_batch = self.data.n_cf_train // self.data.cf_batch_size + 1
         cf_total_loss = 0
 
-        # for iter in range(1, n_cf_batch + 1):
+        for iter in range(1, n_cf_batch + 1):
         #     print("current iter: ", iter, " ", n_cf_batch)
-        time1 = time.time()
-        cf_batch_user, cf_batch_pos_item, cf_batch_neg_item = self.data.generate_cf_batch(self.data.train_user_dict)
-        time2 = time.time()
+            time1 = time.time()
+            cf_batch_user, cf_batch_pos_item, cf_batch_neg_item = self.data.generate_cf_batch(self.data.train_user_dict)
+            time2 = time.time()
 
-        self.optimizer.zero_grad()
+            self.optimizer.zero_grad()
 
-        # print("generate batch: ", time2 - time1)
-        cf_batch_loss = self.calc_cf_loss(cf_batch_user,
-                                          cf_batch_pos_item,
-                                          cf_batch_neg_item)
+            # print("generate batch: ", time2 - time1)
+            cf_batch_loss = self.calc_cf_loss(cf_batch_user,
+                                              cf_batch_pos_item,
+                                              cf_batch_neg_item)
 
-        time3 = time.time()
-        # print("calculate loss: ", time3 - time2)
+            time3 = time.time()
+            # print("calculate loss: ", time3 - time2)
 
-        # import pdb
-        # pdb.set_trace()
+            # import pdb
+            # pdb.set_trace()
 
-        cf_batch_loss.backward()
+            cf_batch_loss.backward()
 
-        time4 = time.time()
-        # print("backward: ", time4 - time3)
+            time4 = time.time()
+            # print("backward: ", time4 - time3)
 
-        self.optimizer.step()
+            self.optimizer.step()
 
-        time5 = time.time()
-        # print("step: ", time5 - time4)
+            time5 = time.time()
+            # print("step: ", time5 - time4)
 
-        cf_total_loss += float(cf_batch_loss)
+            cf_total_loss += float(cf_batch_loss)
 
         # cf_total_loss.backward()
         # self.optimizer.step()
@@ -628,7 +628,7 @@ class hgnn_env(object):
         # print("user_embedding: ", user_embed)
         cf_loss = (-1.0) * F.logsigmoid(pos_score - neg_score)
         cf_loss = torch.mean(cf_loss)
-        print("cf_loss: ", float(cf_loss))
+        # print("cf_loss: ", float(cf_loss))
 
         l2_loss = _L2_loss_mean(user_embed) + _L2_loss_mean(item_pos_embed) + _L2_loss_mean(item_neg_embed)
         loss = cf_loss + self.cf_l2loss_lambda * l2_loss

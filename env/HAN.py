@@ -94,7 +94,7 @@ class HANLayer(nn.Module):
         for i, meta_path in enumerate(meta_paths):
             mp = list(map(str, meta_path))
             graph = self.sg_dict[''.join(mp)]
-            sampler = dgl.dataloading.MultiLayerNeighborSampler([2000])
+            sampler = dgl.dataloading.MultiLayerNeighborSampler([1000])
             dataloader = dgl.dataloading.NodeDataLoader(
                 graph, torch.LongTensor(list(set(b_ids.tolist()))), sampler, torch.device(device),
                 batch_size=len(b_ids),

@@ -94,6 +94,8 @@ class HANLayer(nn.Module):
         for i, meta_path in enumerate(meta_paths):
             mp = list(map(str, meta_path))
             graph = self.sg_dict[''.join(mp)]
+            import pdb
+            pdb.set_trace()
             if graph.number_of_edges() / graph.number_of_nodes() > 500:
                 continue
             sampler = dgl.dataloading.MultiLayerNeighborSampler([500])

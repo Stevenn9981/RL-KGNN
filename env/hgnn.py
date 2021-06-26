@@ -324,15 +324,13 @@ class hgnn_env(object):
         self.optimizer.zero_grad()
         done_list = [False] * len(actions)
         next_state, reward, val_acc = [], [], []
-        import pdb
-        pdb.set_trace()
         for i, act in enumerate(actions):
             if act == STOP:
                 done_list[i] = True
             else:
                 augment_mp = self.data.metapath_transform_dict[act]
                 for i in range(len(self.etypes_lists[0])):
-                    mp = self.etypes_lists[i]
+                    mp = self.etypes_lists[0][i]
                     if len(mp) < 6:
                         if self.train_data.e_n_dict[mp[-1]][1] == self.train_data.e_n_dict[augment_mp[0]][0]:
                             mp.extend(augment_mp)
@@ -343,7 +341,7 @@ class hgnn_env(object):
                                     mp[inx + 1:inx + 1] = augment_mp
 
                 if self.train_data.e_n_dict[augment_mp[0]][0] == 0:
-                    self.etypes_lists.append(augment_mp)
+                    self.etypes_lists[0].append(augment_mp)
                 self.train_GNN()
                 if test:
                     for i in range(10):
@@ -387,7 +385,7 @@ class hgnn_env(object):
             else:
                 augment_mp = self.data.metapath_transform_dict[act]
                 for i in range(len(self.etypes_lists[1])):
-                    mp = self.etypes_lists[i]
+                    mp = self.etypes_lists[1][i]
                     if len(mp) < 6:
                         if self.train_data.e_n_dict[mp[-1]][1] == self.train_data.e_n_dict[augment_mp[0]][0]:
                             mp.extend(augment_mp)
@@ -398,7 +396,7 @@ class hgnn_env(object):
                                     mp[inx + 1:inx + 1] = augment_mp
 
                 if self.train_data.e_n_dict[augment_mp[0]][0] == 0:
-                    self.etypes_lists.append(augment_mp)
+                    self.etypes_lists[1].append(augment_mp)
                 self.train_GNN()
 
             val_precision = self.eval_batch()

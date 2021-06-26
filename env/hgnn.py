@@ -116,7 +116,7 @@ def _L2_loss_mean(x):
 
 
 class hgnn_env(object):
-    def __init__(self, logger1, logger2, model_name, args, dataset='yelp_data', weight_decay=1e-5, policy=None):
+    def __init__(self, logger1, logger2, model_name, args, dataset='yelp_data', weight_decay=1e-5):
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.model_name = model_name
         self.cur_best = 0
@@ -161,8 +161,10 @@ class hgnn_env(object):
         self._set_action_space(data.n_relations + 1)
         obs = self.reset()
         self._set_observation_space(obs)
-        self.policy = policy
-        self.batch_size = args.nd_batch_size
+        self.user_policy = None
+        self.item_policy = None
+        self.nd_batch_size = args.nd_batch_size
+        self.rl_batch_size = args.rl_batch_size
         self.W_R = torch.randn(self.data.n_relations + 1, self.data.entity_dim,
                                self.data.relation_dim).to(self.device)
         nn.init.xavier_uniform_(self.W_R, gain=nn.init.calculate_gain('relu'))
@@ -239,7 +241,7 @@ class hgnn_env(object):
         for metapaths in self.etypes_lists:
             start_type = self.train_data.e_n_dict[metapaths[0][0]][0]
             if start_type == 4:
-                return self.model(self.train_data, self.train_data.x[self.data.node_type_list == start_type], metapaths,
+                return self.model(self.train_data, self.train_data.x[self.data.node_type_list == 4], metapaths,
                                   self.optimizer, u_ids)
 
     def get_item_embedding(self, i_ids):
@@ -250,29 +252,12 @@ class hgnn_env(object):
                                   self.optimizer, i_ids)
 
     def get_all_user_embedding(self):
-        # user_emb = torch.tensor([]).to(self.device)
         all_user_ids = torch.tensor(range(self.train_data.x[self.data.node_type_list == 4].shape[0]))
-        # batch_ids = torch.split(all_user_ids, self.args.kg_batch_size)
-        for metapaths in self.etypes_lists:
-            start_type = self.train_data.e_n_dict[metapaths[0][0]][0]
-            if start_type == 4:
-                # for b_ids in batch_ids:
-                return self.get_user_embedding(all_user_ids)
-                    # user_emb = torch.cat([user_emb, emb], 0)
-        # return user_emb
-
+        return self.get_user_embedding(all_user_ids)
 
     def get_all_item_embedding(self):
-        # item_emb = torch.tensor([]).to(self.device)
         all_item_ids = torch.tensor(range(self.train_data.x[self.data.node_type_list == 0].shape[0]))
-        # batch_ids = torch.split(all_item_ids, self.args.kg_batch_size)
-        for metapaths in self.etypes_lists:
-            start_type = self.train_data.e_n_dict[metapaths[0][0]][0]
-            if start_type == 0:
-                # for b_ids in batch_ids:
-                return self.get_item_embedding(all_item_ids)
-                    # item_emb = torch.cat([item_emb, emb], 0)
-        # return item_emb
+        return self.get_item_embedding(all_item_ids)
 
     def _set_action_space(self, _max):
         self.action_num = _max
@@ -298,21 +283,148 @@ class hgnn_env(object):
         self.meta_path_instances_dict = collections.defaultdict(list)
         self.meta_path_graph_edges = collections.defaultdict(set)
         nodes = range(self.train_data.x.shape[0])
-        index = random.sample(nodes, min(self.batch_size, len(nodes)))
+        index = random.sample(nodes, min(self.nd_batch_size, len(nodes)))
         state = F.normalize(self.update_embedding()[
                                 index]).cpu().detach().numpy()
         self.optimizer.zero_grad()
         return index, state
 
-    def reset2_test(self):
-        self.meta_path_dict = collections.defaultdict(list)
-        self.meta_path_instances_dict = collections.defaultdict(list)
-        nodes = range(self.train_data.x.weight.shape[0])
-        index = random.sample(nodes, len(nodes))
-        state = F.normalize(self.update_embedding()[
-                                index]).cpu().detach().numpy()
+    def get_user_state(self):
+        nodes = range(self.train_data.x[self.data.node_type_list == 4].shape[0])
+        user_embeds = self.get_all_user_embedding()
+        state = []
+        for i in range(self.rl_batch_size):
+            index = random.sample(nodes, min(self.nd_batch_size, len(nodes)))
+            state.append(F.normalize(torch.mean(user_embeds[index])).cpu().detach().numpy())
+        return np.array(state)
+
+    def user_reset(self):
+        self.etypes_lists = [['2', '1'], ['1', '2']]
+        state = self.get_user_state()
         self.optimizer.zero_grad()
-        return index, state
+        return state
+
+    def get_item_state(self):
+        nodes = range(self.train_data.x[self.data.node_type_list == 0].shape[0])
+        item_embeds = self.get_all_item_embedding()
+        state = []
+        for i in range(self.rl_batch_size):
+            index = random.sample(nodes, min(self.nd_batch_size, len(nodes)))
+            state.append(F.normalize(torch.mean(item_embeds[index])).cpu().detach().numpy())
+        return np.array(state)
+
+    def item_reset(self):
+        self.etypes_lists = [['2', '1'], ['1', '2']]
+        state = self.get_item_state()
+        self.optimizer.zero_grad()
+        return state
+
+    def user_step(self, logger1, logger2, actions, test=False):
+        self.model.train()
+        self.optimizer.zero_grad()
+        done_list = [False] * len(actions)
+        next_state, reward, val_acc = [], [], []
+        for i, act in enumerate(actions):
+            if act == STOP:
+                done_list[i] = True
+            else:
+                augment_mp = self.data.metapath_transform_dict[act]
+                for i in range(len(self.etypes_lists[0])):
+                    mp = self.etypes_lists[i]
+                    if len(mp) < 6:
+                        if self.train_data.e_n_dict[mp[-1]][1] == self.train_data.e_n_dict[augment_mp[0]][0]:
+                            mp.extend(augment_mp)
+                        else:
+                            for inx in range(len(mp)):
+                                rel = mp[inx]
+                                if self.train_data.e_n_dict[rel][1] == self.train_data.e_n_dict[augment_mp[0]][0]:
+                                    mp[inx + 1:inx + 1] = augment_mp
+
+                if self.train_data.e_n_dict[augment_mp[0]][0] == 0:
+                    self.etypes_lists.append(augment_mp)
+                self.train_GNN()
+                if test:
+                    for i in range(10):
+                        self.train_GNN()
+
+            val_precision = self.eval_batch()
+            val_acc.append(val_precision)
+
+            self.past_performance.append(val_precision)
+            baseline = np.mean(np.array(self.past_performance[-self.baseline_experience:]))
+            rew = 100 * (val_precision - baseline)
+            reward.append(rew)
+
+            logger1.info("Val acc: %.5f  reward: %.5f" % (val_precision, rew))
+            logger1.info("-----------------------------------------------------------------------")
+
+        r = np.mean(np.array(reward))
+        val_acc = np.mean(val_acc)
+        next_state = self.get_user_state()
+
+        torch.save({'state_dict': self.model.state_dict(),
+                    'optimizer': self.optimizer.state_dict(),
+                    'Val': val_acc,
+                    'Embedding': self.train_data.x,
+                    'Reward': r},
+                   'model/epochpoints/e-' + str(val_acc) + '-' + time.strftime("%Y-%m-%d %H:%M:%S",
+                                                                               time.localtime()) + '.pth.tar')
+
+        logger2.info("Val acc: %.5f  reward: %.5f" % (val_acc, r))
+
+        return next_state, reward, done_list, (val_acc, r)
+
+    def item_step(self, logger1, logger2, actions, test=False):
+        self.model.train()
+        self.optimizer.zero_grad()
+        done_list = [False] * len(actions)
+        next_state, reward, val_acc = [], [], []
+        for i, act in enumerate(actions):
+            if act == STOP:
+                done_list[i] = True
+            else:
+                augment_mp = self.data.metapath_transform_dict[act]
+                for i in range(len(self.etypes_lists[1])):
+                    mp = self.etypes_lists[i]
+                    if len(mp) < 6:
+                        if self.train_data.e_n_dict[mp[-1]][1] == self.train_data.e_n_dict[augment_mp[0]][0]:
+                            mp.extend(augment_mp)
+                        else:
+                            for inx in range(len(mp)):
+                                rel = mp[inx]
+                                if self.train_data.e_n_dict[rel][1] == self.train_data.e_n_dict[augment_mp[0]][0]:
+                                    mp[inx + 1:inx + 1] = augment_mp
+
+                if self.train_data.e_n_dict[augment_mp[0]][0] == 0:
+                    self.etypes_lists.append(augment_mp)
+                self.train_GNN()
+
+            val_precision = self.eval_batch()
+            val_acc.append(val_precision)
+
+            self.past_performance.append(val_precision)
+            baseline = np.mean(np.array(self.past_performance[-self.baseline_experience:]))
+            rew = 100 * (val_precision - baseline)
+            reward.append(rew)
+
+            logger1.info("Val acc: %.5f  reward: %.5f" % (val_precision, rew))
+            logger1.info("-----------------------------------------------------------------------")
+
+        r = np.mean(np.array(reward))
+        val_acc = np.mean(val_acc)
+        next_state = self.get_user_state()
+
+        torch.save({'state_dict': self.model.state_dict(),
+                    'optimizer': self.optimizer.state_dict(),
+                    'Val': val_acc,
+                    'Embedding': self.train_data.x,
+                    'Reward': r},
+                   'model/epochpoints/e-' + str(val_acc) + '-' + time.strftime("%Y-%m-%d %H:%M:%S",
+                                                                               time.localtime()) + '.pth.tar')
+
+        logger2.info("Val acc: %.5f  reward: %.5f" % (val_acc, r))
+
+        return next_state, reward, done_list, (val_acc, r)
 
     def step2(self, logger1, logger2, index, actions, test=False):
         self.model.train()
@@ -447,76 +559,76 @@ class hgnn_env(object):
 
         return next_state, reward, np.array(done_list)[index].tolist(), (val_acc, r)
 
-    def train(self, logger1, idx, test=False):
-        self.model.train()
-        time1 = time.time()
-        edge_index = [[], []]
-        edges = set()
-        for edge in self.meta_path_graph_edges[idx]:
-            edges.add((edge[0], edge[1]))
-            edges.add((edge[1], edge[0]))
-        logger1.info("len(edges):           %d" % len(edges))
-        for edge in edges:
-            edge_index[0].append(edge[0])
-            edge_index[1].append(edge[1])
-
-        time2 = time.time()
-        logger1.info("edge index construction:    %.2f" % (time2 - time1))
-        if edge_index == [[], []]:
-            return
-        # self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))
-        edge_index = torch.tensor(edge_index).to(self.device)
-        # print(self.data.x.weight.shape)
-        # pred = self.model(self.train_data.x(self.train_data.node_idx), edge_index).to(self.device)
-        # self.train_data.x = nn.Embedding.from_pretrained(pred, freeze=False)
-        # self.train_data.x.weight = nn.Parameter(pred)
-        # print(self.train_data.x.weight)
-
-        n_cf_batch = self.data.n_cf_train // self.data.cf_batch_size + 1
-        # self.optimizer.zero_grad()
-
-        cf_total_loss = 0
-        for iter in range(1, n_cf_batch + 1):
-            cf_batch_user, cf_batch_pos_item, cf_batch_neg_item = self.data.generate_cf_batch(self.data.train_user_dict)
-            cf_batch_loss = self.calc_cf_loss(self.train_data, edge_index, cf_batch_user, cf_batch_pos_item,
-                                              cf_batch_neg_item, test)
-            cf_batch_loss.backward()
-            self.optimizer.step()
-            self.optimizer.zero_grad()
-            cf_total_loss += cf_batch_loss
-
-        # cf_total_loss.backward()
-        # self.optimizer.step()
-        print("total_cf_loss: ", cf_total_loss.item())
-
-        # n_kg_batch = self.data.n_kg_train // self.data.kg_batch_size + 1
-
-        # kg_total_loss = 0
-
-        # for iter in range(1, n_kg_batch + 1):
-        # kg_batch_head, kg_batch_relation, kg_batch_pos_tail, kg_batch_neg_tail = self.data.generate_kg_batch(
-        #     self.data.train_kg_dict)
-        # kg_batch_head = kg_batch_head.to(self.device)
-        # kg_batch_relation = kg_batch_relation.to(self.device)
-        # kg_batch_pos_tail = kg_batch_pos_tail.to(self.device)
-        # kg_batch_neg_tail = kg_batch_neg_tail.to(self.device)
-        # kg_batch_loss = self.calc_kg_loss(kg_batch_head, kg_batch_relation, kg_batch_pos_tail,
-        #                       kg_batch_neg_tail)
-        #
-        # kg_batch_loss.backward()
-        # self.optimizer.step()
-        # self.optimizer.zero_grad()
-        # kg_total_loss += kg_batch_loss
-
-        # print("total_kg_loss: ", kg_batch_loss.item())
-        # print(self.train_data.x(torch.tensor([10,11,12])))
+    # def train(self, logger1, idx, test=False):
+    #     self.model.train()
+    #     time1 = time.time()
+    #     edge_index = [[], []]
+    #     edges = set()
+    #     for edge in self.meta_path_graph_edges[idx]:
+    #         edges.add((edge[0], edge[1]))
+    #         edges.add((edge[1], edge[0]))
+    #     logger1.info("len(edges):           %d" % len(edges))
+    #     for edge in edges:
+    #         edge_index[0].append(edge[0])
+    #         edge_index[1].append(edge[1])
+    #
+    #     time2 = time.time()
+    #     logger1.info("edge index construction:    %.2f" % (time2 - time1))
+    #     if edge_index == [[], []]:
+    #         return
+    #     # self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))
+    #     edge_index = torch.tensor(edge_index).to(self.device)
+    #     # print(self.data.x.weight.shape)
+    #     # pred = self.model(self.train_data.x(self.train_data.node_idx), edge_index).to(self.device)
+    #     # self.train_data.x = nn.Embedding.from_pretrained(pred, freeze=False)
+    #     # self.train_data.x.weight = nn.Parameter(pred)
+    #     # print(self.train_data.x.weight)
+    #
+    #     n_cf_batch = self.data.n_cf_train // self.data.cf_batch_size + 1
+    #     # self.optimizer.zero_grad()
+    #
+    #     cf_total_loss = 0
+    #     for iter in range(1, n_cf_batch + 1):
+    #         cf_batch_user, cf_batch_pos_item, cf_batch_neg_item = self.data.generate_cf_batch(self.data.train_user_dict)
+    #         cf_batch_loss = self.calc_cf_loss(self.train_data, edge_index, cf_batch_user, cf_batch_pos_item,
+    #                                           cf_batch_neg_item, test)
+    #         cf_batch_loss.backward()
+    #         self.optimizer.step()
+    #         self.optimizer.zero_grad()
+    #         cf_total_loss += cf_batch_loss
+    #
+    #     # cf_total_loss.backward()
+    #     # self.optimizer.step()
+    #     print("total_cf_loss: ", cf_total_loss.item())
+    #
+    #     # n_kg_batch = self.data.n_kg_train // self.data.kg_batch_size + 1
+    #
+    #     # kg_total_loss = 0
+    #
+    #     # for iter in range(1, n_kg_batch + 1):
+    #     # kg_batch_head, kg_batch_relation, kg_batch_pos_tail, kg_batch_neg_tail = self.data.generate_kg_batch(
+    #     #     self.data.train_kg_dict)
+    #     # kg_batch_head = kg_batch_head.to(self.device)
+    #     # kg_batch_relation = kg_batch_relation.to(self.device)
+    #     # kg_batch_pos_tail = kg_batch_pos_tail.to(self.device)
+    #     # kg_batch_neg_tail = kg_batch_neg_tail.to(self.device)
+    #     # kg_batch_loss = self.calc_kg_loss(kg_batch_head, kg_batch_relation, kg_batch_pos_tail,
+    #     #                       kg_batch_neg_tail)
+    #     #
+    #     # kg_batch_loss.backward()
+    #     # self.optimizer.step()
+    #     # self.optimizer.zero_grad()
+    #     # kg_total_loss += kg_batch_loss
+    #
+    #     # print("total_kg_loss: ", kg_batch_loss.item())
+    #     # print(self.train_data.x(torch.tensor([10,11,12])))
 
     def train_GNN(self):
         n_cf_batch = self.data.n_cf_train // self.data.cf_batch_size + 1
         cf_total_loss = 0
 
         for iter in range(1, n_cf_batch + 1):
-        #     print("current iter: ", iter, " ", n_cf_batch)
+            #     print("current iter: ", iter, " ", n_cf_batch)
             time1 = time.time()
             cf_batch_user, cf_batch_pos_item, cf_batch_neg_item = self.data.generate_cf_batch(self.data.train_user_dict)
             time2 = time.time()
@@ -663,10 +775,8 @@ class hgnn_env(object):
                 pos_logits = torch.cat([pos_logits, cf_scores[idx][self.data.train_user_dict[u]]])
                 neg_logits = torch.cat([neg_logits, torch.unsqueeze(cf_scores[idx][neg_dict[u]], 1)])
             time3 = time.time()
-            # =NDCG10= = self.metrics(pos_logits, neg_logits)
-            HR3, HR10, HR20, NDCG10, NDCG20 = self.metrics(pos_logits, neg_logits, training=False)
-            print(
-                f"Evaluate: HR3 : {HR3:.4f}, HR10 : {HR10:.4f}, NDCG10 : {NDCG10.item():.4f}, NDCG20 : {NDCG20.item():.4f}")
+            NDCG10 = self.metrics(pos_logits, neg_logits)
+            print(f"Evaluate: NDCG10 : {NDCG10.item():.5f}")
             time4 = time.time()
             # print("ALL time: ", time4 - time1)
 

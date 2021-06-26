@@ -56,7 +56,7 @@ def use_pretrain(env):
 
 def main():
     torch.backends.cudnn.deterministic=True
-    max_timesteps = 2
+    max_timesteps = 10
     dataset = 'yelp_data'
 
     args = parse_args()
@@ -74,40 +74,67 @@ def main():
     env.seed(0)
     use_pretrain(env)
 
-    agent = DQNAgent(scope='dqn',
+    user_agent = DQNAgent(scope='dqn',
                     action_num = env.action_num,
                     replay_memory_size=int(1e4),
                     replay_memory_init_size=500,
-                    norm_step=4,
+                    norm_step=2,
                     batch_size=args.nd_batch_size,
                     state_shape = env.observation_space.shape,
                     mlp_layers=[32, 64, 128, 64, 32],
                     learning_rate=0.0005,
                     device=torch.device(device)
             )
-    env.policy = agent
 
-    best_val = 0.0
-    best_i = 0
-    val_list = [0, 0, 0]
+    item_agent = DQNAgent(scope='dqn',
+                    action_num = env.action_num,
+                    replay_memory_size=int(1e4),
+                    replay_memory_init_size=500,
+                    norm_step=2,
+                    batch_size=args.nd_batch_size,
+                    state_shape = env.observation_space.shape,
+                    mlp_layers=[32, 64, 128, 64, 32],
+                    learning_rate=0.0005,
+                    device=torch.device(device)
+            )
+
+    env.user_policy = user_agent
+    env.item_policy = item_agent
+
+    best_user_val = 0.0
+    best_user_i = 0
+
+    best_item_val = 0.0
+    best_item_i = 0
+
     # Training: Learning meta-policy
     logger2.info("Training Meta-policy on Validation Set")
     for i_episode in range(1, max_episodes+1):
-        loss, reward, (val_acc, reward) = agent.learn(logger1, logger2, env, max_timesteps) # debug = (val_acc, reward)
-        val_list.append(val_acc)
-        if val_acc > best_val: # check whether gain improvement on validation set
-            best_policy = deepcopy(agent) # save the best policy
-            best_val = val_acc
-            best_i = i_episode
-        if val_list[-1] < val_list[-2] < val_list[-3] < val_list[-4]:
-            break
+        loss, reward, (val_acc, reward) = user_agent.user_learn(logger1, logger2, env, max_timesteps) # debug = (val_acc, reward)
+        if val_acc > best_user_val: # check whether gain improvement on validation set
+            best_user_policy = deepcopy(user_agent) # save the best policy
+            best_user_val = val_acc
+            best_user_i = i_episode
         logger2.info("Training Meta-policy: %d    Val_Acc: %.5f    Avg_reward: %.5f    Best_Acc:  %.5f    Best_i: %d "
-                     % (i_episode, val_acc, reward, best_val, best_i))
-        torch.save({'q_estimator_qnet_state_dict': agent.q_estimator.qnet.state_dict(),
-                    'target_estimator_qnet_state_dict': agent.target_estimator.qnet.state_dict(),
+                     % (i_episode, val_acc, reward, best_user_val, best_user_i))
+        torch.save({'q_estimator_qnet_state_dict': user_agent.q_estimator.qnet.state_dict(),
+                    'target_estimator_qnet_state_dict': user_agent.target_estimator.qnet.state_dict(),
                     'Val': val_acc,
                     'Reward': reward},
-                    'model/agentpoints/a-' + str(val_acc) + '-' + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + '.pth.tar')
+                    'model/agentpoints/a-user-' + str(val_acc) + '-' + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + '.pth.tar')
+
+        loss, reward, (val_acc, reward) = item_agent.item_learn(logger1, logger2, env, max_timesteps) # debug = (val_acc, reward)
+        if val_acc > best_item_val: # check whether gain improvement on validation set
+            best_item_policy = deepcopy(item_agent) # save the best policy
+            best_item_val = val_acc
+            best_item_i = i_episode
+        logger2.info("Training Meta-policy: %d    Val_Acc: %.5f    Avg_reward: %.5f    Best_Acc:  %.5f    Best_i: %d "
+                     % (i_episode, val_acc, reward, best_item_val, best_item_i))
+        torch.save({'q_estimator_qnet_state_dict': item_agent.q_estimator.qnet.state_dict(),
+                    'target_estimator_qnet_state_dict': item_agent.target_estimator.qnet.state_dict(),
+                    'Val': val_acc,
+                    'Reward': reward},
+                    'model/agentpoints/a-item-' + str(val_acc) + '-' + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + '.pth.tar')
 
 
     # Testing: Apply meta-policy to train a new GNN
@@ -116,22 +143,28 @@ def main():
     new_env.seed(0)
     use_pretrain(new_env)
 
-    new_env.policy = best_policy
+    new_env.user_policy = best_user_policy
+    new_env.item_policy = best_item_policy
 
     b_i = 0
     best_val_i = 0
     best_val_acc = 0
     best_test_acc = 0
-    actions = dict()
+    user_actions = dict()
+    item_actions = dict()
     val_acc = reward = 0
     val_list = [0, 0, 0]
     for i_episode in range(1, 16):
-        index, state = new_env.reset2()
+        user_state = new_env.user_reset()
+        item_state = new_env.item_reset()
         for t in range(max_timesteps):
             if i_episode >= 1:
-                action = best_policy.eval_step(state)
-                actions[t] = action
-            state, reward, done, (val_acc, reward) = new_env.step2(logger1, logger2, index, actions[t], True)
+                user_action = best_user_policy.eval_step(user_state)
+                user_actions[t] = user_action
+                item_action = best_item_policy.eval_step(item_state)
+                item_actions[t] = item_action
+            new_env.user_step(logger1, logger2, user_actions[t], True)
+            new_env.item_step(logger1, logger2, item_actions[t], True)
         val_acc = new_env.test_batch(logger2)
         val_list.append(val_acc)
         if val_acc > best_val_acc and val_acc > new_env.cur_best:

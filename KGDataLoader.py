@@ -40,6 +40,8 @@ def parse_args():
                         help='KG batch size.')
     parser.add_argument('--nd_batch_size', type=int, default=32,
                         help='node sampling batch size.')
+    parser.add_argument('--rl_batch_size', type=int, default=1,
+                        help='RL training batch size.')
     parser.add_argument('--train_batch_size', type=int, default=2000,
                         help='Test batch size (the user number to test every batch).')
     parser.add_argument('--test_batch_size', type=int, default=20000,
@@ -200,6 +202,10 @@ class DataLoaderHGNN(object):
         self.n_entities = self.n_users_entities - self.n_users
 
         # 1: B-U 2: U-B 3: B-Ca 4: B-Ci 5: U-Co 6: U-U 7: Ca-B 8: Ci-B 9: Co-U 10: U-U
+
+        self.metapath_transform_dict = {1: ['1', '2'], 2: ['2', '1'], 3: ['3', '7'], 7: ['3', '7'], 4: ['4', '8'],
+                                        8: ['4', '8'], 5: ['5', '9'],
+                                        9: ['5', '9'], 6: ['6'], 10: ['10']}
 
         # Only for Yelp dataset
         node_type_list = np.zeros(self.n_users_entities, dtype=np.int32)

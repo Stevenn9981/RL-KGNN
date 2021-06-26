@@ -618,7 +618,7 @@ class hgnn_env(object):
     #     # print(self.train_data.x(torch.tensor([10,11,12])))
 
     def train_GNN(self):
-        n_cf_batch = 10 * self.data.n_cf_train // self.data.cf_batch_size + 1
+        n_cf_batch = 20 * self.data.n_cf_train // self.data.cf_batch_size + 1
         cf_total_loss = 0
 
         for iter in range(1, n_cf_batch + 1):

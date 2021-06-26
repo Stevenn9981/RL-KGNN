@@ -295,7 +295,7 @@ class hgnn_env(object):
         state = []
         for i in range(self.rl_batch_size):
             index = random.sample(nodes, min(self.nd_batch_size, len(nodes)))
-            state.append(F.normalize(torch.mean(user_embeds[index])).cpu().detach().numpy())
+            state.append(F.normalize(torch.mean(user_embeds[index], 1)).cpu().detach().numpy())
         return np.array(state)
 
     def user_reset(self):
@@ -310,7 +310,7 @@ class hgnn_env(object):
         state = []
         for i in range(self.rl_batch_size):
             index = random.sample(nodes, min(self.nd_batch_size, len(nodes)))
-            state.append(F.normalize(torch.mean(item_embeds[index])).cpu().detach().numpy())
+            state.append(F.normalize(torch.mean(item_embeds[index], 1)).cpu().detach().numpy())
         return np.array(state)
 
     def item_reset(self):

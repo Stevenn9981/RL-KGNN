@@ -81,6 +81,8 @@ class HANLayer(nn.Module):
             mp = list(map(str, meta_path))
             if ''.join(mp) not in self.sg_dict:
                 tim1 = time.time()
+                import pdb
+                pdb.set_trace()
                 self.sg_dict[''.join(mp)] = dgl.metapath_reachable_graph(g, meta_path)
                 graph = self.sg_dict[''.join(mp)]
                 if graph.number_of_edges() / graph.number_of_nodes() > 800:

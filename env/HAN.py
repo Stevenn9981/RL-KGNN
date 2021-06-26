@@ -79,7 +79,7 @@ class HANLayer(nn.Module):
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         for meta_path in meta_paths:
             mp = list(map(str, meta_path))
-            if ''.join(mp) not in self.gat_layers:
+            if ''.join(mp) not in self.sg_dict:
                 tim1 = time.time()
                 self.sg_dict[''.join(mp)] = dgl.metapath_reachable_graph(g, meta_path)
                 graph = self.sg_dict[''.join(mp)]

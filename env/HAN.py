@@ -96,7 +96,7 @@ class HANLayer(nn.Module):
             graph = self.sg_dict[''.join(mp)]
             import pdb
             pdb.set_trace()
-            if graph.number_of_edges() / graph.number_of_nodes() > 500:
+            if graph.number_of_edges() / graph.number_of_nodes() > 800:
                 continue
             sampler = dgl.dataloading.MultiLayerNeighborSampler([500])
             dataloader = dgl.dataloading.NodeDataLoader(

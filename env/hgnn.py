@@ -336,7 +336,7 @@ class hgnn_env(object):
                                 if self.train_data.e_n_dict[rel][1] == self.train_data.e_n_dict[augment_mp[0]][0]:
                                     mp[inx + 1:inx + 1] = augment_mp
 
-                if self.train_data.e_n_dict[augment_mp[0]][0] == 0:
+                if self.train_data.e_n_dict[augment_mp[0]][0] == 4:
                     self.etypes_lists[0].append(augment_mp)
                 self.train_GNN()
                 if test:

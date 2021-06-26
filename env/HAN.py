@@ -84,6 +84,7 @@ class HANLayer(nn.Module):
                 self.sg_dict[''.join(mp)] = dgl.metapath_reachable_graph(g, meta_path)
                 graph = self.sg_dict[''.join(mp)]
                 if graph.number_of_edges() / graph.number_of_nodes() > 800:
+                    print("Prepare meta-path graph: ", time.time() - tim1)
                     continue
                 gatconv = nn.ModuleDict({''.join(mp): GATConv(self.in_size, self.out_size, self.layer_num_heads,
                                                               self.dropout, self.dropout,

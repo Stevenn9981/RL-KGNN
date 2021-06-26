@@ -325,7 +325,7 @@ class hgnn_env(object):
                 augment_mp = self.data.metapath_transform_dict[act]
                 for i in range(len(self.etypes_lists[0])):
                     mp = self.etypes_lists[0][i]
-                    if len(mp) < 6:
+                    if len(mp) < 4:
                         if self.train_data.e_n_dict[mp[-1]][1] == self.train_data.e_n_dict[augment_mp[0]][0]:
                             mp.extend(augment_mp)
                         else:

@@ -295,7 +295,7 @@ class hgnn_env(object):
         state = []
         for i in range(self.rl_batch_size):
             index = random.sample(nodes, min(self.nd_batch_size, len(nodes)))
-            print(torch.mean(user_embeds[index], 1))
+            print(user_embeds[index].shape)
             print(torch.mean(user_embeds[index], 1).shape)
             state.append(F.normalize(torch.mean(user_embeds[index], 1), dim=0).cpu().detach().numpy())
         return np.array(state)

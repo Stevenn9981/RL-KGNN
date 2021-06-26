@@ -238,18 +238,12 @@ class hgnn_env(object):
         return emb
 
     def get_user_embedding(self, u_ids):
-        for metapaths in self.etypes_lists:
-            start_type = self.train_data.e_n_dict[metapaths[0][0]][0]
-            if start_type == 4:
-                return self.model(self.train_data, self.train_data.x[self.data.node_type_list == 4], metapaths,
-                                  self.optimizer, u_ids)
+        return self.model(self.train_data, self.train_data.x[self.data.node_type_list == 4], self.etypes_lists[0],
+                          self.optimizer, u_ids)
 
     def get_item_embedding(self, i_ids):
-        for metapaths in self.etypes_lists:
-            start_type = self.train_data.e_n_dict[metapaths[0][0]][0]
-            if start_type == 0:
-                return self.model(self.train_data, self.train_data.x[self.data.node_type_list == start_type], metapaths,
-                                  self.optimizer, i_ids)
+        return self.model(self.train_data, self.train_data.x[self.data.node_type_list == 0], self.etypes_lists[1],
+                          self.optimizer, i_ids)
 
     def get_all_user_embedding(self):
         all_user_ids = torch.tensor(range(self.train_data.x[self.data.node_type_list == 4].shape[0]))
@@ -324,6 +318,8 @@ class hgnn_env(object):
         self.optimizer.zero_grad()
         done_list = [False] * len(actions)
         next_state, reward, val_acc = [], [], []
+        import pdb
+        pdb.set_trace()
         for i, act in enumerate(actions):
             if act == STOP:
                 done_list[i] = True

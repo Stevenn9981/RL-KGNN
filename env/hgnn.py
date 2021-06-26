@@ -344,7 +344,7 @@ class hgnn_env(object):
                     self.etypes_lists[0].append(augment_mp)
                 self.train_GNN()
                 if test:
-                    for i in range(10):
+                    for i in range(5):
                         self.train_GNN()
 
             val_precision = self.eval_batch()
@@ -624,7 +624,7 @@ class hgnn_env(object):
     #     # print(self.train_data.x(torch.tensor([10,11,12])))
 
     def train_GNN(self):
-        n_cf_batch = self.data.n_cf_train // self.data.cf_batch_size + 1
+        n_cf_batch = 5 * self.data.n_cf_train // self.data.cf_batch_size + 1
         cf_total_loss = 0
 
         for iter in range(1, n_cf_batch + 1):
@@ -712,12 +712,12 @@ class hgnn_env(object):
         # user_embed = self.get_user_embedding(unode_ids)
         u_embeds = self.get_all_user_embedding()
         tim2 = time.time()
-        print("get user embedding: ", tim2 - tim1)
+        # print("get user embedding: ", tim2 - tim1)
 
         # item_pos_embed = self.get_item_embedding(item_pos_ids)
         i_embeds = self.get_all_item_embedding()
         tim3 = time.time()
-        print("get item embedding: ", tim3 - tim2)
+        # print("get item embedding: ", tim3 - tim2)
 
         # item_neg_embed = self.get_item_embedding(item_neg_ids)
         # tim4 = time.time()

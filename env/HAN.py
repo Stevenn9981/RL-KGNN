@@ -82,6 +82,9 @@ class HANLayer(nn.Module):
             if ''.join(mp) not in self.gat_layers:
                 tim1 = time.time()
                 self.sg_dict[''.join(mp)] = dgl.metapath_reachable_graph(g, meta_path)
+                graph = self.sg_dict[''.join(mp)]
+                if graph.number_of_edges() / graph.number_of_nodes() > 800:
+                    continue
                 gatconv = nn.ModuleDict({''.join(mp): GATConv(self.in_size, self.out_size, self.layer_num_heads,
                                                               self.dropout, self.dropout,
                                                               allow_zero_in_degree=True).to(device)})
@@ -94,8 +97,6 @@ class HANLayer(nn.Module):
         for i, meta_path in enumerate(meta_paths):
             mp = list(map(str, meta_path))
             graph = self.sg_dict[''.join(mp)]
-            import pdb
-            pdb.set_trace()
             if graph.number_of_edges() / graph.number_of_nodes() > 800:
                 continue
             sampler = dgl.dataloading.MultiLayerNeighborSampler([500])

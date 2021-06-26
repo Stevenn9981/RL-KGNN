@@ -324,6 +324,8 @@ class hgnn_env(object):
         self.optimizer.zero_grad()
         done_list = [False] * len(actions)
         next_state, reward, val_acc = [], [], []
+        import pdb
+        pdb.set_trace()
         for i, act in enumerate(actions):
             if act == STOP:
                 done_list[i] = True

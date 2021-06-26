@@ -99,7 +99,7 @@ class HANLayer(nn.Module):
             mp = list(map(str, meta_path))
             graph = self.sg_dict[''.join(mp)]
             if graph.number_of_edges() / graph.number_of_nodes() > 800:
-                semantic_embeddings.append(h[b_ids])
+                semantic_embeddings.append(h[b_ids].expand(-1, self.in_size * self.layer_num_heads))
                 continue
             sampler = dgl.dataloading.MultiLayerNeighborSampler([500])
             dataloader = dgl.dataloading.NodeDataLoader(

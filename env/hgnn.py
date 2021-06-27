@@ -336,12 +336,15 @@ class hgnn_env(object):
 
                 if self.train_data.e_n_dict[augment_mp[0]][0] == 4:
                     self.etypes_lists[0].append(augment_mp)
+                self.etypes_lists[0] = list(map(lambda x: list(x), set(map(lambda x: tuple(x), self.etypes_lists[0]))))
                 self.train_GNN()
                 if test:
-                    for i in range(5):
+                    for i in range(2):
                         self.train_GNN()
-
-            val_precision = self.eval_batch()
+            if not test:
+                val_precision = self.eval_batch()
+            else:
+                val_precision = 0
             val_acc.append(val_precision)
 
             self.past_performance.append(val_precision)
@@ -380,7 +383,7 @@ class hgnn_env(object):
                 augment_mp = self.data.metapath_transform_dict[act]
                 for i in range(len(self.etypes_lists[1])):
                     mp = self.etypes_lists[1][i]
-                    if len(mp) < 6:
+                    if len(mp) < 4:
                         if self.train_data.e_n_dict[mp[-1]][1] == self.train_data.e_n_dict[augment_mp[0]][0]:
                             mp.extend(augment_mp)
                         else:
@@ -391,6 +394,7 @@ class hgnn_env(object):
 
                 if self.train_data.e_n_dict[augment_mp[0]][0] == 0:
                     self.etypes_lists[1].append(augment_mp)
+                self.etypes_lists[1] =list(map(lambda x: list(x), set(map(lambda x: tuple(x), self.etypes_lists[1]))))
                 self.train_GNN()
 
             val_precision = self.eval_batch()

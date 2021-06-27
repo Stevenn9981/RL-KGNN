@@ -38,7 +38,7 @@ def parse_args():
                         help='CF batch size.')
     parser.add_argument('--kg_batch_size', type=int, default=10000,
                         help='KG batch size.')
-    parser.add_argument('--nd_batch_size', type=int, default=32,
+    parser.add_argument('--nd_batch_size', type=int, default=500,
                         help='node sampling batch size.')
     parser.add_argument('--rl_batch_size', type=int, default=1,
                         help='RL training batch size.')

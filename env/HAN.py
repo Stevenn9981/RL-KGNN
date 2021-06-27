@@ -71,7 +71,7 @@ class HANLayer(nn.Module):
             nn.Linear(hidden_size, 1, bias=False)
         )
 
-    def forward(self, g, h, meta_paths, optimizer, b_ids):
+    def forward(self, g, h, meta_paths, optimizer, b_ids, test=False):
         meta_paths = list(tuple(meta_path) for meta_path in meta_paths)
         semantic_embeddings = []
 
@@ -101,7 +101,10 @@ class HANLayer(nn.Module):
             if graph.number_of_edges() / graph.number_of_nodes() > 800:
                 semantic_embeddings.append(h[b_ids].repeat(1, self.layer_num_heads))
                 continue
-            sampler = dgl.dataloading.MultiLayerNeighborSampler([500])
+            if test:
+                sampler = dgl.dataloading.MultiLayerNeighborSampler([1500])
+            else:
+                sampler = dgl.dataloading.MultiLayerNeighborSampler([500])
             dataloader = dgl.dataloading.NodeDataLoader(
                 graph, torch.LongTensor(list(set(b_ids.tolist()))), sampler, torch.device(device),
                 batch_size=len(b_ids),
@@ -128,8 +131,8 @@ class HAN(nn.Module):
                                         hidden_size, num_heads[l], dropout))
         self.predict = nn.Linear(hidden_size * num_heads[-1], out_size)
 
-    def forward(self, g, h, meta_paths, optimizer, b_ids):
+    def forward(self, g, h, meta_paths, optimizer, b_ids, test=False):
         for gnn in self.layers:
-            h = gnn(g.cpu(), h, meta_paths, optimizer, b_ids)
+            h = gnn(g.cpu(), h, meta_paths, optimizer, b_ids, test)
 
         return self.predict(h)

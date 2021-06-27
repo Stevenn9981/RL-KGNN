@@ -339,8 +339,7 @@ class hgnn_env(object):
                 self.etypes_lists[0] = list(map(lambda x: list(x), set(map(lambda x: tuple(x), self.etypes_lists[0]))))
                 self.train_GNN()
                 if test:
-                    for i in range(2):
-                        self.train_GNN(True)
+                    self.train_GNN(True)
             if not test:
                 val_precision = self.eval_batch()
             else:
@@ -397,8 +396,7 @@ class hgnn_env(object):
                 self.etypes_lists[1] =list(map(lambda x: list(x), set(map(lambda x: tuple(x), self.etypes_lists[1]))))
                 self.train_GNN()
                 if test:
-                    for i in range(2):
-                        self.train_GNN(True)
+                    self.train_GNN(True)
             if not test:
                 val_precision = self.eval_batch()
             else:

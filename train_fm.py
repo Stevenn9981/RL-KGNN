@@ -162,6 +162,7 @@ def main():
         user_state, _, _, (_, _) = new_env.user_step(logger1, logger2, user_action, True)
         item_state, _, _, (_, _) = new_env.item_step(logger1, logger2, item_action, True)
         logger2.info("Meta-path set: %s" % (str(new_env.etypes_lists)))
+        print("Meta-path set: %s" % (str(new_env.etypes_lists)))
         val_acc = new_env.test_batch(logger2)
         val_list.append(val_acc)
         if val_acc > best_val_acc and val_acc > new_env.cur_best:

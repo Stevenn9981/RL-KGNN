@@ -337,6 +337,7 @@ class hgnn_env(object):
                                 rel = mp[inx]
                                 if self.train_data.e_n_dict[rel][1] == self.train_data.e_n_dict[augment_mp[0]][0]:
                                     mp[inx + 1:inx + 1] = augment_mp
+                                    break
 
                 if self.train_data.e_n_dict[augment_mp[0]][0] == 4:
                     self.etypes_lists[0].append(augment_mp)
@@ -399,6 +400,7 @@ class hgnn_env(object):
                                 rel = mp[inx]
                                 if self.train_data.e_n_dict[rel][1] == self.train_data.e_n_dict[augment_mp[0]][0]:
                                     mp[inx + 1:inx + 1] = augment_mp
+                                    break
 
                 if self.train_data.e_n_dict[augment_mp[0]][0] == 0:
                     self.etypes_lists[1].append(augment_mp)

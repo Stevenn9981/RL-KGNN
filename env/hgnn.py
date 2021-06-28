@@ -321,6 +321,7 @@ class hgnn_env(object):
         for i, act in enumerate(actions):
             if act == STOP:
                 done_list[i] = True
+                self.train_GNN()
             else:
                 augment_mp = self.data.metapath_transform_dict[act]
                 for i in range(len(self.etypes_lists[0])):
@@ -344,7 +345,7 @@ class hgnn_env(object):
             if not test:
                 val_precision = self.eval_batch()
             else:
-                val_precision = 0
+                val_precision = self.test_batch(logger2)
             val_acc.append(val_precision)
 
             self.past_performance.append(val_precision)
@@ -394,14 +395,15 @@ class hgnn_env(object):
 
                 if self.train_data.e_n_dict[augment_mp[0]][0] == 0:
                     self.etypes_lists[1].append(augment_mp)
-                self.etypes_lists[1] =list(map(lambda x: list(x), set(map(lambda x: tuple(x), self.etypes_lists[1]))))
-                self.train_GNN()
+                self.etypes_lists[1] = list(map(lambda x: list(x), set(map(lambda x: tuple(x), self.etypes_lists[1]))))
                 if test:
                     self.train_GNN(True)
+                else:
+                    self.train_GNN()
             if not test:
                 val_precision = self.eval_batch()
             else:
-                val_precision = 0
+                val_precision = self.test_batch(logger2)
             val_acc.append(val_precision)
 
             self.past_performance.append(val_precision)
@@ -626,11 +628,11 @@ class hgnn_env(object):
     #     # print(self.train_data.x(torch.tensor([10,11,12])))
 
     def train_GNN(self, test=False):
-        n_cf_batch = 10 * self.data.n_cf_train // self.data.cf_batch_size + 1
+        n_cf_batch = 5 * self.data.n_cf_train // self.data.cf_batch_size + 1
         cf_total_loss = 0
 
         if test:
-            n_cf_batch *= 3
+            n_cf_batch *= 2
 
         for iter in range(1, n_cf_batch + 1):
             #     print("current iter: ", iter, " ", n_cf_batch)

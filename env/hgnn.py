@@ -380,6 +380,7 @@ class hgnn_env(object):
         for i, act in enumerate(actions):
             if act == STOP:
                 done_list[i] = True
+                self.train_GNN()
             else:
                 augment_mp = self.data.metapath_transform_dict[act]
                 for i in range(len(self.etypes_lists[1])):

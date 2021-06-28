@@ -86,6 +86,7 @@ class HANLayer(nn.Module):
                 tim1 = time.time()
                 self.sg_dict[''.join(mp)] = dgl.metapath_reachable_graph(g, meta_path)
                 graph = self.sg_dict[''.join(mp)]
+                print("Average degree: ", graph.number_of_edges() / graph.number_of_nodes())
                 if graph.number_of_edges() / graph.number_of_nodes() > 5000:
                     print("Prepare meta-path graph: ", time.time() - tim1)
                     continue

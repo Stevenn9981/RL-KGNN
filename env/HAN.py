@@ -75,10 +75,6 @@ class HANLayer(nn.Module):
         meta_paths = list(tuple(meta_path) for meta_path in meta_paths)
         semantic_embeddings = []
         DEGREE_THERSHOLD = 12000
-        if test:
-            sampler = dgl.dataloading.MultiLayerNeighborSampler([1500])
-        else:
-            sampler = dgl.dataloading.MultiLayerNeighborSampler([500])
 
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         for meta_path in meta_paths:
@@ -108,6 +104,10 @@ class HANLayer(nn.Module):
                 semantic_embeddings.append(h[b_ids].repeat(1, self.layer_num_heads))
             if graph.number_of_edges() / graph.number_of_nodes() > DEGREE_THERSHOLD:
                 continue
+            if test:
+                sampler = dgl.dataloading.MultiLayerNeighborSampler([1500])
+            else:
+                sampler = dgl.dataloading.MultiLayerNeighborSampler([500])
             dataloader = dgl.dataloading.NodeDataLoader(
                 graph, torch.LongTensor(list(set(b_ids.tolist()))), sampler, torch.device(device),
                 batch_size=len(b_ids),

@@ -75,7 +75,6 @@ class HANLayer(nn.Module):
         meta_paths = list(tuple(meta_path) for meta_path in meta_paths)
         semantic_embeddings = []
 
-
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         for meta_path in meta_paths:
             mp = list(map(str, meta_path))
@@ -94,11 +93,11 @@ class HANLayer(nn.Module):
                 optimizer.add_param_group({'params': gatconv.parameters()})
                 print("Prepare meta-path graph: ", time.time() - tim1)
 
-
         for i, meta_path in enumerate(meta_paths):
             mp = list(map(str, meta_path))
             graph = self.sg_dict[''.join(mp)]
-            if graph.number_of_edges() / graph.number_of_nodes() > 800:
+            if graph.number_of_edges() / graph.number_of_nodes() > 800 and len(semantic_embeddings) == 0 and i == len(
+                    meta_paths) - 1:
                 semantic_embeddings.append(h[b_ids].repeat(1, self.layer_num_heads))
                 continue
             if test:

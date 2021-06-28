@@ -156,10 +156,13 @@ def main():
     val_list = [0, 0, 0]
     user_state = new_env.user_reset()
     item_state = new_env.item_reset()
-    for i_episode in range(1, 50):
+    for i_episode in range(1, 10):
         user_action = best_user_policy.eval_step(user_state)
         item_action = best_item_policy.eval_step(item_state)
         user_state, _, _, (_, _) = new_env.user_step(logger1, logger2, user_action, True)
+        new_env.test_batch(logger2)
+        logger2.info("Meta-path set: %s" % (str(new_env.etypes_lists)))
+        print("Meta-path set: %s" % (str(new_env.etypes_lists)))
         item_state, _, _, (_, _) = new_env.item_step(logger1, logger2, item_action, True)
         logger2.info("Meta-path set: %s" % (str(new_env.etypes_lists)))
         print("Meta-path set: %s" % (str(new_env.etypes_lists)))

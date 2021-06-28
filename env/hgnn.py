@@ -337,9 +337,10 @@ class hgnn_env(object):
                 if self.train_data.e_n_dict[augment_mp[0]][0] == 4:
                     self.etypes_lists[0].append(augment_mp)
                 self.etypes_lists[0] = list(map(lambda x: list(x), set(map(lambda x: tuple(x), self.etypes_lists[0]))))
-                self.train_GNN()
                 if test:
                     self.train_GNN(True)
+                else:
+                    self.train_GNN()
             if not test:
                 val_precision = self.eval_batch()
             else:
@@ -627,6 +628,9 @@ class hgnn_env(object):
     def train_GNN(self, test=False):
         n_cf_batch = 10 * self.data.n_cf_train // self.data.cf_batch_size + 1
         cf_total_loss = 0
+
+        if test:
+            n_cf_batch *= 3
 
         for iter in range(1, n_cf_batch + 1):
             #     print("current iter: ", iter, " ", n_cf_batch)

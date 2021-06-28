@@ -136,6 +136,7 @@ def main():
                     'Reward': reward},
                     'model/agentpoints/a-item-' + str(val_acc) + '-' + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + '.pth.tar')
 
+    del env
 
     # Testing: Apply meta-policy to train a new GNN
     logger2.info("Training GNNs with learned meta-policy")

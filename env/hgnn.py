@@ -639,7 +639,7 @@ class hgnn_env(object):
         cf_total_loss = 0
 
         if test:
-            n_cf_batch *= 2
+            n_cf_batch *= 3
 
         for iter in range(1, n_cf_batch + 1):
             #     print("current iter: ", iter, " ", n_cf_batch)

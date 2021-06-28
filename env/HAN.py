@@ -74,6 +74,7 @@ class HANLayer(nn.Module):
     def forward(self, g, h, meta_paths, optimizer, b_ids, test=False):
         meta_paths = list(tuple(meta_path) for meta_path in meta_paths)
         semantic_embeddings = []
+        DEGREE_THERSHOLD = 12000
         if test:
             sampler = dgl.dataloading.MultiLayerNeighborSampler([1500])
         else:
@@ -87,7 +88,7 @@ class HANLayer(nn.Module):
                 self.sg_dict[''.join(mp)] = dgl.metapath_reachable_graph(g, meta_path)
                 graph = self.sg_dict[''.join(mp)]
                 print("Meta-path: ", str(mp), " Average degree: ", graph.number_of_edges() / graph.number_of_nodes())
-                if graph.number_of_edges() / graph.number_of_nodes() > 5000:
+                if graph.number_of_edges() / graph.number_of_nodes() > DEGREE_THERSHOLD:
                     print("Prepare meta-path graph: ", time.time() - tim1)
                     continue
                 gatconv = nn.ModuleDict({''.join(mp): GATConv(self.in_size, self.out_size, self.layer_num_heads,
@@ -101,10 +102,11 @@ class HANLayer(nn.Module):
         for i, meta_path in enumerate(meta_paths):
             mp = list(map(str, meta_path))
             graph = self.sg_dict[''.join(mp)]
-            if graph.number_of_edges() / graph.number_of_nodes() > 5000 and len(semantic_embeddings) == 0 and i == len(
+            if graph.number_of_edges() / graph.number_of_nodes() > DEGREE_THERSHOLD and len(
+                    semantic_embeddings) == 0 and i == len(
                     meta_paths) - 1:
                 semantic_embeddings.append(h[b_ids].repeat(1, self.layer_num_heads))
-            if graph.number_of_edges() / graph.number_of_nodes() > 5000:
+            if graph.number_of_edges() / graph.number_of_nodes() > DEGREE_THERSHOLD:
                 continue
             dataloader = dgl.dataloading.NodeDataLoader(
                 graph, torch.LongTensor(list(set(b_ids.tolist()))), sampler, torch.device(device),

@@ -140,6 +140,6 @@ class HAN(nn.Module):
 
     def forward(self, g, h, meta_paths, optimizer, b_ids, test=False):
         for gnn in self.layers:
-            h = gnn(g.cpu(), h, meta_paths, optimizer, b_ids, test)
+            h, meta_paths = gnn(g.cpu(), h, meta_paths, optimizer, b_ids, test)
 
         return self.predict(h), meta_paths

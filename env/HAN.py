@@ -101,7 +101,7 @@ class HANLayer(nn.Module):
                 meta_pathset.remove(list(meta_path))
                 meta_paths.remove(meta_path)
 
-        print("Processed Meta-path Set: ", meta_paths)
+        # print("Processed Meta-path Set: ", meta_paths)
 
         for i, meta_path in enumerate(meta_paths):
             mp = list(map(str, meta_path))

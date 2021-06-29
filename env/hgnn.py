@@ -331,11 +331,13 @@ class hgnn_env(object):
                     mp = self.etypes_lists[0][i]
                     if len(mp) < 4:
                         if self.train_data.e_n_dict[mp[-1]][1] == self.train_data.e_n_dict[augment_mp[0]][0]:
+                            self.etypes_lists[0].append(mp)
                             mp.extend(augment_mp)
                         else:
                             for inx in range(len(mp)):
                                 rel = mp[inx]
                                 if self.train_data.e_n_dict[rel][1] == self.train_data.e_n_dict[augment_mp[0]][0]:
+                                    self.etypes_lists[0].append(mp)
                                     mp[inx + 1:inx + 1] = augment_mp
                                     break
 
@@ -394,11 +396,13 @@ class hgnn_env(object):
                     mp = self.etypes_lists[1][i]
                     if len(mp) < 4:
                         if self.train_data.e_n_dict[mp[-1]][1] == self.train_data.e_n_dict[augment_mp[0]][0]:
+                            self.etypes_lists[1].append(mp)
                             mp.extend(augment_mp)
                         else:
                             for inx in range(len(mp)):
                                 rel = mp[inx]
                                 if self.train_data.e_n_dict[rel][1] == self.train_data.e_n_dict[augment_mp[0]][0]:
+                                    self.etypes_lists[1].append(mp)
                                     mp[inx + 1:inx + 1] = augment_mp
                                     break
 

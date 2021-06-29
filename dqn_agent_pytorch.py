@@ -186,7 +186,7 @@ class DQNAgent(object):
             for each in trajectories:
                 self.feed(each)
         loss = self.train()
-        print('DQN loss: ', loss)
+        print('User DQN loss: ', loss)
         return loss, reward_batch, debug
 
     def item_learn(self, logger1, logger2, env, total_timesteps):
@@ -201,7 +201,7 @@ class DQNAgent(object):
             for each in trajectories:
                 self.feed(each)
         loss = self.train()
-        print('DQN loss: ', loss)
+        print('Item DQN loss: ', loss)
         return loss, reward_batch, debug
 
 

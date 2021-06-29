@@ -182,6 +182,8 @@ class DQNAgent(object):
             state_batch = next_state_batch
             next_state_batch, reward_batch, done_batch, debug = env.user_step(logger1, logger2,
                                                                           best_actions)  # debug = (val_acc, test_acc)
+            logger2.info("Now meta-path set: %s" % (str(env.etypes_lists)))
+            print("Now meta-path set: %s" % (str(env.etypes_lists)))
             trajectories = zip(state_batch, best_actions, reward_batch, next_state_batch, done_batch)
             for each in trajectories:
                 self.feed(each)

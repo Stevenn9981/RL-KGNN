@@ -71,8 +71,8 @@ class HANLayer(nn.Module):
             nn.Linear(hidden_size, 1, bias=False)
         )
 
-    def forward(self, g, h, meta_paths, optimizer, b_ids, test=False):
-        meta_paths = list(tuple(meta_path) for meta_path in meta_paths)
+    def forward(self, g, h, meta_pathset, optimizer, b_ids, test=False):
+        meta_paths = list(tuple(meta_path) for meta_path in meta_pathset)
         semantic_embeddings = []
         DEGREE_THERSHOLD = 8000
 
@@ -85,7 +85,7 @@ class HANLayer(nn.Module):
                 graph = self.sg_dict[''.join(mp)]
                 print("Meta-path: ", str(mp), " Average degree: ", graph.number_of_edges() / graph.number_of_nodes())
                 if graph.number_of_edges() / graph.number_of_nodes() > DEGREE_THERSHOLD:
-                    meta_paths.remove(meta_path)
+                    meta_pathset.remove(list(meta_path))
                     print("Prepare meta-path graph: ", time.time() - tim1)
                     continue
                 gatconv = nn.ModuleDict({''.join(mp): GATConv(self.in_size, self.out_size, self.layer_num_heads,
@@ -97,7 +97,7 @@ class HANLayer(nn.Module):
                 print("Prepare meta-path graph: ", time.time() - tim1)
             elif self.sg_dict[''.join(mp)].number_of_edges() / self.sg_dict[
                 ''.join(mp)].number_of_nodes() > DEGREE_THERSHOLD:
-                meta_paths.remove(meta_path)
+                meta_pathset.remove(list(meta_path))
 
         print("Processed Meta-path Set: ", meta_paths)
 
@@ -125,7 +125,7 @@ class HANLayer(nn.Module):
                 semantic_embeddings.append(emb)
         semantic_embeddings = torch.stack(semantic_embeddings, dim=1)  # (N, M, D * K)
 
-        return self.semantic_attention(semantic_embeddings), meta_paths  # (N, D * K)
+        return self.semantic_attention(semantic_embeddings)  # (N, D * K)
 
 
 class HAN(nn.Module):
@@ -140,6 +140,6 @@ class HAN(nn.Module):
 
     def forward(self, g, h, meta_paths, optimizer, b_ids, test=False):
         for gnn in self.layers:
-            h, meta_paths = gnn(g.cpu(), h, meta_paths, optimizer, b_ids, test)
+            h = gnn(g.cpu(), h, meta_paths, optimizer, b_ids, test)
 
-        return self.predict(h), meta_paths
+        return self.predict(h)

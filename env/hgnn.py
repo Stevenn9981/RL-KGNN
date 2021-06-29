@@ -238,15 +238,15 @@ class hgnn_env(object):
     #     return emb
 
     def get_user_embedding(self, u_ids, test=False):
-        h, meta_paths = self.model(self.train_data, self.train_data.x[self.data.node_type_list == 4], self.etypes_lists[0],
+        h = self.model(self.train_data, self.train_data.x[self.data.node_type_list == 4], self.etypes_lists[0],
                           self.optimizer, u_ids, test)
-        self.etypes_lists[0] = meta_paths
+        # self.etypes_lists[0] = meta_paths
         return h
 
     def get_item_embedding(self, i_ids, test=False):
-        h, meta_paths = self.model(self.train_data, self.train_data.x[self.data.node_type_list == 0], self.etypes_lists[1],
+        h = self.model(self.train_data, self.train_data.x[self.data.node_type_list == 0], self.etypes_lists[1],
                           self.optimizer, i_ids, test)
-        self.etypes_lists[1] = meta_paths
+        # self.etypes_lists[1] = meta_paths
         return h
 
     def get_all_user_embedding(self, test=False):

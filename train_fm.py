@@ -205,7 +205,7 @@ def main():
         #     best_test_acc = test_acc
         #     b_i = i_episode
         # logger2.info("Testing GNN %d:   Test_Acc: %.5f  Best_test_i: %d  best_val_i: %d" % (i_episode, test_acc, b_i, best_val_i))
-
+    del new_env
 
     test_env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset)
     test_env.seed(0)

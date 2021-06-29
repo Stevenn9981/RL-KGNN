@@ -56,7 +56,7 @@ def use_pretrain(env):
 
 def main():
     torch.backends.cudnn.deterministic=True
-    max_timesteps = 10
+    max_timesteps = 5
     dataset = 'yelp_data'
 
     args = parse_args()

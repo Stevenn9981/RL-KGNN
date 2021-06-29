@@ -101,7 +101,7 @@ class HANLayer(nn.Module):
 
         print("Processed Meta-path Set: ", meta_paths)
 
-        for i, meta_path in enumerate(meta_paths[:]):
+        for i, meta_path in enumerate(meta_paths):
             mp = list(map(str, meta_path))
             graph = self.sg_dict[''.join(mp)]
             # if graph.number_of_edges() / graph.number_of_nodes() > DEGREE_THERSHOLD and len(
@@ -125,7 +125,7 @@ class HANLayer(nn.Module):
                 semantic_embeddings.append(emb)
         semantic_embeddings = torch.stack(semantic_embeddings, dim=1)  # (N, M, D * K)
 
-        return self.semantic_attention(semantic_embeddings)  # (N, D * K)
+        return self.semantic_attention(semantic_embeddings), meta_paths  # (N, D * K)
 
 
 class HAN(nn.Module):
@@ -142,4 +142,4 @@ class HAN(nn.Module):
         for gnn in self.layers:
             h = gnn(g.cpu(), h, meta_paths, optimizer, b_ids, test)
 
-        return self.predict(h)
+        return self.predict(h), meta_paths

@@ -228,22 +228,26 @@ class hgnn_env(object):
     #     print(edge_metapath_array)
     #     return g_list, self.train_data.x, type_mask, edge_metapath_array
 
-    def update_embedding(self):
-        emb = self.train_data.x.clone()
-        for metapaths in self.etypes_lists:
-            start_type = self.train_data.e_n_dict[metapaths[0][0]][0]
-            item_emb = emb[self.data.node_type_list == start_type]
-            emb[self.data.node_type_list == start_type] = self.model(self.train_data, item_emb, metapaths,
-                                                                     self.optimizer)
-        return emb
+    # def update_embedding(self):
+    #     emb = self.train_data.x.clone()
+    #     for metapaths in self.etypes_lists:
+    #         start_type = self.train_data.e_n_dict[metapaths[0][0]][0]
+    #         item_emb = emb[self.data.node_type_list == start_type]
+    #         emb[self.data.node_type_list == start_type] = self.model(self.train_data, item_emb, metapaths,
+    #                                                                  self.optimizer)
+    #     return emb
 
     def get_user_embedding(self, u_ids, test=False):
-        return self.model(self.train_data, self.train_data.x[self.data.node_type_list == 4], self.etypes_lists[0],
+        h, meta_paths = self.model(self.train_data, self.train_data.x[self.data.node_type_list == 4], self.etypes_lists[0],
                           self.optimizer, u_ids, test)
+        self.etypes_lists[0] = meta_paths
+        return h
 
     def get_item_embedding(self, i_ids, test=False):
-        return self.model(self.train_data, self.train_data.x[self.data.node_type_list == 0], self.etypes_lists[1],
+        h, meta_paths = self.model(self.train_data, self.train_data.x[self.data.node_type_list == 0], self.etypes_lists[1],
                           self.optimizer, i_ids, test)
+        self.etypes_lists[1] = meta_paths
+        return h
 
     def get_all_user_embedding(self, test=False):
         all_user_ids = torch.tensor(range(self.train_data.x[self.data.node_type_list == 4].shape[0]))
@@ -272,16 +276,16 @@ class hgnn_env(object):
         random.seed(random_seed)
         np.random.seed(random_seed)
 
-    def reset2(self):
-        self.meta_path_dict = collections.defaultdict(list)
-        self.meta_path_instances_dict = collections.defaultdict(list)
-        self.meta_path_graph_edges = collections.defaultdict(set)
-        nodes = range(self.train_data.x.shape[0])
-        index = random.sample(nodes, min(self.nd_batch_size, len(nodes)))
-        state = F.normalize(self.update_embedding()[
-                                index]).cpu().detach().numpy()
-        self.optimizer.zero_grad()
-        return index, state
+    # def reset2(self):
+    #     self.meta_path_dict = collections.defaultdict(list)
+    #     self.meta_path_instances_dict = collections.defaultdict(list)
+    #     self.meta_path_graph_edges = collections.defaultdict(set)
+    #     nodes = range(self.train_data.x.shape[0])
+    #     index = random.sample(nodes, min(self.nd_batch_size, len(nodes)))
+    #     state = F.normalize(self.update_embedding()[
+    #                             index]).cpu().detach().numpy()
+    #     self.optimizer.zero_grad()
+    #     return index, state
 
     def get_user_state(self):
         nodes = range(self.train_data.x[self.data.node_type_list == 4].shape[0])

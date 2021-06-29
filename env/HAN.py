@@ -21,7 +21,7 @@ class SemanticAttention(nn.Module):
 
         self.project = nn.Sequential(
             nn.Linear(in_size, hidden_size),
-            nn.LeakyReLU(),
+            nn.Tanh(),
             nn.Linear(hidden_size, 1, bias=False)
         )
 

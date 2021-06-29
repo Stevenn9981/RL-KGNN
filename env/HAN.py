@@ -95,6 +95,9 @@ class HANLayer(nn.Module):
                 self.gat_layers.update(gatconv)
                 optimizer.add_param_group({'params': gatconv.parameters()})
                 print("Prepare meta-path graph: ", time.time() - tim1)
+            elif self.sg_dict[''.join(mp)].number_of_edges() / self.sg_dict[
+                ''.join(mp)].number_of_nodes() > DEGREE_THERSHOLD:
+                meta_paths.remove(meta_path)
 
         print("Processed Meta-path Set: ", meta_paths)
 

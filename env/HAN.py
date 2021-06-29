@@ -77,7 +77,7 @@ class HANLayer(nn.Module):
         DEGREE_THERSHOLD = 10000
 
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        for meta_path in meta_paths:
+        for meta_path in meta_paths[:]:
             mp = list(map(str, meta_path))
             if ''.join(mp) not in self.sg_dict:
                 tim1 = time.time()
@@ -85,6 +85,7 @@ class HANLayer(nn.Module):
                 graph = self.sg_dict[''.join(mp)]
                 print("Meta-path: ", str(mp), " Average degree: ", graph.number_of_edges() / graph.number_of_nodes())
                 if graph.number_of_edges() / graph.number_of_nodes() > DEGREE_THERSHOLD:
+                    meta_paths.remove(meta_path)
                     print("Prepare meta-path graph: ", time.time() - tim1)
                     continue
                 gatconv = nn.ModuleDict({''.join(mp): GATConv(self.in_size, self.out_size, self.layer_num_heads,
@@ -95,16 +96,18 @@ class HANLayer(nn.Module):
                 optimizer.add_param_group({'params': gatconv.parameters()})
                 print("Prepare meta-path graph: ", time.time() - tim1)
 
-        for i, meta_path in enumerate(meta_paths):
+        print("Processed Meta-path Set: ", meta_paths)
+
+        for i, meta_path in enumerate(meta_paths[:]):
             mp = list(map(str, meta_path))
             graph = self.sg_dict[''.join(mp)]
             # if graph.number_of_edges() / graph.number_of_nodes() > DEGREE_THERSHOLD and len(
             #         semantic_embeddings) == 0 and i == len(
             #         meta_paths) - 1:
             #     semantic_embeddings.append(h[b_ids].repeat(1, self.layer_num_heads))
-            if graph.number_of_edges() / graph.number_of_nodes() > DEGREE_THERSHOLD:
-                meta_paths.remove(meta_path)
-                continue
+            # if graph.number_of_edges() / graph.number_of_nodes() > DEGREE_THERSHOLD:
+            #     meta_paths.remove(meta_path)
+            #     continue
             sampler = dgl.dataloading.MultiLayerNeighborSampler([500])
             dataloader = dgl.dataloading.NodeDataLoader(
                 graph, torch.LongTensor(list(set(b_ids.tolist()))), sampler, torch.device(device),

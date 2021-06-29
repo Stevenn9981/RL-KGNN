@@ -85,6 +85,7 @@ class HANLayer(nn.Module):
                 graph = self.sg_dict[''.join(mp)]
                 print("Meta-path: ", str(mp), " Average degree: ", graph.number_of_edges() / graph.number_of_nodes())
                 if graph.number_of_edges() / graph.number_of_nodes() > DEGREE_THERSHOLD:
+                    meta_paths.remove(meta_path)
                     meta_pathset.remove(list(meta_path))
                     print("Prepare meta-path graph: ", time.time() - tim1)
                     continue
@@ -98,6 +99,7 @@ class HANLayer(nn.Module):
             elif self.sg_dict[''.join(mp)].number_of_edges() / self.sg_dict[
                 ''.join(mp)].number_of_nodes() > DEGREE_THERSHOLD:
                 meta_pathset.remove(list(meta_path))
+                meta_paths.remove(meta_path)
 
         print("Processed Meta-path Set: ", meta_paths)
 

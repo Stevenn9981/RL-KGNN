@@ -159,7 +159,8 @@ def main():
     item_state = new_env.item_reset()
     user_stop = False
     item_stop = False
-    for i_episode in range(1, 10):
+    mp_set = []
+    for i_episode in range(max_timesteps):
         user_action = best_user_policy.eval_step(user_state)
         item_action = best_item_policy.eval_step(item_state)
         if not user_stop:
@@ -168,7 +169,11 @@ def main():
                 user_stop = True
         else:
             new_env.train_GNN(True)
-        new_env.test_batch(logger2)
+        val_acc = new_env.test_batch(logger2)
+        val_list.append(val_acc)
+        if val_acc > best_val_acc and val_acc > new_env.cur_best:
+            mp_set = new_env.etypes_lists
+            best_val_acc = val_acc
         logger2.info("Meta-path set: %s" % (str(new_env.etypes_lists)))
         print("Meta-path set: %s" % (str(new_env.etypes_lists)))
         if not item_stop:
@@ -182,15 +187,16 @@ def main():
         val_acc = new_env.test_batch(logger2)
         val_list.append(val_acc)
         if val_acc > best_val_acc and val_acc > new_env.cur_best:
+            mp_set = new_env.etypes_lists
             best_val_acc = val_acc
-            if os.path.exists(model_name):
-                os.remove(model_name)
-            torch.save({'state_dict': new_env.model.state_dict(),
-                            'optimizer': new_env.optimizer.state_dict(),
-                            'Val': val_acc,
-                            'Embedding': new_env.train_data.x},
-                           model_name)
-            best_val_i = i_episode
+            # if os.path.exists(model_name):
+            #     os.remove(model_name)
+            # torch.save({'state_dict': new_env.model.state_dict(),
+            #                 'optimizer': new_env.optimizer.state_dict(),
+            #                 'Val': val_acc,
+            #                 'Embedding': new_env.train_data.x},
+            #                model_name)
+            # best_val_i = i_episode
         logger2.info("Evaluating GNN %d:   Val_Acc: %.5f  Reward: %.5f  best_val_i: %d" % (i_episode, val_acc, reward, best_val_i))
         if val_list[-1] < val_list[-2] < val_list[-3] < val_list[-4]:
             break
@@ -200,11 +206,38 @@ def main():
         #     b_i = i_episode
         # logger2.info("Testing GNN %d:   Test_Acc: %.5f  Best_test_i: %d  best_val_i: %d" % (i_episode, test_acc, b_i, best_val_i))
 
+
+    test_env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset)
+    test_env.seed(0)
+    test_env.etypes_lists = mp_set
+    use_pretrain(test_env)
+
+
+    best = 0
+    best_i = 0
+    for i in range(40):
+        print('Current epoch: ', i)
+        if i % 1 == 0:
+            acc = test_env.test_batch(logger2)
+            if acc > best:
+                best = acc
+                best_i = i
+                if os.path.exists(model_name):
+                    os.remove(model_name)
+                torch.save({'state_dict': test_env.model.state_dict(),
+                                'optimizer': test_env.optimizer.state_dict(),
+                                'Val': val_acc,
+                                'Embedding': test_env.train_data.x},
+                               model_name)
+            logger2.info('Best Accuracy: %.5f\tBest_i : %d' % (best, best_i))
+            print('Best: ', best, 'Best_i: ', best_i)
+        test_env.train_GNN(True)
+
     logger2.info("---------------------------------------------------\nStart the performance testing on test dataset:")
     model_checkpoint = torch.load(model_name)
-    new_env.model.load_state_dict(model_checkpoint['state_dict'])
-    new_env.train_data.x = model_checkpoint['Embedding']
-    new_env.test_batch(logger2)
+    test_env.model.load_state_dict(model_checkpoint['state_dict'])
+    test_env.train_data.x = model_checkpoint['Embedding']
+    test_env.test_batch(logger2)
 
 
 if __name__ == '__main__':

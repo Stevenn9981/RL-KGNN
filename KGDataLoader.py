@@ -205,7 +205,7 @@ class DataLoaderHGNN(object):
 
         self.metapath_transform_dict = {1: ['1', '2'], 2: ['2', '1'], 3: ['3', '7'], 7: ['3', '7'], 4: ['4', '8'],
                                         8: ['4', '8'], 5: ['5', '9'],
-                                        9: ['5', '9'], 6: ['6'], 10: ['10']}
+                                        9: ['5', '9'], 6: ['6'], 10: ['6']}
 
         # Only for Yelp dataset
         node_type_list = np.zeros(self.n_users_entities, dtype=np.int32)

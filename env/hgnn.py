@@ -142,7 +142,7 @@ class hgnn_env(object):
                 data.train_graph.edge_index[1][i].item())
         data.train_graph.adj_dist = adj_dist
         data.train_graph.attr_dict = attr_dict
-        self.etypes_lists = [[['2', '4', '8', '1']], [['1', '2'], ['1', '2', '3', '7'], ['4', '8', '1', '2'], ['3', '7', '4', '8']]]
+        self.etypes_lists = [[['2', '4', '8', '1'], ['2', '1']], [['1', '2'], ['4', '8', '1', '2']]]
 
         self.model = HAN(
             in_size=data.entity_dim,
@@ -641,7 +641,7 @@ class hgnn_env(object):
         cf_total_loss = 0
 
         if test:
-            n_cf_batch *= 3
+            n_cf_batch *= 2
 
         for iter in range(1, n_cf_batch + 1):
             #     print("current iter: ", iter, " ", n_cf_batch)

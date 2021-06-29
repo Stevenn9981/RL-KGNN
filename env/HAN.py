@@ -98,10 +98,10 @@ class HANLayer(nn.Module):
         for i, meta_path in enumerate(meta_paths):
             mp = list(map(str, meta_path))
             graph = self.sg_dict[''.join(mp)]
-            if graph.number_of_edges() / graph.number_of_nodes() > DEGREE_THERSHOLD and len(
-                    semantic_embeddings) == 0 and i == len(
-                    meta_paths) - 1:
-                semantic_embeddings.append(h[b_ids].repeat(1, self.layer_num_heads))
+            # if graph.number_of_edges() / graph.number_of_nodes() > DEGREE_THERSHOLD and len(
+            #         semantic_embeddings) == 0 and i == len(
+            #         meta_paths) - 1:
+            #     semantic_embeddings.append(h[b_ids].repeat(1, self.layer_num_heads))
             if graph.number_of_edges() / graph.number_of_nodes() > DEGREE_THERSHOLD:
                 meta_paths.remove(meta_path)
                 continue

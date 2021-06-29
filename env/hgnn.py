@@ -142,7 +142,7 @@ class hgnn_env(object):
                 data.train_graph.edge_index[1][i].item())
         data.train_graph.adj_dist = adj_dist
         data.train_graph.attr_dict = attr_dict
-        self.etypes_lists = [[['2', '1']], [['1', '2'], ['4', '8'], ['3', '7']]]
+        self.etypes_lists = [[['2', '1']], [['3', '7'], ['4', '8'], ['1', '2']]]
 
         self.model = HAN(
             in_size=data.entity_dim,
@@ -239,13 +239,13 @@ class hgnn_env(object):
 
     def get_user_embedding(self, u_ids, test=False):
         h = self.model(self.train_data, self.train_data.x[self.data.node_type_list == 4], self.etypes_lists[0],
-                          self.optimizer, u_ids, test)
+                       self.optimizer, u_ids, test)
         # self.etypes_lists[0] = meta_paths
         return h
 
     def get_item_embedding(self, i_ids, test=False):
         h = self.model(self.train_data, self.train_data.x[self.data.node_type_list == 0], self.etypes_lists[1],
-                          self.optimizer, i_ids, test)
+                       self.optimizer, i_ids, test)
         # self.etypes_lists[1] = meta_paths
         return h
 

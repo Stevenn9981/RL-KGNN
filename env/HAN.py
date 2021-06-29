@@ -74,7 +74,7 @@ class HANLayer(nn.Module):
     def forward(self, g, h, meta_paths, optimizer, b_ids, test=False):
         meta_paths = list(tuple(meta_path) for meta_path in meta_paths)
         semantic_embeddings = []
-        DEGREE_THERSHOLD = 12000
+        DEGREE_THERSHOLD = 10000
 
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         for meta_path in meta_paths:

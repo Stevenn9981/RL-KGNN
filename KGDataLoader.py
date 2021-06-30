@@ -203,9 +203,6 @@ class DataLoaderHGNN(object):
 
         # 1: B-U 2: U-B 3: B-Ca 4: B-Ci 5: U-Co 6: U-U 7: Ca-B 8: Ci-B 9: Co-U 10: U-U
 
-        self.metapath_transform_dict = {1: ['1', '2'], 2: ['2', '1'], 3: ['3', '7'], 7: ['3', '7'], 4: ['4', '8'],
-                                        8: ['4', '8'], 5: ['5', '9'],
-                                        9: ['5', '9'], 6: ['6'], 10: ['6']}
 
         # Only for Yelp dataset
         node_type_list = np.zeros(self.n_users_entities, dtype=np.int32)
@@ -215,7 +212,13 @@ class DataLoaderHGNN(object):
         node_type_list[14842:14853] = 3
         node_type_list[14853:] = 4
         self.node_type_list = node_type_list
+
         self.n_id_start_dict = {0: 0, 1: 14284, 2: 14795, 3: 14842, 4: 14853}
+
+        self.metapath_transform_dict = {1: ['1', '2'], 2: ['2', '1'], 3: ['3', '7'], 7: ['3', '7'], 4: ['4', '8'],
+                                        8: ['4', '8'], 5: ['5', '9'],
+                                        9: ['5', '9'], 6: ['6'], 10: ['6']}
+
 
         self.n_types = max(node_type_list) + 1
 
@@ -313,14 +316,14 @@ class DataLoaderHGNN(object):
         #             lambda: collections.defaultdict(  # target_id
         #                 lambda: []  # source_id
         #             ))))
-        adjM = np.zeros((n_nodes, n_nodes), dtype=int)
+        # adjM = np.zeros((n_nodes, n_nodes), dtype=int)
         relations = collections.defaultdict(list)
         e_n_dict = collections.defaultdict(tuple)
         for row in zip(*kg_data.to_dict("list").values()):
             relations[('n' + str(row[3]), str(row[1]), 'n' + str(row[4]))].append(
                 (row[0] - self.n_id_start_dict[row[3]], row[2] - self.n_id_start_dict[row[4]]))
-            adjM[row[0], row[2]] = 1
-            adjM[row[2], row[0]] = 1
+            # adjM[row[0], row[2]] = 1
+            # adjM[row[2], row[0]] = 1
             e_n_dict[str(row[1])] = [row[3], row[4]]
         graph = dgl.heterograph(relations)
 
@@ -331,12 +334,12 @@ class DataLoaderHGNN(object):
 
         edge_index = torch.tensor([kg_data['t'], kg_data['h']], dtype=torch.long)
         edge_attr = torch.tensor(kg_data['r'])
-        graph.adjM = adjM
+        # graph.adjM = adjM
         graph.e_n_dict = e_n_dict
         graph.x = x
         graph.edge_index = edge_index
         graph.edge_attr = edge_attr
-        graph.relation_embed = torch.randn(self.n_relations + 1, self.relation_dim)
+        # graph.relation_embed = torch.randn(self.n_relations + 1, self.relation_dim)
         graph.node_idx = torch.arange(n_nodes, dtype=torch.long)
         graph.node_types = node_type_list
         return graph

@@ -152,6 +152,7 @@ class hgnn_env(object):
             dropout=0).to(
             self.device)
         self.train_data = data.train_graph
+        self.train_data.x = self.train_data.x.to(self.device)
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr, weight_decay=weight_decay)
         self.train_data.node_idx = self.train_data.node_idx.to(self.device)
         # self.data.test_graph = self.data.test_graph.to(self.device)

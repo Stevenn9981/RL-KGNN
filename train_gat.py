@@ -11,6 +11,7 @@ import time
 from copy import deepcopy
 import logging
 import torch.nn as nn
+import env.HAN as HAN
 
 from env.hgnn import hgnn_env
 
@@ -61,6 +62,7 @@ def main():
 
     args = parse_args()
     args.lr = 0.005
+    HAN.DEGREE_THERSHOLD = 80000
 
     infor = 'net_pretrain_' + str(args.entity_dim)
     model_name = 'model_' + infor + '.pth'

@@ -14,6 +14,7 @@ import time
 import dgl
 from dgl.nn.pytorch import GATConv, GraphConv
 
+DEGREE_THERSHOLD = 8000
 
 class SemanticAttention(nn.Module):
     def __init__(self, in_size, hidden_size=64):
@@ -74,7 +75,6 @@ class HANLayer(nn.Module):
     def forward(self, g, h, meta_pathset, optimizer, b_ids, test=False):
         meta_paths = list(tuple(meta_path) for meta_path in meta_pathset)
         semantic_embeddings = []
-        DEGREE_THERSHOLD = 8000
 
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         for meta_path in meta_paths[:]:

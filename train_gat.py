@@ -60,6 +60,7 @@ def main():
     dataset = 'yelp_data'
 
     args = parse_args()
+    args.lr = 0.005
 
     infor = 'net_pretrain_' + str(args.entity_dim)
     model_name = 'model_' + infor + '.pth'

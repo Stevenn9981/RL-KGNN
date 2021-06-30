@@ -80,7 +80,7 @@ def main():
     # env.optimizer = torch.optim.Adam(env.model.parameters(), args.lr)
     # env.optimizer.zero_grad()
     env.seed(0)
-    # use_pretrain(env)
+    use_pretrain(env)
 
     best = 0
     best_i = 0

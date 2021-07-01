@@ -142,8 +142,7 @@ class hgnn_env(object):
                 data.train_graph.edge_index[1][i].item())
         data.train_graph.adj_dist = adj_dist
         data.train_graph.attr_dict = attr_dict
-        self.etypes_lists = [[['2', '1']],
-                             [['1', '2'], ['3', '7'], ['4', '8']]]
+        self.etypes_lists = eval(args.mpset)
 
         self.model = HAN(
             in_size=data.entity_dim,

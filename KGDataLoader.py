@@ -99,6 +99,8 @@ def parse_args():
                         help='Repeat the training and testing for N times. Default is 1.')
     parser.add_argument('--save-postfix', default='Yelp',
                         help='Postfix for the saved model and result. Default is Yelp.')
+    parser.add_argument('--mpset', default="[[['2', '1']], [['1', '2']]]",
+                        help='Meta-path Set.')
 
     args = parser.parse_args()
 

@@ -237,7 +237,6 @@ def main():
                     os.remove(model_name)
                 torch.save({'state_dict': test_env.model.state_dict(),
                                 'optimizer': test_env.optimizer.state_dict(),
-                                'Val': val_acc,
                                 'Embedding': test_env.train_data.x},
                                model_name)
             logger2.info('Best Accuracy: %.5f\tBest_i : %d' % (best, best_i))

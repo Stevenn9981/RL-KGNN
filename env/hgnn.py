@@ -185,6 +185,8 @@ class hgnn_env(object):
         self.meta_path_dict = collections.defaultdict(list)
         self.meta_path_instances_dict = collections.defaultdict(list)
         self.meta_path_graph_edges = collections.defaultdict(set)
+
+        self.neg_dict = collections.defaultdict(list)
         logger1.info('Data initialization done')
         print("finish")
 
@@ -809,15 +811,15 @@ class hgnn_env(object):
         user_ids = list(self.data.test_user_dict.keys())
         user_ids_batch = user_ids[:]
 
-        neg_dict = collections.defaultdict(list)
         NDCG10 = 0
 
         with torch.no_grad():
             for u in user_ids_batch:
-                for _ in self.data.test_user_dict[u]:
-                    nl = self.data.sample_neg_items_for_u_test(self.data.train_user_dict, self.data.test_user_dict, u,
-                                                               NEG_SIZE_RANKING)
-                    neg_dict[u].extend(nl)
+                if u not in self.neg_dict:
+                    for _ in self.data.test_user_dict[u]:
+                        nl = self.data.sample_neg_items_for_u_test(self.data.train_user_dict, self.data.test_user_dict, u,
+                                                                   NEG_SIZE_RANKING)
+                        self.neg_dict[u].extend(nl)
             # self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))
             # all_embed = self.update_embedding().to(self.device)
 
@@ -831,7 +833,7 @@ class hgnn_env(object):
                                      i_embeds.transpose(0, 1))
             for idx, u in enumerate(user_ids_batch):
                 pos_logits = torch.cat([pos_logits, cf_scores[idx][self.data.test_user_dict[u]]])
-                neg_logits = torch.cat([neg_logits, torch.unsqueeze(cf_scores[idx][neg_dict[u]], 1)])
+                neg_logits = torch.cat([neg_logits, torch.unsqueeze(cf_scores[idx][self.neg_dict[u]], 1)])
 
             HR1, HR3, HR10, HR20, NDCG10, NDCG20 = self.metrics(pos_logits, neg_logits,
                                                                 training=False)

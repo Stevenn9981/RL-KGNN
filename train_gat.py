@@ -61,7 +61,6 @@ def main():
     dataset = 'yelp_data'
 
     args = parse_args()
-    args.lr = 0.005
     HAN.DEGREE_THERSHOLD = 80000
 
     infor = 'net_pretrain_' + str(args.entity_dim)

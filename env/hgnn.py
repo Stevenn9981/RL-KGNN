@@ -20,7 +20,7 @@ from KGDataLoader import *
 STOP = 0
 
 NEG_SIZE_TRAIN = 10
-NEG_SIZE_RANKING = 200
+NEG_SIZE_RANKING = 500
 
 
 def _L2_loss_mean(x):

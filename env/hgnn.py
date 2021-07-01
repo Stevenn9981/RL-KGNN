@@ -440,6 +440,8 @@ class hgnn_env(object):
         val_acc = np.mean(val_acc)
         next_state = self.get_user_state()
 
+        self.model.reset()
+
         torch.save({'state_dict': self.model.state_dict(),
                     'optimizer': self.optimizer.state_dict(),
                     'Val': val_acc,

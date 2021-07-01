@@ -61,6 +61,7 @@ class HANLayer(nn.Module):
 
         # One GAT layer for each meta path based adjacency matrix
         self.gat_layers = nn.ModuleDict()
+        self.rest_layers = nn.ModuleDict()
         self.mp_weights = nn.ParameterDict()
         self.in_size, self.out_size, self.layer_num_heads, self.dropout = in_size, out_size, layer_num_heads, dropout
         self.semantic_attention = SemanticAttention(in_size=out_size * layer_num_heads)
@@ -71,6 +72,9 @@ class HANLayer(nn.Module):
             nn.ReLU(),
             nn.Linear(hidden_size, 1, bias=False)
         )
+
+    def reset(self):
+        self.gat_layers.load_state_dict(self.rest_layers.state_dict())
 
     def forward(self, g, h, meta_pathset, optimizer, b_ids, test=False):
         meta_paths = list(tuple(meta_path) for meta_path in meta_pathset)
@@ -94,6 +98,7 @@ class HANLayer(nn.Module):
                                                               allow_zero_in_degree=True).to(device)})
 
                 self.gat_layers.update(gatconv)
+                self.rest_layers.update(gatconv.clone())
                 optimizer.add_param_group({'params': gatconv.parameters()})
                 print("Prepare meta-path graph: ", time.time() - tim1)
             elif self.sg_dict[''.join(mp)].number_of_edges() / self.sg_dict[
@@ -145,3 +150,7 @@ class HAN(nn.Module):
             h = gnn(g.cpu(), h, meta_paths, optimizer, b_ids, test)
 
         return self.predict(h)
+
+    def reset(self):
+        for gnn in self.layers:
+            gnn.reset()

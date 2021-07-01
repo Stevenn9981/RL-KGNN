@@ -5,6 +5,7 @@ could not reproduce the result in HAN as they did not provide the preprocessing 
 constructed another dataset from ACM with a different set of papers, connections, features and
 labels.
 """
+import copy
 
 import torch
 import torch.nn as nn
@@ -98,7 +99,7 @@ class HANLayer(nn.Module):
                                                               allow_zero_in_degree=True).to(device)})
 
                 self.gat_layers.update(gatconv)
-                self.rest_layers.update(gatconv.clone())
+                self.rest_layers.update(copy.deepcopy(gatconv))
                 optimizer.add_param_group({'params': gatconv.parameters()})
                 print("Prepare meta-path graph: ", time.time() - tim1)
             elif self.sg_dict[''.join(mp)].number_of_edges() / self.sg_dict[

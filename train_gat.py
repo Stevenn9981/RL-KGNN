@@ -97,6 +97,8 @@ def main():
             logger2.info('Best Accuracy: %.5f\tBest_i : %d' % (best, best_i))
             print('Best: ', best, 'Best_i: ', best_i)
         env.train_GNN(True)
+        if i == 0:
+            print(env.etypes_lists)
 
 
 

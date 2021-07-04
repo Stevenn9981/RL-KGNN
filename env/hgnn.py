@@ -384,7 +384,7 @@ class hgnn_env(object):
 
         logger2.info("Val acc: %.5f  reward: %.5f" % (val_acc, r))
 
-        self.model.reset()
+        # self.model.reset()
 
         return next_state, reward, done_list, (val_acc, r)
 
@@ -451,7 +451,7 @@ class hgnn_env(object):
 
         logger2.info("Val acc: %.5f  reward: %.5f" % (val_acc, r))
 
-        self.model.reset()
+        # self.model.reset()
         return next_state, reward, done_list, (val_acc, r)
 
     # def step2(self, logger1, logger2, index, actions, test=False):

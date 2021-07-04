@@ -186,6 +186,7 @@ class hgnn_env(object):
         self.meta_path_instances_dict = collections.defaultdict(list)
         self.meta_path_graph_edges = collections.defaultdict(set)
 
+        self.eval_neg_dict = collections.defaultdict(list)
         self.test_neg_dict = collections.defaultdict(list)
         logger1.info('Data initialization done')
         print("finish")
@@ -373,8 +374,6 @@ class hgnn_env(object):
         val_acc = np.mean(val_acc)
         next_state = self.get_user_state()
 
-        self.model.reset()
-
         torch.save({'state_dict': self.model.state_dict(),
                     'optimizer': self.optimizer.state_dict(),
                     'Val': val_acc,
@@ -384,6 +383,8 @@ class hgnn_env(object):
                                                                                time.localtime()) + '.pth.tar')
 
         logger2.info("Val acc: %.5f  reward: %.5f" % (val_acc, r))
+
+        self.model.reset()
 
         return next_state, reward, done_list, (val_acc, r)
 
@@ -440,8 +441,6 @@ class hgnn_env(object):
         val_acc = np.mean(val_acc)
         next_state = self.get_user_state()
 
-        self.model.reset()
-
         torch.save({'state_dict': self.model.state_dict(),
                     'optimizer': self.optimizer.state_dict(),
                     'Val': val_acc,
@@ -452,6 +451,7 @@ class hgnn_env(object):
 
         logger2.info("Val acc: %.5f  reward: %.5f" % (val_acc, r))
 
+        self.model.reset()
         return next_state, reward, done_list, (val_acc, r)
 
     # def step2(self, logger1, logger2, index, actions, test=False):
@@ -779,14 +779,11 @@ class hgnn_env(object):
         time1 = time.time()
         user_ids = list(self.data.train_user_dict.keys())
         user_ids_batch = random.sample(user_ids, min(len(user_ids) - 2, self.args.train_batch_size))
-        # neg_list = []
-        neg_dict = collections.defaultdict(list)
         for u in user_ids_batch:
-            for _ in self.data.train_user_dict[u]:
-                nl = self.data.sample_neg_items_for_u(self.data.train_user_dict, u, neg_num)
-                # neg_list.append(nl)
-                neg_dict[u].extend(nl)
-        # self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))
+            if u not in self.eval_neg_dict:
+                for _ in self.data.train_user_dict[u]:
+                    nl = self.data.sample_neg_items_for_u(self.data.train_user_dict, u, neg_num)
+                    self.eval_neg_dict[u].extend(nl)
 
         with torch.no_grad():
             u_embeds = self.get_all_user_embedding()
@@ -801,7 +798,7 @@ class hgnn_env(object):
                                      i_embeds.transpose(0, 1))
             for idx, u in enumerate(user_ids_batch):
                 pos_logits = torch.cat([pos_logits, cf_scores[idx][self.data.train_user_dict[u]]])
-                neg_logits = torch.cat([neg_logits, torch.unsqueeze(cf_scores[idx][neg_dict[u]], 1)])
+                neg_logits = torch.cat([neg_logits, torch.unsqueeze(cf_scores[idx][self.eval_neg_dict[u]], 1)])
             time3 = time.time()
             NDCG10 = self.metrics(pos_logits, neg_logits)
             print(f"Evaluate: NDCG10 : {NDCG10.item():.5f}")

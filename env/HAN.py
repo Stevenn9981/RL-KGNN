@@ -15,7 +15,7 @@ import time
 import dgl
 from dgl.nn.pytorch import GATConv, GraphConv
 
-DEGREE_THERSHOLD = 8000
+DEGREE_THERSHOLD = 6000
 
 class SemanticAttention(nn.Module):
     def __init__(self, in_size, hidden_size=64):
@@ -76,8 +76,6 @@ class HANLayer(nn.Module):
         )
 
     def reset(self):
-        import pdb
-        pdb.set_trace()
         self.gat_layers.load_state_dict(self.rest_layers.state_dict())
 
     def forward(self, g, h, meta_pathset, optimizer, b_ids, test=False):

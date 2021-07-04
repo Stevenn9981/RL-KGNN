@@ -17,6 +17,7 @@ from dgl.nn.pytorch import GATConv, GraphConv
 
 DEGREE_THERSHOLD = 6000
 
+
 class SemanticAttention(nn.Module):
     def __init__(self, in_size, hidden_size=64):
         super(SemanticAttention, self).__init__()
@@ -97,7 +98,8 @@ class HANLayer(nn.Module):
                     continue
                 self.sg_dict[''.join(mp)] = graph
                 gatconv = nn.ModuleDict({''.join(mp): GATConv(self.in_size, self.out_size, self.layer_num_heads,
-                                                              self.dropout, self.dropout,
+                                                              self.dropout, self.dropout, residual=True,
+                                                              activation=nn.ELU(),
                                                               allow_zero_in_degree=True).to(device)})
 
                 self.gat_layers.update(gatconv)

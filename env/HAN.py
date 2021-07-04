@@ -98,7 +98,7 @@ class HANLayer(nn.Module):
                     continue
                 self.sg_dict[''.join(mp)] = graph
                 gatconv = nn.ModuleDict({''.join(mp): GATConv(self.in_size, self.out_size, self.layer_num_heads,
-                                                              self.dropout, self.dropout, residual=True,
+                                                              self.dropout, self.dropout,
                                                               activation=nn.ELU(),
                                                               allow_zero_in_degree=True).to(device)})
 

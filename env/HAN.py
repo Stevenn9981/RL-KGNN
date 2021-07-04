@@ -67,6 +67,7 @@ class HANLayer(nn.Module):
         self.in_size, self.out_size, self.layer_num_heads, self.dropout = in_size, out_size, layer_num_heads, dropout
         self.semantic_attention = SemanticAttention(in_size=out_size * layer_num_heads)
         self.sg_dict = dict()
+        self.large_graph = dict()
 
         self.project = nn.Sequential(
             nn.Linear(out_size * layer_num_heads, hidden_size),
@@ -84,16 +85,17 @@ class HANLayer(nn.Module):
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         for meta_path in meta_paths[:]:
             mp = list(map(str, meta_path))
-            if ''.join(mp) not in self.sg_dict:
+            if ''.join(mp) not in self.sg_dict and ''.join(mp) not in self.large_graph:
                 tim1 = time.time()
-                self.sg_dict[''.join(mp)] = dgl.metapath_reachable_graph(g, meta_path)
-                graph = self.sg_dict[''.join(mp)]
+                graph = dgl.metapath_reachable_graph(g, meta_path)
                 print("Meta-path: ", str(mp), " Average degree: ", graph.number_of_edges() / graph.number_of_nodes())
                 if graph.number_of_edges() / graph.number_of_nodes() > DEGREE_THERSHOLD:
+                    self.large_graph[''.join(mp)] = graph.number_of_edges() / graph.number_of_nodes()
                     meta_paths.remove(meta_path)
                     meta_pathset.remove(list(meta_path))
                     print("Prepare meta-path graph: ", time.time() - tim1)
                     continue
+                self.sg_dict[''.join(mp)] = graph
                 gatconv = nn.ModuleDict({''.join(mp): GATConv(self.in_size, self.out_size, self.layer_num_heads,
                                                               self.dropout, self.dropout,
                                                               allow_zero_in_degree=True).to(device)})
@@ -102,8 +104,7 @@ class HANLayer(nn.Module):
                 self.rest_layers.update(copy.deepcopy(gatconv))
                 optimizer.add_param_group({'params': gatconv.parameters()})
                 print("Prepare meta-path graph: ", time.time() - tim1)
-            elif self.sg_dict[''.join(mp)].number_of_edges() / self.sg_dict[
-                ''.join(mp)].number_of_nodes() > DEGREE_THERSHOLD:
+            elif ''.join(mp) in self.large_graph:
                 meta_pathset.remove(list(meta_path))
                 meta_paths.remove(meta_path)
 

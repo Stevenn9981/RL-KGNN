@@ -156,6 +156,7 @@ class HAN(nn.Module):
     def get_embedding(self, g, h, meta_paths, optimizer, b_ids, test=False):
         for gnn in self.layers:
             h = gnn(g.cpu(), h, meta_paths, optimizer, b_ids, test)
+        return h
 
     def reset(self):
         for gnn in self.layers:

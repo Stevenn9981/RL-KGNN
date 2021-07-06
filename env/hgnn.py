@@ -14,6 +14,9 @@ import torch
 import copy
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import host_subplot
+from sklearn.metrics import f1_score
+
+from utils import load_data, EarlyStopping
 
 from KGDataLoader import *
 
@@ -27,96 +30,97 @@ def _L2_loss_mean(x):
     return torch.mean(torch.sum(torch.pow(x, 2), dim=1, keepdim=False) / 2.)
 
 
-# class Net(torch.nn.Module):
-#     def __init__(self, entity_dim):
-#         super(Net, self).__init__()
-#         dout = 0
-#         self.entity_dim = entity_dim
-#         self.layer1 = nn.Linear(64, 64)
-#         self.node_type_dict = nn.ModuleList()
-#         self.edge_type_dict = nn.ModuleDict()
-#         for i in range(5):
-#             self.node_type_dict.append(nn.Linear(entity_dim, 64))
-#         self.conv1 = GATConv(64, 32, 2, dropout=dout)
-#         self.conv2 = GATConv(64, 64, 2, dropout=dout)
-#         self.conv3 = GATConv(128, entity_dim, 1, dropout=dout)
+def score(logits, labels):
+    _, indices = torch.max(logits, dim=1)
+    prediction = indices.long().cpu().numpy()
+    labels = labels.cpu().numpy()
+
+    accuracy = (prediction == labels).sum() / len(prediction)
+    micro_f1 = f1_score(labels, prediction, average='micro')
+    macro_f1 = f1_score(labels, prediction, average='macro')
+
+    return accuracy, micro_f1, macro_f1
+
+
+def evaluate(model, g, features, labels, mask, loss_func):
+    model.eval()
+    with torch.no_grad():
+        logits = model(g, features)
+    loss = loss_func(logits[mask], labels[mask])
+    accuracy, micro_f1, macro_f1 = score(logits[mask], labels[mask])
+
+    return loss, accuracy, micro_f1, macro_f1
+
+
+# def main(args):
+#     # If args['hetero'] is True, g would be a heterogeneous graph.
+#     # Otherwise, it will be a list of homogeneous graphs.
+#     g, features, labels, num_classes, train_idx, val_idx, test_idx, train_mask, \
+#     val_mask, test_mask = load_data(args['dataset'])
 #
-#     def forward(self, x, edge_index, node_types):
-#         device = 'cuda' if torch.cuda.is_available() else 'cpu'
-#         t = self.node_type_dict[0](x)
-#         for i in range(5):
-#             t[node_types == i] = self.node_type_dict[i](x)[node_types == i]
-#         x = t
+#     if hasattr(torch, 'BoolTensor'):
+#         train_mask = train_mask.bool()
+#         val_mask = val_mask.bool()
+#         test_mask = test_mask.bool()
 #
-#         x = F.relu(self.layer1(x))
-#         x = self.conv1(x, edge_index)
-#         x = torch.flatten(x, start_dim=1)
-#         x = F.relu(x)
-#         x = self.conv2(x, edge_index)
-#         x = torch.flatten(x, start_dim=1)
-#         x = F.relu(x)
-#         x = self.conv3(x, edge_index)
-#         x = torch.flatten(x, start_dim=1)
-#         return x
-
-
-# class GAT(torch.nn.Module):
-#     def __init__(self, entity_dim):
-#         super(GAT, self).__init__()
-#         self.conv1 = GATConv(entity_dim, entity_dim, 1)
+#     features = features.to(args['device'])
+#     labels = labels.to(args['device'])
+#     train_mask = train_mask.to(args['device'])
+#     val_mask = val_mask.to(args['device'])
+#     test_mask = test_mask.to(args['device'])
 #
-#     def forward(self, x, edge_index):
-#         x = self.conv1(x, edge_index)
-#         x = torch.flatten(x, start_dim=1)
-#         return x
-
-
-# class GraphSAGE(torch.nn.Module):
-#     def __init__(self, entity_dim):
-#         super(GraphSAGE, self).__init__()
-#         self.conv1 = SAGEConv(entity_dim, entity_dim)
+#     if args['hetero']:
+#         from model_hetero import HAN
+#         model = HAN(meta_paths=[['pa', 'ap'], ['pf', 'fp']],
+#                     in_size=features.shape[1],
+#                     hidden_size=args['hidden_units'],
+#                     out_size=num_classes,
+#                     num_heads=args['num_heads'],
+#                     dropout=args['dropout']).to(args['device'])
+#         g = g.to(args['device'])
+#     else:
+#         from model import HAN
+#         model = HAN(num_meta_paths=len(g),
+#                     in_size=features.shape[1],
+#                     hidden_size=args['hidden_units'],
+#                     out_size=num_classes,
+#                     num_heads=args['num_heads'],
+#                     dropout=args['dropout']).to(args['device'])
+#         g = [graph.to(args['device']) for graph in g]
 #
-#     def forward(self, x, edge_index):
-#         x = self.conv1(x, edge_index)
-#         return x
-
-
-# class GAT2(torch.nn.Module):
-#     def __init__(self, entity_dim):
-#         super(GAT2, self).__init__()
-#         self.conv1 = GATConv(entity_dim, 32, 1)
-#         self.conv2 = GATConv(32, entity_dim, 1)
+#     stopper = EarlyStopping(patience=args['patience'])
+#     loss_fcn = torch.nn.CrossEntropyLoss()
+#     optimizer = torch.optim.Adam(model.parameters(), lr=args['lr'],
+#                                  weight_decay=args['weight_decay'])
 #
-#     def forward(self, x, edge_index):
-#         x = self.conv1(x, edge_index)
-#         x = torch.flatten(x, start_dim=1)
-#         x = F.relu(x)
-#         x = self.conv2(x, edge_index)
-#         x = torch.flatten(x, start_dim=1)
-#         return x
-
-
-# class GAT3(torch.nn.Module):
-#     def __init__(self, entity_dim):
-#         super(GAT3, self).__init__()
-#         self.conv1 = GATConv(entity_dim, entity_dim, 1)
-#         self.conv2 = GATConv(entity_dim, entity_dim, 1)
-#         self.conv3 = GATConv(entity_dim, entity_dim, 1)
+#     for epoch in range(args['num_epochs']):
+#         model.train()
+#         logits = model(g, features)
+#         loss = loss_fcn(logits[train_mask], labels[train_mask])
 #
-#     def forward(self, x, edge_index):
-#         x = self.conv1(x, edge_index)
-#         x = torch.flatten(x, start_dim=1)
-#         x = F.relu(x)
-#         x = self.conv2(x, edge_index)
-#         x = torch.flatten(x, start_dim=1)
-#         x = F.relu(x)
-#         x = self.conv3(x, edge_index)
-#         x = torch.flatten(x, start_dim=1)
-#         return x
+#         optimizer.zero_grad()
+#         loss.backward()
+#         optimizer.step()
+#
+#         train_acc, train_micro_f1, train_macro_f1 = score(logits[train_mask], labels[train_mask])
+#         val_loss, val_acc, val_micro_f1, val_macro_f1 = evaluate(model, g, features, labels, val_mask, loss_fcn)
+#         early_stop = stopper.step(val_loss.data.item(), val_acc, model)
+#
+#         print('Epoch {:d} | Train Loss {:.4f} | Train Micro f1 {:.4f} | Train Macro f1 {:.4f} | '
+#               'Val Loss {:.4f} | Val Micro f1 {:.4f} | Val Macro f1 {:.4f}'.format(
+#             epoch + 1, loss.item(), train_micro_f1, train_macro_f1, val_loss.item(), val_micro_f1, val_macro_f1))
+#
+#         if early_stop:
+#             break
+#
+#     stopper.load_checkpoint(model)
+#     test_loss, test_acc, test_micro_f1, test_macro_f1 = evaluate(model, g, features, labels, test_mask, loss_fcn)
+#     print('Test loss {:.4f} | Test Micro f1 {:.4f} | Test Macro f1 {:.4f}'.format(
+#         test_loss.item(), test_micro_f1, test_macro_f1))
 
 
 class hgnn_env(object):
-    def __init__(self, logger1, logger2, model_name, args, dataset='yelp_data', weight_decay=1e-5):
+    def __init__(self, logger1, logger2, model_name, args, dataset='yelp_data', weight_decay=1e-5, task='rec'):
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.model_name = model_name
         self.cur_best = 0
@@ -124,46 +128,71 @@ class hgnn_env(object):
         # args.data_dir = path
         # print(args.data_dir)
         lr = args.lr
-        self.data = DataLoaderHGNN(logger1, args, dataset)
-        data = self.data
+        self.task = task
         # print(data.train_graph)
         # data.train_graph.adj = to_dense_adj(data.train_graph.edge_index, edge_attr=data.train_graph.edge_attr)
-        adj_dist = dict()
-        attr_dict = dict()
-        for i, attr in enumerate(data.train_graph.edge_attr):
-            if data.train_graph.edge_index[0][i].item() not in adj_dist:
-                adj_dist[data.train_graph.edge_index[0][i].item()] = dict()
-            if attr.item() not in adj_dist[data.train_graph.edge_index[0][i].item()]:
-                adj_dist[data.train_graph.edge_index[0][i].item()][attr.item()] = set()
-            if attr.item() not in attr_dict:
-                attr_dict[attr.item()] = set()
-            attr_dict[attr.item()].add(data.train_graph.edge_index[0][i].item())
-            adj_dist[data.train_graph.edge_index[0][i].item()][attr.item()].add(
-                data.train_graph.edge_index[1][i].item())
-        data.train_graph.adj_dist = adj_dist
-        data.train_graph.attr_dict = attr_dict
-        self.etypes_lists = eval(args.mpset)
+        # adj_dist = dict()
+        # attr_dict = dict()
+        # for i, attr in enumerate(data.train_graph.edge_attr):
+        #     if data.train_graph.edge_index[0][i].item() not in adj_dist:
+        #         adj_dist[data.train_graph.edge_index[0][i].item()] = dict()
+        #     if attr.item() not in adj_dist[data.train_graph.edge_index[0][i].item()]:
+        #         adj_dist[data.train_graph.edge_index[0][i].item()][attr.item()] = set()
+        #     if attr.item() not in attr_dict:
+        #         attr_dict[attr.item()] = set()
+        #     attr_dict[attr.item()].add(data.train_graph.edge_index[0][i].item())
+        #     adj_dist[data.train_graph.edge_index[0][i].item()][attr.item()].add(
+        #         data.train_graph.edge_index[1][i].item())
+        # data.train_graph.adj_dist = adj_dist
+        # data.train_graph.attr_dict = attr_dict
 
-        self.model = HAN(
-            in_size=data.entity_dim,
-            hidden_size=args.hidden_dim,
-            out_size=data.entity_dim,
-            num_heads=args.num_heads,
-            dropout=0).to(
-            self.device)
-        self.train_data = data.train_graph
-        self.train_data.x = self.train_data.x.to(self.device)
+        if task == 'rec':
+            self.etypes_lists = eval(args.mpset)
+            self.data = DataLoaderHGNN(logger1, args, dataset)
+            self.metapath_transform_dict = self.data.metapath_transform_dict
+            data = self.data
+            self.model = HAN(
+                in_size=data.entity_dim,
+                hidden_size=args.hidden_dim,
+                out_size=data.entity_dim,
+                num_heads=args.num_heads,
+                dropout=0).to(
+                self.device)
+            self.train_data = data.train_graph
+            self.train_data.x = self.train_data.x.to(self.device)
+            self.train_data.node_idx = self.train_data.node_idx.to(self.device)
+            self._set_action_space(data.n_relations + 1)
+            self.user_policy = None
+            self.item_policy = None
+            self.eval_neg_dict = collections.defaultdict(list)
+            self.test_neg_dict = collections.defaultdict(list)
+        elif task == 'classification':
+            self.etypes_lists = [[['pa', 'ap']]]
+            g, features, labels, num_classes, train_idx, val_idx, test_idx, train_mask, \
+            val_mask, test_mask = load_data(dataset)
+            if hasattr(torch, 'BoolTensor'):
+                train_mask = train_mask.bool()
+                val_mask = val_mask.bool()
+                test_mask = test_mask.bool()
+
+            self.train_data = g.to(self.device)
+            self.train_data.x = features.to(self.device)
+            self.train_data.e_n_dict = {'pa': ['p', 'a'], 'ap': ['a', 'p'], 'pf': ['p', 'f'], 'fp': ['f', 'p']}
+            self.metapath_transform_dict = {1: ['pa', 'ap'], 2: ['pf', 'fp']}
+            self.labels = labels.to(self.device)
+            self.train_mask = train_mask.to(self.device)
+            self.val_mask = val_mask.to(self.device)
+            self.test_mask = test_mask.to(self.device)
+            self.model = HAN(in_size=features.shape[1],
+                             hidden_size=32,
+                             out_size=num_classes,
+                             num_heads=args.num_heads,
+                             dropout=0.6).to(self.device)
+            self._set_action_space(3)
+            self.policy = None
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr, weight_decay=weight_decay)
-        self.train_data.node_idx = self.train_data.node_idx.to(self.device)
-        # self.data.test_graph = self.data.test_graph.to(self.device)
-        # import pdb
-        # pdb.set_trace()
-
-        self._set_action_space(data.n_relations + 1)
         obs = self.reset()
         self._set_observation_space(obs)
-        self.user_policy = None
-        self.item_policy = None
         self.nd_batch_size = args.nd_batch_size
         self.rl_batch_size = args.rl_batch_size
         self.W_R = torch.randn(self.data.n_relations + 1, self.data.entity_dim,
@@ -171,7 +200,7 @@ class hgnn_env(object):
         nn.init.xavier_uniform_(self.W_R, gain=nn.init.calculate_gain('relu'))
 
         self.cf_l2loss_lambda = args.cf_l2loss_lambda
-        self.kg_l2loss_lambda = args.kg_l2loss_lambda
+        # self.kg_l2loss_lambda = args.kg_l2loss_lambda
 
         self.baseline_experience = 10
         # print(adj_dist)
@@ -179,67 +208,14 @@ class hgnn_env(object):
 
         # buffers for updating
         # self.buffers = {i: [] for i in range(max_layer)}
-        self.buffers = collections.defaultdict(list)
+        # self.buffers = collections.defaultdict(list)
         self.past_performance = []
 
-        self.meta_path_dict = collections.defaultdict(list)
-        self.meta_path_instances_dict = collections.defaultdict(list)
-        self.meta_path_graph_edges = collections.defaultdict(set)
+        # self.meta_path_dict = collections.defaultdict(list)
+        # self.meta_path_instances_dict = collections.defaultdict(list)
+        # self.meta_path_graph_edges = collections.defaultdict(set)
 
-        self.eval_neg_dict = collections.defaultdict(list)
-        self.test_neg_dict = collections.defaultdict(list)
         logger1.info('Data initialization done')
-        print("finish")
-
-    # def get_input(self, etypes_lists):
-    #     g_list = []
-    #     expected_mp = []
-    #     for e_metapath in etypes_lists:
-    #         l2 = []
-    #         for metapath in e_metapath:
-    #             n_metapath = [self.train_data.e_n_dict[metapath[0]][0]]
-    #             for e in metapath:
-    #                 if self.train_data.e_n_dict[e][0] == n_metapath[-1]:
-    #                     n_metapath.append(self.train_data.e_n_dict[e][1])
-    #                 else:
-    #                     n_metapath = None
-    #                     break
-    #             l2.append(tuple(n_metapath))
-    #         expected_mp.append(l2)
-    #     print(expected_mp)
-    #     adjM = self.train_data.adjM
-    #     type_mask = self.data.node_type_list
-    #     edge_metapath_array = []
-    #     g_lists = []
-    #     for i in range(len(etypes_lists)):
-    #         # get metapath based neighbor pairs
-    #         neighbor_pairs = get_metapath_neighbor_pairs(adjM, type_mask, expected_mp[i])
-    #         # construct and save metapath-based networks
-    #         G_list = get_networkx_graph(neighbor_pairs, type_mask, i)
-    #         for nx_G_list in G_list:
-    #             g_lists.append([])
-    #             for nx_G in nx_G_list:
-    #                 g = dgl.DGLGraph(multigraph=True)
-    #                 g.add_nodes(nx_G.number_of_nodes())
-    #                 g.add_edges(*list(zip(*sorted(map(lambda tup: (int(tup[0]), int(tup[1])), nx_G.edges())))))
-    #                 g_lists[-1].append(g)
-    #         l3 = []
-    #         # node indices of edge metapaths
-    #         all_edge_metapath_idx_array = get_edge_metapath_idx_array(neighbor_pairs)
-    #         for metapath, edge_metapath_idx_array in zip(expected_mp[i], all_edge_metapath_idx_array):
-    #             l3.append(edge_metapath_idx_array)
-    #         edge_metapath_array.append(l3)
-    #     print(edge_metapath_array)
-    #     return g_list, self.train_data.x, type_mask, edge_metapath_array
-
-    # def update_embedding(self):
-    #     emb = self.train_data.x.clone()
-    #     for metapaths in self.etypes_lists:
-    #         start_type = self.train_data.e_n_dict[metapaths[0][0]][0]
-    #         item_emb = emb[self.data.node_type_list == start_type]
-    #         emb[self.data.node_type_list == start_type] = self.model(self.train_data, item_emb, metapaths,
-    #                                                                  self.optimizer)
-    #     return emb
 
     def get_user_embedding(self, u_ids, test=False):
         h = self.model(self.train_data, self.train_data.x[self.data.node_type_list == 4], self.etypes_lists[0],
@@ -266,8 +242,8 @@ class hgnn_env(object):
         self.action_space = Discrete(_max)
 
     def _set_observation_space(self, observation):
-        low = np.full(observation.shape, -float('inf'))
-        high = np.full(observation.shape, float('inf'))
+        low = np.full(observation.shape, -np.float32('inf'))
+        high = np.full(observation.shape, np.float32('inf'))
         self.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
 
     def reset(self):
@@ -280,25 +256,17 @@ class hgnn_env(object):
         random.seed(random_seed)
         np.random.seed(random_seed)
 
-    # def reset2(self):
-    #     self.meta_path_dict = collections.defaultdict(list)
-    #     self.meta_path_instances_dict = collections.defaultdict(list)
-    #     self.meta_path_graph_edges = collections.defaultdict(set)
-    #     nodes = range(self.train_data.x.shape[0])
-    #     index = random.sample(nodes, min(self.nd_batch_size, len(nodes)))
-    #     state = F.normalize(self.update_embedding()[
-    #                             index]).cpu().detach().numpy()
-    #     self.optimizer.zero_grad()
-    #     return index, state
+    def sample_state(self, embeds, nodes):
+        state = []
+        for i in range(self.rl_batch_size):
+            index = random.sample(nodes, min(self.nd_batch_size, len(nodes)))
+            state.append(F.normalize(torch.mean(embeds[index], 0), dim=0).cpu().detach().numpy())
+        return np.array(state)
 
     def get_user_state(self):
         nodes = range(self.train_data.x[self.data.node_type_list == 4].shape[0])
         user_embeds = self.get_all_user_embedding()
-        state = []
-        for i in range(self.rl_batch_size):
-            index = random.sample(nodes, min(self.nd_batch_size, len(nodes)))
-            state.append(F.normalize(torch.mean(user_embeds[index], 0), dim=0).cpu().detach().numpy())
-        return np.array(state)
+        return self.sample_state(user_embeds, nodes)
 
     def user_reset(self):
         self.etypes_lists = [[['2', '1']], [['1', '2']]]
@@ -309,11 +277,7 @@ class hgnn_env(object):
     def get_item_state(self):
         nodes = range(self.train_data.x[self.data.node_type_list == 0].shape[0])
         item_embeds = self.get_all_item_embedding()
-        state = []
-        for i in range(self.rl_batch_size):
-            index = random.sample(nodes, min(self.nd_batch_size, len(nodes)))
-            state.append(F.normalize(torch.mean(item_embeds[index], 0), dim=0).cpu().detach().numpy())
-        return np.array(state)
+        return self.sample_state(item_embeds, nodes)
 
     def item_reset(self):
         self.etypes_lists = [[['2', '1']], [['1', '2']]]
@@ -321,7 +285,18 @@ class hgnn_env(object):
         self.optimizer.zero_grad()
         return state
 
-    def user_step(self, logger1, logger2, actions, test=False):
+    def get_class_state(self):
+        nodes = range(self.train_data.x.shape[0])
+        class_embeds = self.train_data.x
+        return self.sample_state(class_embeds, nodes)
+
+    def class_reset(self):
+        self.etypes_lists = [[['pa', 'ap']]]
+        state = self.get_class_state()
+        self.optimizer.zero_grad()
+        return state
+
+    def rec_step(self, actions, logger1, logger2, test, type):
         self.model.train()
         self.optimizer.zero_grad()
         done_list = [False] * len(actions)
@@ -334,32 +309,30 @@ class hgnn_env(object):
                 else:
                     self.train_GNN()
             else:
-                augment_mp = self.data.metapath_transform_dict[act]
-                for i in range(len(self.etypes_lists[0])):
-                    mp = self.etypes_lists[0][i]
+                augment_mp = self.metapath_transform_dict[act]
+                for i in range(len(self.etypes_lists[type[0]])):
+                    mp = self.etypes_lists[type[0]][i]
                     if len(mp) < 4:
                         if self.train_data.e_n_dict[mp[-1]][1] == self.train_data.e_n_dict[augment_mp[0]][0]:
-                            self.etypes_lists[0].append(mp[:])
+                            self.etypes_lists[type[0]].append(mp[:])
                             mp.extend(augment_mp)
                         else:
                             for inx in range(len(mp)):
                                 rel = mp[inx]
                                 if self.train_data.e_n_dict[rel][1] == self.train_data.e_n_dict[augment_mp[0]][0]:
-                                    self.etypes_lists[0].append(mp[:])
+                                    self.etypes_lists[type[0]].append(mp[:])
                                     mp[inx + 1:inx + 1] = augment_mp
                                     break
 
-                if self.train_data.e_n_dict[augment_mp[0]][0] == 4:
-                    self.etypes_lists[0].append(augment_mp)
-                self.etypes_lists[0] = list(map(lambda x: list(x), set(map(lambda x: tuple(x), self.etypes_lists[0]))))
+                if self.train_data.e_n_dict[augment_mp[0]][0] == type[1]:
+                    self.etypes_lists[type[0]].append(augment_mp)
+                self.etypes_lists[type[0]] = list(
+                    map(lambda x: list(x), set(map(lambda x: tuple(x), self.etypes_lists[type[0]]))))
                 if test:
                     self.train_GNN(True)
                 else:
                     self.train_GNN()
-            if not test:
-                val_precision = self.eval_batch()
-            else:
-                val_precision = self.test_batch(logger2)
+            val_precision = self.eval_batch()
             val_acc.append(val_precision)
 
             self.past_performance.append(val_precision)
@@ -369,292 +342,69 @@ class hgnn_env(object):
 
             logger1.info("Val acc: %.5f  reward: %.5f" % (val_precision, rew))
             logger1.info("-----------------------------------------------------------------------")
-
         r = np.mean(np.array(reward))
         val_acc = np.mean(val_acc)
+        logger2.info("Val acc: %.5f  reward: %.5f" % (val_acc, r))
+        return done_list, r, reward, val_acc
+
+    def user_step(self, logger1, logger2, actions, test=False,
+                  type=(0, 4)):  # type - (index_of_etpyes_list, index_of_node_type)
+        done_list, r, reward, val_acc = self.rec_step(actions, logger1, logger2, test, type)
         next_state = self.get_user_state()
 
-        torch.save({'state_dict': self.model.state_dict(),
-                    'optimizer': self.optimizer.state_dict(),
-                    'Val': val_acc,
-                    'Embedding': self.train_data.x,
-                    'Reward': r},
-                   'model/epochpoints/e-' + str(val_acc) + '-' + time.strftime("%Y-%m-%d %H:%M:%S",
-                                                                               time.localtime()) + '.pth.tar')
-
-        logger2.info("Val acc: %.5f  reward: %.5f" % (val_acc, r))
-
         # self.model.reset()
 
         return next_state, reward, done_list, (val_acc, r)
 
-    def item_step(self, logger1, logger2, actions, test=False):
-        self.model.train()
-        self.optimizer.zero_grad()
-        done_list = [False] * len(actions)
-        next_state, reward, val_acc = [], [], []
-        for i, act in enumerate(actions):
-            if act == STOP:
-                done_list[i] = True
-                if test:
-                    self.train_GNN(True)
-                else:
-                    self.train_GNN()
-            else:
-                augment_mp = self.data.metapath_transform_dict[act]
-                for i in range(len(self.etypes_lists[1])):
-                    mp = self.etypes_lists[1][i]
-                    if len(mp) < 4:
-                        if self.train_data.e_n_dict[mp[-1]][1] == self.train_data.e_n_dict[augment_mp[0]][0]:
-                            self.etypes_lists[1].append(mp[:])
-                            mp.extend(augment_mp)
-                        else:
-                            for inx in range(len(mp)):
-                                rel = mp[inx]
-                                if self.train_data.e_n_dict[rel][1] == self.train_data.e_n_dict[augment_mp[0]][0]:
-                                    self.etypes_lists[1].append(mp[:])
-                                    mp[inx + 1:inx + 1] = augment_mp
-                                    break
-
-                if self.train_data.e_n_dict[augment_mp[0]][0] == 0:
-                    self.etypes_lists[1].append(augment_mp)
-                self.etypes_lists[1] = list(map(lambda x: list(x), set(map(lambda x: tuple(x), self.etypes_lists[1]))))
-                if test:
-                    self.train_GNN(True)
-                else:
-                    self.train_GNN()
-            if not test:
-                val_precision = self.eval_batch()
-            else:
-                val_precision = self.test_batch(logger2)
-            val_acc.append(val_precision)
-
-            self.past_performance.append(val_precision)
-            baseline = np.mean(np.array(self.past_performance[-self.baseline_experience:]))
-            rew = 100 * (val_precision - baseline)
-            reward.append(rew)
-
-            logger1.info("Val acc: %.5f  reward: %.5f" % (val_precision, rew))
-            logger1.info("-----------------------------------------------------------------------")
-
-        r = np.mean(np.array(reward))
-        val_acc = np.mean(val_acc)
+    def item_step(self, logger1, logger2, actions, test=False, type=(1, 0)):
+        done_list, r, reward, val_acc = self.rec_step(actions, logger1, logger2, test, type)
         next_state = self.get_item_state()
 
-        torch.save({'state_dict': self.model.state_dict(),
-                    'optimizer': self.optimizer.state_dict(),
-                    'Val': val_acc,
-                    'Embedding': self.train_data.x,
-                    'Reward': r},
-                   'model/epochpoints/e-' + str(val_acc) + '-' + time.strftime("%Y-%m-%d %H:%M:%S",
-                                                                               time.localtime()) + '.pth.tar')
-
-        logger2.info("Val acc: %.5f  reward: %.5f" % (val_acc, r))
-
         # self.model.reset()
         return next_state, reward, done_list, (val_acc, r)
 
-    # def step2(self, logger1, logger2, index, actions, test=False):
-    #     self.model.train()
-    #     self.optimizer.zero_grad()
-    #     done_list = [False] * self.train_data.x.shape[0]
-    #
-    #     next_state, reward, val_acc = [], [], []
-    #     # for act, idx in zip(actions, index):
-    #     #     time1 = time.time()
-    #     #     logger1.info("Start an iteration")
-    #     #     if idx not in self.meta_path_graph_edges:
-    #     #         if act == STOP:
-    #     #             self.meta_path_dict[idx].append(STOP)
-    #     #             done_list[idx] = True
-    #     #         elif act not in self.train_data.attr_dict:
-    #     #             self.meta_path_dict[idx].append(STOP)
-    #     #         else:
-    #     #             self.meta_path_dict[idx].append(act)
-    #     #             for start_node in self.train_data.attr_dict[act]:
-    #     #                 for target_node in self.train_data.adj_dist[start_node][act]:
-    #     #                     # self.meta_path_instances_dict[idx].append([(start_node, target_node)])
-    #     #                     self.meta_path_graph_edges[idx].add((start_node, target_node))
-    #     #     else:
-    #     #         flag = False
-    #     #         # update_meta_path_instances = []
-    #     #         update_meta_path_edges = set()
-    #     #         if act != STOP and self.meta_path_dict[idx][-1] != STOP:
-    #     #             # if len(self.meta_path_instances_dict[idx]) < 2e7 or len(self.meta_path_dict[idx]) < 2:
-    #     #             for edge in self.meta_path_graph_edges[idx]:
-    #     #                 # if len(update_meta_path_instances) > 3e7:
-    #     #                 #     break
-    #     #                 end_node = edge[1]
-    #     #                 if act in self.train_data.adj_dist[end_node]:
-    #     #                     for target_node in self.train_data.adj_dist[end_node][act]:
-    #     #                         if target_node != edge[0]:
-    #     #                             flag = True
-    #     #                             # path_i = path_instance.copy()
-    #     #                             # path_i.append((end_node, target_node))
-    #     #                             # update_meta_path_instances.append(path_i)
-    #     #                             update_meta_path_edges.add((end_node, target_node))
-    #     #         # self.meta_path_instances_dict[idx] = update_meta_path_instances
-    #     #         self.meta_path_graph_edges[idx] = update_meta_path_edges
-    #     #         if flag:
-    #     #             self.meta_path_dict[idx].append(act)
-    #     #         else:
-    #     #             if self.meta_path_dict[idx][-1] != STOP:
-    #     #                 self.meta_path_dict[idx].append(STOP)
-    #     #             done_list[idx] = True
-    #     #     time2 = time.time()
-    #     #     logger1.info("time2-time1:              %.2f" % (time2 - time1))
-    #     #     logger1.info("meta-path:                %s" % self.meta_path_dict[idx])
-    #     #     if test:
-    #     #         logger2.info("meta-path:                %s" % self.meta_path_dict[idx])
-    #     #     # logger1.info("meta-path instances: ", self.meta_path_instances_dict[idx])
-    #     #     # logger1.info("len(meta-path instances): ", len(self.meta_path_instances_dict[idx]))
-    #     #     logger1.info("len(meta-path edges):     %d" % len(self.meta_path_graph_edges[idx]))
-    #     #
-    #     #     if len(self.meta_path_graph_edges) > 0 and not done_list[idx]:
-    #     #         self.train(logger1, idx, test)
-    #     #         if test:
-    #     #             accur = self.test_batch(logger2)
-    #     #             if self.cur_best < accur:
-    #     #                 self.cur_best = accur
-    #     #                 if os.path.exists(self.model_name):
-    #     #                     os.remove(self.model_name)
-    #     #                 torch.save({'state_dict': self.model.state_dict(),
-    #     #                             'optimizer': self.optimizer.state_dict(),
-    #     #                             'Val': accur,
-    #     #                             'Embedding': self.train_data.x},
-    #     #                            self.model_name)
-    #     #             # self.test_batch(logger2)
-    #     #
-    #     #     time3 = time.time()
-    #     #     logger1.info("training time:            %.2f" % (time3 - time2))
-    #     #
-    #     #     val_precision = self.eval_batch()
-    #     #     val_acc.append(val_precision)
-    #     #     # if idx not in self.meta_path_graph_edges:
-    #     #     #     self.past_performance.append(val_precision)
-    #     #     #     baseline = np.mean(np.array(self.past_performance[-self.baseline_experience:]))
-    #     #     #     rew = 100 * (val_precision - baseline)
-    #     #     #     reward.append(rew)
-    #     #     # else:
-    #     #     self.past_performance.append(val_precision)
-    #     #     baseline = np.mean(np.array(self.past_performance[-self.baseline_experience:]))
-    #     #     rew = 100 * (val_precision - baseline)
-    #     #     reward.append(rew)
-    #     #
-    #     #     logger1.info("Val acc: %.5f  reward: %.5f" % (val_precision, rew))
-    #     #     logger1.info("-----------------------------------------------------------------------")
-    #
-    #     for act, idx in zip(actions, index):
-    #         if act == STOP:
-    #             done_list[idx] = True
-    #         else:
-    #             for i in range(len(self.etypes_lists)):
-    #                 mp = self.etypes_lists[i]
-    #                 if self.train_data.e_n_dict[mp[-1]][1] == self.train_data.e_n_dict[str(act)][0]:
-    #                     mp.append(str(act))
-    #             if self.train_data.e_n_dict[str(act)][0] == 0 or self.train_data.e_n_dict[str(act)][0] == 4:
-    #                 self.etypes_lists.append([str(act)])
-    #
-    #         self.train_GNN()
-    #
-    #         val_precision = self.eval_batch()
-    #         val_acc.append(val_precision)
-    #
-    #         self.past_performance.append(val_precision)
-    #         baseline = np.mean(np.array(self.past_performance[-self.baseline_experience:]))
-    #         rew = 100 * (val_precision - baseline)
-    #         reward.append(rew)
-    #
-    #         logger1.info("Val acc: %.5f  reward: %.5f" % (val_precision, rew))
-    #         logger1.info("-----------------------------------------------------------------------")
-    #
-    #     next_state = F.normalize(
-    #         self.update_embedding()[
-    #             index]).cpu().detach().numpy()
-    #     r = np.mean(np.array(reward))
-    #     val_acc = np.mean(val_acc)
-    #     next_state = np.array(next_state)
-    #
-    #     torch.save({'state_dict': self.model.state_dict(),
-    #                 'optimizer': self.optimizer.state_dict(),
-    #                 'Val': val_acc,
-    #                 'Embedding': self.train_data.x,
-    #                 'Reward': r},
-    #                'model/epochpoints/e-' + str(val_acc) + '-' + time.strftime("%Y-%m-%d %H:%M:%S",
-    #                                                                            time.localtime()) + '.pth.tar')
-    #
-    #     logger2.info("Val acc: %.5f  reward: %.5f" % (val_acc, r))
-    #
-    #     return next_state, reward, np.array(done_list)[index].tolist(), (val_acc, r)
+    def class_step(self, logger1, logger2, actions, test=False, type=(0, 'p')):
+        done_list, r, reward, val_acc = self.rec_step(actions, logger1, logger2, test, type)
+        next_state = self.get_class_state()
 
-    # def train(self, logger1, idx, test=False):
-    #     self.model.train()
-    #     time1 = time.time()
-    #     edge_index = [[], []]
-    #     edges = set()
-    #     for edge in self.meta_path_graph_edges[idx]:
-    #         edges.add((edge[0], edge[1]))
-    #         edges.add((edge[1], edge[0]))
-    #     logger1.info("len(edges):           %d" % len(edges))
-    #     for edge in edges:
-    #         edge_index[0].append(edge[0])
-    #         edge_index[1].append(edge[1])
-    #
-    #     time2 = time.time()
-    #     logger1.info("edge index construction:    %.2f" % (time2 - time1))
-    #     if edge_index == [[], []]:
-    #         return
-    #     # self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))
-    #     edge_index = torch.tensor(edge_index).to(self.device)
-    #     # print(self.data.x.weight.shape)
-    #     # pred = self.model(self.train_data.x(self.train_data.node_idx), edge_index).to(self.device)
-    #     # self.train_data.x = nn.Embedding.from_pretrained(pred, freeze=False)
-    #     # self.train_data.x.weight = nn.Parameter(pred)
-    #     # print(self.train_data.x.weight)
-    #
-    #     n_cf_batch = self.data.n_cf_train // self.data.cf_batch_size + 1
-    #     # self.optimizer.zero_grad()
-    #
-    #     cf_total_loss = 0
-    #     for iter in range(1, n_cf_batch + 1):
-    #         cf_batch_user, cf_batch_pos_item, cf_batch_neg_item = self.data.generate_cf_batch(self.data.train_user_dict)
-    #         cf_batch_loss = self.calc_cf_loss(self.train_data, edge_index, cf_batch_user, cf_batch_pos_item,
-    #                                           cf_batch_neg_item, test)
-    #         cf_batch_loss.backward()
-    #         self.optimizer.step()
-    #         self.optimizer.zero_grad()
-    #         cf_total_loss += cf_batch_loss
-    #
-    #     # cf_total_loss.backward()
-    #     # self.optimizer.step()
-    #     print("total_cf_loss: ", cf_total_loss.item())
-    #
-    #     # n_kg_batch = self.data.n_kg_train // self.data.kg_batch_size + 1
-    #
-    #     # kg_total_loss = 0
-    #
-    #     # for iter in range(1, n_kg_batch + 1):
-    #     # kg_batch_head, kg_batch_relation, kg_batch_pos_tail, kg_batch_neg_tail = self.data.generate_kg_batch(
-    #     #     self.data.train_kg_dict)
-    #     # kg_batch_head = kg_batch_head.to(self.device)
-    #     # kg_batch_relation = kg_batch_relation.to(self.device)
-    #     # kg_batch_pos_tail = kg_batch_pos_tail.to(self.device)
-    #     # kg_batch_neg_tail = kg_batch_neg_tail.to(self.device)
-    #     # kg_batch_loss = self.calc_kg_loss(kg_batch_head, kg_batch_relation, kg_batch_pos_tail,
-    #     #                       kg_batch_neg_tail)
-    #     #
-    #     # kg_batch_loss.backward()
-    #     # self.optimizer.step()
-    #     # self.optimizer.zero_grad()
-    #     # kg_total_loss += kg_batch_loss
-    #
-    #     # print("total_kg_loss: ", kg_batch_loss.item())
-    #     # print(self.train_data.x(torch.tensor([10,11,12])))
+        self.model.reset()
+        return next_state, reward, done_list, (val_acc, r)
+
+    def train_classifier(self, test=False):
+        stopper = EarlyStopping(patience=50)
+        loss_fcn = torch.nn.CrossEntropyLoss()
+
+        for epoch in range(100):
+            self.model.train()
+            logits = self.model(self.train_data, self.train_data.x)
+            loss = loss_fcn(logits[self.train_mask], self.labels[self.train_mask])
+
+            self.optimizer.zero_grad()
+            loss.backward()
+            self.optimizer.step()
+
+            train_acc, train_micro_f1, train_macro_f1 = score(logits[self.train_mask], self.labels[self.train_mask])
+            val_loss, val_acc, val_micro_f1, val_macro_f1 = evaluate(self.model, self.train_data, self.train_data.x,
+                                                                     self.labels, self.val_mask, loss_fcn)
+            early_stop = stopper.step(val_loss.data.item(), val_acc, self.model)
+
+            print('Epoch {:d} | Train Loss {:.4f} | Train Micro f1 {:.4f} | Train Macro f1 {:.4f} | '
+                  'Val Loss {:.4f} | Val Micro f1 {:.4f} | Val Macro f1 {:.4f}'.format(
+                epoch + 1, loss.item(), train_micro_f1, train_macro_f1, val_loss.item(), val_micro_f1, val_macro_f1))
+
+            if early_stop:
+                break
+        stopper.load_checkpoint(self.model)
 
     def train_GNN(self, test=False):
+        if self.task == 'rec':
+            self.train_recommender(test)
+        elif self.task == 'classification':
+            self.train_classifier(test)
+
+    def train_recommender(self, test):
         n_cf_batch = 5 * self.data.n_cf_train // self.data.cf_batch_size + 1
         cf_total_loss = 0
-
         for iter in range(1, n_cf_batch + 1):
             #     print("current iter: ", iter, " ", n_cf_batch)
             time1 = time.time()
@@ -671,9 +421,6 @@ class hgnn_env(object):
             time3 = time.time()
             # print("calculate loss: ", time3 - time2)
 
-            # import pdb
-            # pdb.set_trace()
-
             cf_batch_loss.backward()
 
             time4 = time.time()
@@ -685,7 +432,6 @@ class hgnn_env(object):
             # print("step: ", time5 - time4)
 
             cf_total_loss += float(cf_batch_loss)
-
         # cf_total_loss.backward()
         # self.optimizer.step()
         print("total_cf_loss: ", float(cf_total_loss))
@@ -775,6 +521,18 @@ class hgnn_env(object):
         return loss
 
     def eval_batch(self, neg_num=NEG_SIZE_TRAIN):
+        if self.task == 'rec':
+            return self.eval_recommender(neg_num)
+        elif self.task == 'classification':
+            return self.eval_classifier()
+
+    def eval_classifier(self):
+        loss_fcn = torch.nn.CrossEntropyLoss()
+        val_loss, val_precision, val_micro_f1, val_macro_f1 = evaluate(self.model, self.train_data, self.train_data.x,
+                                                                       self.labels, self.val_mask, loss_fcn)
+        return val_precision
+
+    def eval_recommender(self, neg_num):
         self.model.eval()
         time1 = time.time()
         user_ids = list(self.data.train_user_dict.keys())
@@ -784,7 +542,6 @@ class hgnn_env(object):
                 for _ in self.data.train_user_dict[u]:
                     nl = self.data.sample_neg_items_for_u(self.data.train_user_dict, u, neg_num)
                     self.eval_neg_dict[u].extend(nl)
-
         with torch.no_grad():
             u_embeds = self.get_all_user_embedding()
             i_embeds = self.get_all_item_embedding()
@@ -804,21 +561,35 @@ class hgnn_env(object):
             print(f"Evaluate: NDCG10 : {NDCG10.item():.5f}")
             time4 = time.time()
             # print("ALL time: ", time4 - time1)
-
         return NDCG10.cpu().item()
 
     def test_batch(self, logger2):
+        if self.task == 'rec':
+            return self.test_recommender(logger2)
+        elif self.task == 'classification':
+            return self.test_classifier(logger2)
+
+    def test_classifier(self, logger2):
+        loss_fcn = torch.nn.CrossEntropyLoss()
+        test_loss, test_acc, test_micro_f1, test_macro_f1 = evaluate(self.model, self.train_data, self.train_data.x,
+                                                                       self.labels, self.test_mask, loss_fcn)
+        logger2.info('Test loss {:.4f} | Test Micro f1 {:.4f} | Test Macro f1 {:.4f}'.format(
+            test_loss.item(), test_micro_f1, test_macro_f1))
+        print('Test loss {:.4f} | Test Micro f1 {:.4f} | Test Macro f1 {:.4f}'.format(
+            test_loss.item(), test_micro_f1, test_macro_f1))
+        return test_acc
+
+    def test_recommender(self, logger2):
         self.model.eval()
         user_ids = list(self.data.test_user_dict.keys())
         user_ids_batch = user_ids[:]
-
         NDCG10 = 0
-
         with torch.no_grad():
             for u in user_ids_batch:
                 if u not in self.test_neg_dict:
                     for _ in self.data.test_user_dict[u]:
-                        nl = self.data.sample_neg_items_for_u_test(self.data.train_user_dict, self.data.test_user_dict, u,
+                        nl = self.data.sample_neg_items_for_u_test(self.data.train_user_dict, self.data.test_user_dict,
+                                                                   u,
                                                                    NEG_SIZE_RANKING)
                         self.test_neg_dict[u].extend(nl)
             # self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))
@@ -843,7 +614,6 @@ class hgnn_env(object):
                     HR1, HR3, HR10, HR20, NDCG10.item(), NDCG20.item()))
             print(
                 f"Test: HR1 : {HR1:.4f}, HR3 : {HR3:.4f}, HR10 : {HR10:.4f}, NDCG10 : {NDCG10.item():.4f}, NDCG20 : {NDCG20.item():.4f}")
-
         return NDCG10.cpu().item()
 
     # def test_train_batch(self):

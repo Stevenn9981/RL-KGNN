@@ -286,7 +286,9 @@ class hgnn_env(object):
 
     def get_class_state(self):
         nodes = range(self.train_data.x.shape[0])
-        class_embeds = self.train_data.x
+        b_ids = torch.tensor(nodes)
+        class_embeds = self.model(self.train_data, self.train_data.x, self.etypes_lists[0],
+                       self.optimizer, b_ids, test=False)
         return self.sample_state(class_embeds, nodes)
 
     def class_reset(self):

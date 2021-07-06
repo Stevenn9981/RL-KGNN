@@ -41,17 +41,6 @@ def score(logits, labels):
 
     return accuracy, micro_f1, macro_f1
 
-
-def evaluate(model, g, features, labels, mask, loss_func):
-    model.eval()
-    with torch.no_grad():
-        logits = model(g, features)
-    loss = loss_func(logits[mask], labels[mask])
-    accuracy, micro_f1, macro_f1 = score(logits[mask], labels[mask])
-
-    return loss, accuracy, micro_f1, macro_f1
-
-
 # def main(args):
 #     # If args['hetero'] is True, g would be a heterogeneous graph.
 #     # Otherwise, it will be a list of homogeneous graphs.
@@ -217,6 +206,16 @@ class hgnn_env(object):
 
         logger1.info('Data initialization done')
 
+    def evaluate(self, model, g, features, labels, mask, loss_func):
+        self.model.eval()
+        ids = torch.tensor(range(self.train_data.x.shape[0]))
+        with torch.no_grad():
+            logits = self.model(g, features, self.etypes_lists[0], self.optimizer, ids, test=True)
+        loss = loss_func(logits[mask], labels[mask])
+        accuracy, micro_f1, macro_f1 = score(logits[mask], labels[mask])
+
+        return loss, accuracy, micro_f1, macro_f1
+
     def get_user_embedding(self, u_ids, test=False):
         h = self.model(self.train_data, self.train_data.x[self.data.node_type_list == 4], self.etypes_lists[0],
                        self.optimizer, u_ids, test)
@@ -373,10 +372,11 @@ class hgnn_env(object):
     def train_classifier(self, test=False):
         stopper = EarlyStopping(patience=50)
         loss_fcn = torch.nn.CrossEntropyLoss()
+        ids = torch.tensor(range(self.train_data.x.shape[0]))
 
         for epoch in range(100):
             self.model.train()
-            logits = self.model(self.train_data, self.train_data.x)
+            logits = self.model(self.train_data, self.train_data.x, self.etypes_lists[0], self.optimizer, ids, test=False)
             loss = loss_fcn(logits[self.train_mask], self.labels[self.train_mask])
 
             self.optimizer.zero_grad()
@@ -384,7 +384,7 @@ class hgnn_env(object):
             self.optimizer.step()
 
             train_acc, train_micro_f1, train_macro_f1 = score(logits[self.train_mask], self.labels[self.train_mask])
-            val_loss, val_acc, val_micro_f1, val_macro_f1 = evaluate(self.model, self.train_data, self.train_data.x,
+            val_loss, val_acc, val_micro_f1, val_macro_f1 = self.evaluate(self.model, self.train_data, self.train_data.x,
                                                                      self.labels, self.val_mask, loss_fcn)
             early_stop = stopper.step(val_loss.data.item(), val_acc, self.model)
 
@@ -528,7 +528,7 @@ class hgnn_env(object):
 
     def eval_classifier(self):
         loss_fcn = torch.nn.CrossEntropyLoss()
-        val_loss, val_precision, val_micro_f1, val_macro_f1 = evaluate(self.model, self.train_data, self.train_data.x,
+        val_loss, val_precision, val_micro_f1, val_macro_f1 = self.evaluate(self.model, self.train_data, self.train_data.x,
                                                                        self.labels, self.val_mask, loss_fcn)
         return val_precision
 
@@ -571,7 +571,7 @@ class hgnn_env(object):
 
     def test_classifier(self, logger2):
         loss_fcn = torch.nn.CrossEntropyLoss()
-        test_loss, test_acc, test_micro_f1, test_macro_f1 = evaluate(self.model, self.train_data, self.train_data.x,
+        test_loss, test_acc, test_micro_f1, test_macro_f1 = self.evaluate(self.model, self.train_data, self.train_data.x,
                                                                        self.labels, self.test_mask, loss_fcn)
         logger2.info('Test loss {:.4f} | Test Micro f1 {:.4f} | Test Macro f1 {:.4f}'.format(
             test_loss.item(), test_micro_f1, test_macro_f1))

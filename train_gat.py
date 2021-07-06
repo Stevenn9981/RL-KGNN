@@ -66,7 +66,7 @@ def main():
     infor = 'net_pretrain_' + str(args.entity_dim)
     model_name = 'model_' + infor + '.pth'
 
-    max_episodes = 2
+    max_episodes = 1
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     logger1 = get_logger('log', 'logger_' + infor + '.log')
@@ -87,6 +87,9 @@ def main():
     best_i = 0
     for i in range(max_episodes + 1):
         print('Current epoch: ', i)
+        env.train_GNN(True)
+        if i == 0:
+            print(env.etypes_lists)
         if i % 1 == 0:
             # env.eval_batch(100)
             acc = env.test_batch(logger2)
@@ -95,9 +98,6 @@ def main():
                 best_i = i
             logger2.info('Best Accuracy: %.5f\tBest_i : %d' % (best, best_i))
             print('Best: ', best, 'Best_i: ', best_i)
-        env.train_GNN(True)
-        if i == 0:
-            print(env.etypes_lists)
 
 
 

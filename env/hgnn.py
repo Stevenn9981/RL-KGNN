@@ -247,6 +247,8 @@ class hgnn_env(object):
 
     def reset(self):
         state = self.train_data.x[0]
+        if self.task == 'classification':
+            state = self.get_class_state()[0]
         self.optimizer.zero_grad()
         return state
 
@@ -286,7 +288,7 @@ class hgnn_env(object):
 
     def get_class_state(self):
         nodes = range(self.train_data.x.shape[0])
-        b_ids = torch.tensor(nodes)
+        b_ids = torch.tensor(range(self.train_data.x.shape[0]))
         class_embeds = self.model(self.train_data, self.train_data.x, self.etypes_lists[0],
                        self.optimizer, b_ids, test=False)
         return self.sample_state(class_embeds, nodes)

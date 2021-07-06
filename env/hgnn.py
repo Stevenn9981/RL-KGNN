@@ -381,7 +381,7 @@ class hgnn_env(object):
         if test:
             epoch = 200
         else:
-            epoch = 50
+            epoch = 100
 
         for epoch in range(epoch):
             self.model.train()

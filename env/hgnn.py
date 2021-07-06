@@ -156,7 +156,7 @@ class hgnn_env(object):
             self.eval_neg_dict = collections.defaultdict(list)
             self.test_neg_dict = collections.defaultdict(list)
         elif task == 'classification':
-            self.etypes_lists = [[['pa', 'ap']]]
+            self.etypes_lists = [[['pf', 'fp']]]
             g, features, labels, num_classes, train_idx, val_idx, test_idx, train_mask, \
             val_mask, test_mask = load_data(dataset)
             if hasattr(torch, 'BoolTensor'):
@@ -295,7 +295,7 @@ class hgnn_env(object):
         return self.sample_state(class_embeds, nodes)
 
     def class_reset(self):
-        self.etypes_lists = [[['pa', 'ap']]]
+        self.etypes_lists = [[['pf', 'fp']]]
         state = self.get_class_state()
         self.optimizer.zero_grad()
         return state

@@ -365,7 +365,6 @@ class hgnn_env(object):
     def class_step(self, logger1, logger2, actions, test=False, type=(0, 'p')):
         done_list, r, reward, val_acc = self.rec_step(actions, logger1, logger2, test, type)
         next_state = self.get_class_state()
-
         self.model.reset()
         return next_state, reward, done_list, (val_acc, r)
 

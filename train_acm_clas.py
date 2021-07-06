@@ -128,7 +128,7 @@ def main():
     mp_set = []
     for i_episode in range(max_timesteps):
         class_action = best_class_policy.eval_step(class_state)
-        class_state, _, class_done, (_, _) = new_env.class_step(logger1, logger2, class_action, True)
+        class_state, _, class_stop, (_, _) = new_env.class_step(logger1, logger2, class_action, True)
         val_acc = new_env.test_batch(logger2)
         val_list.append(val_acc)
         if val_acc > best_val_acc:

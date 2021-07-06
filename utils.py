@@ -230,7 +230,7 @@ def load_data(dataset, remove_self_loop=False):
 class EarlyStopping(object):
     def __init__(self, patience=10):
         dt = datetime.datetime.now()
-        self.filename = 'early_stop_{}_{:02d}-{:02d}-{:02d}.pth'.format(
+        self.filename = './class/early_stop_{}_{:02d}-{:02d}-{:02d}.pth'.format(
             dt.date(), dt.hour, dt.minute, dt.second)
         self.patience = patience
         self.counter = 0

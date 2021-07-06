@@ -300,6 +300,8 @@ class hgnn_env(object):
         self.optimizer.zero_grad()
         done_list = [False] * len(actions)
         next_state, reward, val_acc = [], [], []
+        if test:
+            print(actions)
         for i, act in enumerate(actions):
             if act == STOP:
                 done_list[i] = True
@@ -351,7 +353,6 @@ class hgnn_env(object):
         done_list, r, reward, val_acc = self.rec_step(actions, logger1, logger2, test, type)
         next_state = self.get_user_state()
 
-        # self.model.reset()
 
         return next_state, reward, done_list, (val_acc, r)
 
@@ -359,13 +360,12 @@ class hgnn_env(object):
         done_list, r, reward, val_acc = self.rec_step(actions, logger1, logger2, test, type)
         next_state = self.get_item_state()
 
-        # self.model.reset()
         return next_state, reward, done_list, (val_acc, r)
 
     def class_step(self, logger1, logger2, actions, test=False, type=(0, 'p')):
         done_list, r, reward, val_acc = self.rec_step(actions, logger1, logger2, test, type)
         next_state = self.get_class_state()
-        self.model.reset()
+
         return next_state, reward, done_list, (val_acc, r)
 
     def train_classifier(self, test=False):

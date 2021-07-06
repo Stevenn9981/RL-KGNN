@@ -245,7 +245,7 @@ class EarlyStopping(object):
             self.save_checkpoint(model)
         elif (loss > self.best_loss) and (acc < self.best_acc):
             self.counter += 1
-            if self.counter % 10 == 0:
+            if self.counter % (self.patience // 2) == 0:
                 print(f'EarlyStopping counter: {self.counter} out of {self.patience}')
             if self.counter >= self.patience:
                 self.early_stop = True

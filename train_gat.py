@@ -58,7 +58,7 @@ def use_pretrain(env):
 def main():
     torch.backends.cudnn.deterministic=True
     max_timesteps = 2
-    dataset = 'yelp_data'
+    dataset = 'ACMRaw'
 
     args = parse_args()
     HAN.DEGREE_THERSHOLD = 80000
@@ -72,7 +72,7 @@ def main():
     logger1 = get_logger('log', 'logger_' + infor + '.log')
     logger2 = get_logger('log2', 'logger2_' + infor + '.log')
 
-    env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset)
+    env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset, task='classification')
 
     # import pdb
     # pdb.set_trace()
@@ -81,7 +81,7 @@ def main():
     # env.optimizer = torch.optim.Adam(env.model.parameters(), args.lr)
     # env.optimizer.zero_grad()
     env.seed(0)
-    use_pretrain(env)
+    # use_pretrain(env)
 
     best = 0
     best_i = 0

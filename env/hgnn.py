@@ -195,9 +195,9 @@ class hgnn_env(object):
         self._set_observation_space(obs)
         self.nd_batch_size = args.nd_batch_size
         self.rl_batch_size = args.rl_batch_size
-        self.W_R = torch.randn(self.data.n_relations + 1, self.data.entity_dim,
-                               self.data.relation_dim).to(self.device)
-        nn.init.xavier_uniform_(self.W_R, gain=nn.init.calculate_gain('relu'))
+        # self.W_R = torch.randn(self.data.n_relations + 1, self.data.entity_dim,
+        #                        self.data.relation_dim).to(self.device)
+        # nn.init.xavier_uniform_(self.W_R, gain=nn.init.calculate_gain('relu'))
 
         self.cf_l2loss_lambda = args.cf_l2loss_lambda
         # self.kg_l2loss_lambda = args.kg_l2loss_lambda

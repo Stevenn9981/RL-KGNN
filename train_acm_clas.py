@@ -117,7 +117,6 @@ def main():
     print("Training GNNs with learned meta-policy")
     new_env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset, task='classification')
     new_env.seed(0)
-    use_pretrain(new_env)
 
     new_env.policy = best_class_policy
 
@@ -133,8 +132,6 @@ def main():
             class_state, _, class_done, (_, _) = new_env.class_step(logger1, logger2, class_action, True)
             if class_done[0]:
                 class_stop = True
-        else:
-            new_env.train_GNN(True)
         val_acc = new_env.test_batch(logger2)
         val_list.append(val_acc)
         if val_acc > best_val_acc:
@@ -155,33 +152,12 @@ def main():
     test_env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset, task='classification')
     test_env.seed(0)
     test_env.etypes_lists = mp_set
-    use_pretrain(test_env)
 
 
-    best = 0
-    best_i = 0
-    for i in range(1):
-        print('Current epoch: ', i)
-        test_env.train_GNN(True)
-        if i % 1 == 0:
-            acc = test_env.test_batch(logger2)
-            if acc > best:
-                best = acc
-                best_i = i
-                if os.path.exists(model_name):
-                    os.remove(model_name)
-                torch.save({'state_dict': test_env.model.state_dict(),
-                                'optimizer': test_env.optimizer.state_dict(),
-                                'Embedding': test_env.train_data.x},
-                               model_name)
-            logger2.info('Best Accuracy: %.5f\tBest_i : %d' % (best, best_i))
-            print('Best: ', best, 'Best_i: ', best_i)
-
-    logger2.info("---------------------------------------------------\nStart the performance testing on test dataset:")
-    model_checkpoint = torch.load(model_name)
-    test_env.model.load_state_dict(model_checkpoint['state_dict'])
-    test_env.train_data.x = model_checkpoint['Embedding']
+    print('start testing')
+    test_env.train_GNN(True)
     test_env.test_batch(logger2)
+
 
 
 if __name__ == '__main__':

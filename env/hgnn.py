@@ -177,13 +177,15 @@ class hgnn_env(object):
                              out_size=num_classes,
                              num_heads=args.num_heads,
                              dropout=0.6).to(self.device)
-            # self.embedding_func = nn.Linear(num_classes, 32)
+            self.embedding_func = nn.Linear(num_classes, 32)
             self._set_action_space(3)
             self.policy = None
 
         self.nd_batch_size = args.nd_batch_size
         self.rl_batch_size = args.rl_batch_size
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr, weight_decay=weight_decay)
+        if task == "classification":
+            self.optimizer.add_param_group({'params': self.embedding_func.parameters()})
         obs = self.reset()
         self._set_observation_space(obs)
         # self.W_R = torch.randn(self.data.n_relations + 1, self.data.entity_dim,
@@ -291,8 +293,8 @@ class hgnn_env(object):
     def get_class_state(self):
         nodes = range(self.train_data.x.shape[0])
         b_ids = torch.tensor(range(self.train_data.x.shape[0]))
-        class_embeds = self.model.get_embedding(self.train_data, self.train_data.x, self.etypes_lists[0],
-                       self.optimizer, b_ids, test=False)
+        class_embeds = self.embedding_func(self.model(self.train_data, self.train_data.x, self.etypes_lists[0],
+                       self.optimizer, b_ids, test=False))
         return self.sample_state(class_embeds, nodes)
 
     def class_reset(self):

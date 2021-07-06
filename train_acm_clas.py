@@ -56,7 +56,8 @@ def use_pretrain(env):
 
 def main():
     torch.backends.cudnn.deterministic=True
-    max_timesteps = 5
+    max_timesteps = 4
+    max_episodes = 6
     dataset = 'ACMRaw'
 
     args = parse_args()
@@ -64,7 +65,6 @@ def main():
     infor = 'classification_' + str(args.lr) + '_' + str(args.nd_batch_size)
     model_name = 'model_' + infor + '.pth'
 
-    max_episodes = 10
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     logger1 = get_logger('log', 'logger_' + infor + '.log')

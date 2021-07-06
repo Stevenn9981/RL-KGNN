@@ -56,7 +56,7 @@ def use_pretrain(env):
 
 def main():
     torch.backends.cudnn.deterministic=True
-    max_timesteps = 4
+    max_timesteps = 3
     max_episodes = 3
     dataset = 'ACMRaw'
 

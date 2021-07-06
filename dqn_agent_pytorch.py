@@ -176,17 +176,21 @@ class DQNAgent(object):
 
     def user_learn(self, logger1, logger2, env, total_timesteps):
         next_state_batch = env.user_reset()
-        return self.learn(env, logger1, logger2, next_state_batch, total_timesteps)
+        for t in range(total_timesteps):
+            A = self.predict_batch(next_state_batch)
+            best_actions = np.random.choice(np.arange(len(A)), p=A, size=next_state_batch.shape[0])
+            state_batch = next_state_batch
+            next_state_batch, reward_batch, done_batch, debug = env.user_step(logger1, logger2,
+                                                                              best_actions)  # debug = (val_acc, test_acc)
+            trajectories = zip(state_batch, best_actions, reward_batch, next_state_batch, done_batch)
+            for each in trajectories:
+                self.feed(each)
+        loss = self.train()
+        print('User DQN loss: ', loss)
+        return loss, reward_batch, debug
 
     def item_learn(self, logger1, logger2, env, total_timesteps):
         next_state_batch = env.item_reset()
-        return self.learn(env, logger1, logger2, next_state_batch, total_timesteps)
-
-    def class_learn(self, logger1, logger2, env, total_timesteps):
-        next_state_batch = env.class_reset()
-        return self.learn(env, logger1, logger2, next_state_batch, total_timesteps)
-
-    def learn(self, env, logger1, logger2, next_state_batch, total_timesteps):
         for t in range(total_timesteps):
             A = self.predict_batch(next_state_batch)
             best_actions = np.random.choice(np.arange(len(A)), p=A, size=next_state_batch.shape[0])
@@ -197,7 +201,22 @@ class DQNAgent(object):
             for each in trajectories:
                 self.feed(each)
         loss = self.train()
-        print('DQN loss: ', loss)
+        print('Item DQN loss: ', loss)
+        return loss, reward_batch, debug
+
+    def class_learn(self, logger1, logger2, env, total_timesteps):
+        next_state_batch = env.class_reset()
+        for t in range(total_timesteps):
+            A = self.predict_batch(next_state_batch)
+            best_actions = np.random.choice(np.arange(len(A)), p=A, size=next_state_batch.shape[0])
+            state_batch = next_state_batch
+            next_state_batch, reward_batch, done_batch, debug = env.class_step(logger1, logger2,
+                                                                              best_actions)  # debug = (val_acc, test_acc)
+            trajectories = zip(state_batch, best_actions, reward_batch, next_state_batch, done_batch)
+            for each in trajectories:
+                self.feed(each)
+        loss = self.train()
+        print('Class DQN loss: ', loss)
         return loss, reward_batch, debug
 
     def feed(self, ts):

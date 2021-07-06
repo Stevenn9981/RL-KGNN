@@ -374,7 +374,12 @@ class hgnn_env(object):
         loss_fcn = torch.nn.CrossEntropyLoss()
         ids = torch.tensor(range(self.train_data.x.shape[0]))
 
-        for epoch in range(100):
+        if test:
+            epoch = 200
+        else:
+            epoch = 50
+
+        for epoch in range(epoch):
             self.model.train()
             logits = self.model(self.train_data, self.train_data.x, self.etypes_lists[0], self.optimizer, ids, test=False)
             loss = loss_fcn(logits[self.train_mask], self.labels[self.train_mask])

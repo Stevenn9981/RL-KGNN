@@ -57,7 +57,7 @@ def use_pretrain(env):
 def main():
     torch.backends.cudnn.deterministic=True
     max_timesteps = 4
-    max_episodes = 6
+    max_episodes = 5
     dataset = 'ACMRaw'
 
     args = parse_args()
@@ -160,8 +160,9 @@ def main():
 
     best = 0
     best_i = 0
-    for i in range(100):
+    for i in range(1):
         print('Current epoch: ', i)
+        test_env.train_GNN(True)
         if i % 1 == 0:
             acc = test_env.test_batch(logger2)
             if acc > best:
@@ -175,7 +176,6 @@ def main():
                                model_name)
             logger2.info('Best Accuracy: %.5f\tBest_i : %d' % (best, best_i))
             print('Best: ', best, 'Best_i: ', best_i)
-        test_env.train_GNN(True)
 
     logger2.info("---------------------------------------------------\nStart the performance testing on test dataset:")
     model_checkpoint = torch.load(model_name)

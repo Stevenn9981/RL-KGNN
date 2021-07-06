@@ -530,6 +530,9 @@ class hgnn_env(object):
         loss_fcn = torch.nn.CrossEntropyLoss()
         val_loss, val_precision, val_micro_f1, val_macro_f1 = self.evaluate(self.model, self.train_data, self.train_data.x,
                                                                        self.labels, self.val_mask, loss_fcn)
+        print('Test loss {:.4f} | Test Micro f1 {:.4f} | Test Macro f1 {:.4f}'.format(
+            val_loss.item(), val_micro_f1, val_macro_f1))
+
         return val_precision
 
     def eval_recommender(self, neg_num):

@@ -181,6 +181,7 @@ class hgnn_env(object):
             self._set_action_space(3)
             self.policy = None
 
+        self.mpset_eval_dict = dict()
         self.nd_batch_size = args.nd_batch_size
         self.rl_batch_size = args.rl_batch_size
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr, weight_decay=weight_decay)
@@ -338,11 +339,18 @@ class hgnn_env(object):
                     self.etypes_lists[type[0]].append(augment_mp)
                 self.etypes_lists[type[0]] = list(
                     map(lambda x: list(x), set(map(lambda x: tuple(x), self.etypes_lists[type[0]]))))
-                if test:
-                    self.train_GNN(True)
-                else:
-                    self.train_GNN()
-            val_precision = self.eval_batch()
+
+                if str(self.etypes_lists) not in self.mpset_eval_dict:
+                    if test:
+                        self.train_GNN(True)
+                    else:
+                        self.train_GNN()
+
+            if str(self.etypes_lists) not in self.mpset_eval_dict:
+                val_precision = self.eval_batch()
+                self.mpset_eval_dict[str(self.etypes_lists)] = val_precision
+            else:
+                val_precision = self.mpset_eval_dict[str(self.etypes_lists)]
             val_acc.append(val_precision)
 
             self.past_performance.append(val_precision)

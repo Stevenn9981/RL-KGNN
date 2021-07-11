@@ -99,9 +99,10 @@ def main():
                 if acc > best:
                     best = acc
                     best_i = i
+                    print('Best: ', best, ' Best_i: ', best_i)
                 logger2.info('Best Accuracy: %.5f\tBest_i : %d' % (best, best_i))
-                print('Best: ', best, 'Best_i: ', best_i)
-        print("Current test: ", inx, ". This test time: ", (time.time() - tim2) / 60, "min"
+        print("Current test: ", inx, '. Best: ', best, '. Best_i: ', best_i
+              , ". This test time: ", (time.time() - tim2) / 60, "min"
               , ". Current time: ", (time.time() - tim1) / 60, "min")
 
 

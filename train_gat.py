@@ -29,6 +29,7 @@ def get_logger(logger_name, log_file, level=logging.INFO):
 
     return logging.getLogger(logger_name)
 
+
 def use_pretrain(env):
     print('./data/yelp_data/embedding/user.embedding_' + str(env.data.entity_dim))
     fr1 = open('./data/yelp_data/embedding/user.embedding_' + str(env.data.entity_dim), 'r')
@@ -56,9 +57,10 @@ def use_pretrain(env):
 
 
 def main():
-    torch.backends.cudnn.deterministic=True
-    max_timesteps = 2
-    dataset = 'ACMRaw'
+    tim1 = time.time()
+    torch.backends.cudnn.deterministic = True
+    # max_timesteps = 2
+    # dataset = 'ACMRaw'
 
     args = parse_args()
     HAN.DEGREE_THERSHOLD = 80000
@@ -73,44 +75,34 @@ def main():
     logger2 = get_logger('log2', 'logger2_' + infor + '.log')
 
     env = hgnn_env(logger1, logger2, model_name, args)
-
-    # import pdb
-    # pdb.set_trace()
-
-    # env.model = GraphSAGE(args.entity_dim).to(device)
-    # env.optimizer = torch.optim.Adam(env.model.parameters(), args.lr)
-    # env.optimizer.zero_grad()
     env.seed(0)
-    # use_pretrain(env)
-
-
+    use_pretrain(env)
+    u_set = [['2', '1'], ['2', '1', '2', '1'], ['2', '3', '7', '1'], ['2', '4', '8', '1'], ['5', '9'],
+             ['2', '1', '5', '9'], ['2', '1', '6'], ['6', '6'], ['5', '9', '6'], ['6', '5', '9']]
+    i_set = [['1', '2'], ['1', '4', '8', '2'], ['1', '3', '7', '2'], ['1', '6', '2'], ['1', '6', '6', '2'],
+             ['1', '5', '9', '2'], ['4', '8'], ['3', '7'], ['4', '8', '3', '7'], ['3', '7', '4', '8']]
 
     best = 0
     best_i = 0
-    for i in range(max_episodes + 1):
-        print('Current epoch: ', i)
-        env.train_GNN(True)
-        if i == 0:
-            print(env.etypes_lists)
-        if i % 1 == 0:
-            # env.eval_batch(100)
-            acc = env.test_batch(logger2)
-            if acc > best:
-                best = acc
-                best_i = i
-            logger2.info('Best Accuracy: %.5f\tBest_i : %d' % (best, best_i))
-            print('Best: ', best, 'Best_i: ', best_i)
-
-
-
-    # logger2.info("---------------------------------------------------\nStart the performance testing on test dataset:")
-    # new_env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset)
-    # new_env.seed(0)
-    # use_pretrain(new_env)
-    # model_checkpoint = torch.load(model_name)
-    # new_env.model.load_state_dict(model_checkpoint['state_dict'])
-    # new_env.train_data.x = model_checkpoint['Embedding']
-    # new_env.test_batch(logger2)
+    for inx in range(10):
+        env.etypes_lists[0] = random.sample(u_set, random.randint(1, 5))
+        env.etypes_lists[1] = random.sample(i_set, random.randint(1, 5))
+        for i in range(max_episodes + 1):
+            tim2 = time.time()
+            print('Current epoch: ', i)
+            env.train_GNN(True)
+            if i == 0:
+                print(env.etypes_lists)
+            if i % 1 == 0:
+                # env.eval_batch(100)
+                acc = env.test_batch(logger2)
+                if acc > best:
+                    best = acc
+                    best_i = i
+                logger2.info('Best Accuracy: %.5f\tBest_i : %d' % (best, best_i))
+                print('Best: ', best, 'Best_i: ', best_i)
+        print("Current test: ", inx, ". This test time: ", (time.time() - tim2) / 60, "min"
+              , ". Current time: ", (time.time() - tim1) / 60, "min")
 
 
 if __name__ == '__main__':

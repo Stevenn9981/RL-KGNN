@@ -160,11 +160,12 @@ def main():
     val_list = [0, 0, 0]
     user_state = new_env.user_reset()
     item_state = new_env.item_reset()
-    new_env.reset_eval_dict()
     mp_set = []
     for i_episode in range(max_timesteps):
         user_action = best_user_policy.eval_step(user_state)
         item_action = best_item_policy.eval_step(item_state)
+
+        new_env.model.reset()
         user_state, _, user_done, (_, _) = new_env.user_step(logger1, logger2, user_action, True)
         val_acc = new_env.eval_batch(100)
         val_list.append(val_acc)
@@ -173,6 +174,8 @@ def main():
             best_val_acc = val_acc
         logger2.info("Meta-path set: %s" % (str(new_env.etypes_lists)))
         print("Meta-path set: %s" % (str(new_env.etypes_lists)))
+
+        new_env.model.reset()
         item_state, _, item_done, (_, _) = new_env.item_step(logger1, logger2, item_action, True)
         logger2.info("Meta-path set: %s" % (str(new_env.etypes_lists)))
         print("Meta-path set: %s" % (str(new_env.etypes_lists)))

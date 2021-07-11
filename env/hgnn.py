@@ -345,7 +345,8 @@ class hgnn_env(object):
 
                 if str(self.etypes_lists) not in self.mpset_eval_dict:
                     if test:
-                        self.train_GNN(True)
+                        for _ in range(3):
+                            self.train_GNN(True)
                     else:
                         self.train_GNN()
 

@@ -88,8 +88,9 @@ class HANLayer(nn.Module):
             mp = list(map(str, meta_path))
             if ''.join(mp) not in self.sg_dict and ''.join(mp) not in self.large_graph:
                 tim1 = time.time()
+                print("Meta-path: ", str(mp))
                 graph = dgl.metapath_reachable_graph(g, meta_path)
-                print("Meta-path: ", str(mp), " Average degree: ", graph.number_of_edges() / graph.number_of_nodes())
+                print("Average degree: ", graph.number_of_edges() / graph.number_of_nodes())
                 if graph.number_of_edges() / graph.number_of_nodes() > DEGREE_THERSHOLD:
                     self.large_graph[''.join(mp)] = graph.number_of_edges() / graph.number_of_nodes()
                     meta_paths.remove(meta_path)

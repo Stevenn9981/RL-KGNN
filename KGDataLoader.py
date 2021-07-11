@@ -101,6 +101,8 @@ def parse_args():
                         help='Postfix for the saved model and result. Default is Yelp.')
     parser.add_argument('--mpset', default="[[['2', '1']], [['1', '2']]]",
                         help='Meta-path Set.')
+    parser.add_argument('--init', default="RL",
+                        help='Meta-path Set initialization method.')
 
     args = parser.parse_args()
 

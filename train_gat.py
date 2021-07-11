@@ -68,7 +68,7 @@ def main():
     infor = 'net_pretrain_' + str(args.entity_dim)
     model_name = 'model_' + infor + '.pth'
 
-    max_episodes = 1
+    max_episodes = 100
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     logger1 = get_logger('log', 'logger_' + infor + '.log')
@@ -84,27 +84,42 @@ def main():
 
     best = 0
     best_i = 0
-    for inx in range(10):
-        env.etypes_lists[0] = random.sample(u_set, random.randint(1, 4))
-        env.etypes_lists[1] = random.sample(i_set, random.randint(1, 4))
-        for i in range(max_episodes + 1):
-            tim2 = time.time()
-            print('Current epoch: ', i)
-            env.train_GNN(True)
-            if i == 0:
-                print(env.etypes_lists)
-            if i % 1 == 0:
-                # env.eval_batch(100)
-                acc = env.test_batch(logger2)
-                if acc > best:
-                    best = acc
-                    best_i = i
-                    print('Best: ', best, ' Best_i: ', best_i)
-                logger2.info('Best Accuracy: %.5f\tBest_i : %d' % (best, best_i))
-        print("Current test: ", inx, ' Metapath Set: ', str(env.etypes_lists)
-              , '.\n Best: ', best, '. Best_i: ', best_i
-              , ". This test time: ", (time.time() - tim2) / 60, "min"
-              , ". Current time: ", (time.time() - tim1) / 60, "min")
+    init_method = args.init
+
+    if init_method == 'random':
+        for inx in range(10):
+            env.etypes_lists[0] = random.sample(u_set, random.randint(1, 4))
+            env.etypes_lists[1] = random.sample(i_set, random.randint(1, 4))
+            train_and_test(best, best_i, env, inx, logger2, max_episodes, tim1)
+
+    if init_method == 'greedy':
+        for inx in range(10):
+            u_s = random.sample(u_set, 3)
+            i_s = random.sample(i_set, 3)
+            train_and_test(best, best_i, env, inx, logger2, max_episodes, tim1)
+
+
+def train_and_test(best, best_i, env, inx, logger2, max_episodes, tim1):
+    val_list = [0, 0, 0]
+    print(env.etypes_lists)
+    tim2 = time.time()
+    for i in range(max_episodes + 1):
+        print('Current epoch: ', i)
+        env.train_GNN(True)
+        if i % 1 == 0:
+            acc = env.test_batch(logger2)
+            val_list.append(acc)
+            if acc > best:
+                best = acc
+                best_i = i
+                print('Best: ', best, ' Best_i: ', best_i)
+            logger2.info('Best Accuracy: %.5f\tBest_i : %d' % (best, best_i))
+        if val_list[-1] < val_list[-2] < val_list[-3] < val_list[-4]:
+            break
+    print("Current test: ", inx, ' Metapath Set: ', str(env.etypes_lists)
+          , '.\n Best: ', best, '. Best_i: ', best_i
+          , ". This test time: ", (time.time() - tim2) / 60, "min"
+          , ". Current time: ", (time.time() - tim1) / 60, "min")
 
 
 if __name__ == '__main__':

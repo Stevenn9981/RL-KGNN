@@ -72,7 +72,7 @@ def main():
     logger1 = get_logger('log', 'logger_' + infor + '.log')
     logger2 = get_logger('log2', 'logger2_' + infor + '.log')
 
-    env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset, task='classification')
+    env = hgnn_env(logger1, logger2, model_name, args)
 
     # import pdb
     # pdb.set_trace()

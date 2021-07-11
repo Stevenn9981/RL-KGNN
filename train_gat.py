@@ -68,7 +68,7 @@ def main():
     infor = 'net_pretrain_' + str(args.entity_dim)
     model_name = 'model_' + infor + '.pth'
 
-    max_episodes = 100
+    max_episodes = 60
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     logger1 = get_logger('log', 'logger_' + infor + '.log')
@@ -136,20 +136,20 @@ def train_and_test(inx, max_episodes, tim1, logger1, logger2, model_name, args, 
     env.etypes_lists = mpset
     best = 0
     best_i = 0
-    val_list = [0, 0, 0]
+    # val_list = [0, 0, 0]
     print(env.etypes_lists)
     for i in range(max_episodes + 1):
         print('Current epoch: ', i)
         env.train_GNN(True)
         if i % 1 == 0:
             acc = env.test_batch(logger2)
-            val_list.append(acc)
+            # val_list.append(acc)
             if acc > best:
                 best = acc
                 best_i = i
                 print('Best: ', best, ' Best_i: ', best_i)
             logger2.info('Best Accuracy: %.5f\tBest_i : %d' % (best, best_i))
-        if val_list[-1] < val_list[-2] < val_list[-3] < val_list[-4]:
+        if i - best_i > 5:
             break
     print("Current test: ", inx, ' Metapath Set: ', str(env.etypes_lists)
           , '.\n Best: ', best, '. Best_i: ', best_i

@@ -257,6 +257,9 @@ class hgnn_env(object):
         self.optimizer.zero_grad()
         return state
 
+    def reset_eval_dict(self):
+        self.eval_neg_dict = collections.defaultdict(list)
+
     def seed(self, random_seed):
         torch.manual_seed(random_seed)
         random.seed(random_seed)
@@ -369,7 +372,6 @@ class hgnn_env(object):
                   type=(0, 4)):  # type - (index_of_etpyes_list, index_of_node_type)
         done_list, r, reward, val_acc = self.rec_step(actions, logger1, logger2, test, type)
         next_state = self.get_user_state()
-
 
         return next_state, reward, done_list, (val_acc, r)
 

@@ -85,8 +85,8 @@ def main():
     best = 0
     best_i = 0
     for inx in range(10):
-        env.etypes_lists[0] = random.sample(u_set, random.randint(1, 5))
-        env.etypes_lists[1] = random.sample(i_set, random.randint(1, 5))
+        env.etypes_lists[0] = random.sample(u_set, random.randint(1, 4))
+        env.etypes_lists[1] = random.sample(i_set, random.randint(1, 4))
         for i in range(max_episodes + 1):
             tim2 = time.time()
             print('Current epoch: ', i)

@@ -82,7 +82,7 @@ def main():
     init_method = args.init
 
     if init_method == 'random':
-        for inx in range(10):
+        for inx in range(12):
             mpset = [[], []]
             mpset[0] = random.sample(u_set, random.randint(1, 4))
             mpset[1] = random.sample(i_set, random.randint(1, 4))

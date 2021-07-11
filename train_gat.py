@@ -74,35 +74,70 @@ def main():
     logger1 = get_logger('log', 'logger_' + infor + '.log')
     logger2 = get_logger('log2', 'logger2_' + infor + '.log')
 
-    env = hgnn_env(logger1, logger2, model_name, args)
-    env.seed(0)
-    use_pretrain(env)
     u_set = [['2', '1'], ['2', '1', '2', '1'], ['2', '3', '7', '1'], ['2', '4', '8', '1'], ['5', '9'],
              ['2', '1', '5', '9'], ['2', '1', '6'], ['6', '6'], ['5', '9', '6'], ['6', '5', '9']]
-    i_set = [['1', '2'], ['1', '4', '8', '2'], ['1', '3', '7', '2'], ['1', '6', '2'], ['1', '6', '6', '2'],
+    i_set = [['1', '2'], ['1', '2', '4', '8'], ['1', '2', '3', '7'], ['1', '6', '2'], ['1', '6', '6', '2'],
              ['1', '5', '9', '2'], ['4', '8'], ['3', '7'], ['4', '8', '3', '7'], ['3', '7', '4', '8']]
 
-    best = 0
-    best_i = 0
     init_method = args.init
 
     if init_method == 'random':
         for inx in range(10):
-            env.etypes_lists[0] = random.sample(u_set, random.randint(1, 4))
-            env.etypes_lists[1] = random.sample(i_set, random.randint(1, 4))
-            train_and_test(best, best_i, env, inx, logger2, max_episodes, tim1)
+            mpset = [[], []]
+            mpset[0] = random.sample(u_set, random.randint(1, 4))
+            mpset[1] = random.sample(i_set, random.randint(1, 4))
+            train_and_test(inx, max_episodes, tim1, logger1, logger2, model_name, args, mpset)
 
     if init_method == 'greedy':
-        for inx in range(10):
-            u_s = random.sample(u_set, 3)
-            i_s = random.sample(i_set, 3)
-            train_and_test(best, best_i, env, inx, logger2, max_episodes, tim1)
+        sample_num = 4
+        best_mpset = [[['2', '1']], [['1', '2']]]
+        for inx in range(3):
+            u_s = random.sample(u_set, sample_num)
+            i_s = random.sample(i_set, sample_num)
+
+            # user_meta_path
+            u_best_acc = 0
+            cur_best_mpset = None
+            for i in range(sample_num):
+                mpset = best_mpset[:]
+                if u_s[i] in mpset[0]:
+                    continue
+                mpset[0].append(u_s[i])
+                acc = train_and_test(inx, max_episodes, tim1, logger1, logger2, model_name, args, mpset)
+                if acc > u_best_acc:
+                    u_best_acc = acc
+                    cur_best_mpset = mpset[:]
+            if cur_best_mpset is not None:
+                best_mpset = cur_best_mpset
+            print("Current Best Meta_path set: ", str(best_mpset))
+
+            # item_meta_path
+            u_best_acc = 0
+            cur_best_mpset = None
+            for i in range(sample_num):
+                mpset = best_mpset[:]
+                if i_s[i] in mpset[1]:
+                    continue
+                mpset[1].append(i_s[i])
+                acc = train_and_test(inx, max_episodes, tim1, logger1, logger2, model_name, args, mpset)
+                if acc > u_best_acc:
+                    u_best_acc = acc
+                    cur_best_mpset = mpset[:]
+            if cur_best_mpset is not None:
+                best_mpset = cur_best_mpset
+            print("Current Best Meta_path set: ", str(best_mpset))
 
 
-def train_and_test(best, best_i, env, inx, logger2, max_episodes, tim1):
+def train_and_test(inx, max_episodes, tim1, logger1, logger2, model_name, args, mpset):
+    tim2 = time.time()
+    env = hgnn_env(logger1, logger2, model_name, args)
+    env.seed(0)
+    use_pretrain(env)
+    env.etypes_lists = mpset
+    best = 0
+    best_i = 0
     val_list = [0, 0, 0]
     print(env.etypes_lists)
-    tim2 = time.time()
     for i in range(max_episodes + 1):
         print('Current epoch: ', i)
         env.train_GNN(True)
@@ -120,6 +155,7 @@ def train_and_test(best, best_i, env, inx, logger2, max_episodes, tim1):
           , '.\n Best: ', best, '. Best_i: ', best_i
           , ". This test time: ", (time.time() - tim2) / 60, "min"
           , ". Current time: ", (time.time() - tim1) / 60, "min")
+    return best
 
 
 if __name__ == '__main__':

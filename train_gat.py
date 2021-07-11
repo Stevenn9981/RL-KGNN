@@ -99,14 +99,14 @@ def main():
             u_best_acc = 0
             cur_best_mpset = None
             for i in range(sample_num):
-                mpset = best_mpset[:]
+                mpset = deepcopy(best_mpset)
                 if u_s[i] in mpset[0]:
                     continue
                 mpset[0].append(u_s[i])
                 acc = train_and_test(inx, max_episodes, tim1, logger1, logger2, model_name, args, mpset)
                 if acc > u_best_acc:
                     u_best_acc = acc
-                    cur_best_mpset = mpset[:]
+                    cur_best_mpset = deepcopy(mpset)
             if cur_best_mpset is not None:
                 best_mpset = cur_best_mpset
             print("Current Best Meta_path set: ", str(best_mpset))
@@ -115,14 +115,14 @@ def main():
             u_best_acc = 0
             cur_best_mpset = None
             for i in range(sample_num):
-                mpset = best_mpset[:]
+                mpset = deepcopy(best_mpset)
                 if i_s[i] in mpset[1]:
                     continue
                 mpset[1].append(i_s[i])
                 acc = train_and_test(inx, max_episodes, tim1, logger1, logger2, model_name, args, mpset)
                 if acc > u_best_acc:
                     u_best_acc = acc
-                    cur_best_mpset = mpset[:]
+                    cur_best_mpset = deepcopy(mpset)
             if cur_best_mpset is not None:
                 best_mpset = cur_best_mpset
             print("Current Best Meta_path set: ", str(best_mpset))

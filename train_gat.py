@@ -134,21 +134,25 @@ def main():
 
     if init_method == 'draw':
         xs = [i for i in range(max_episodes + 1)]
-        mpset = "[[['2', '1']], [['4', '8'], ['1', '2'], ['3', '7']]]"
-        acc1 = train_and_test_for_draw(1, max_episodes, tim1, logger1, logger2, model_name, args, mpset)
-        mpset = "[[['2', '1']], [['1', '2']]"
-        acc2 = train_and_test_for_draw(1, max_episodes, tim1, logger1, logger2, model_name, args, mpset)
         mpset = "[[['6', '6']], [['4', '8']]"
-        acc3 = train_and_test_for_draw(1, max_episodes, tim1, logger1, logger2, model_name, args, mpset)
+        acc1 = train_and_test_for_draw(1, max_episodes, tim1, logger1, logger2, model_name, args, mpset)
+        mpset = "[[['6', '6'], ['2', '1']], [['4', '8']]"
+        acc2 = train_and_test_for_draw(2, max_episodes, tim1, logger1, logger2, model_name, args, mpset)
+        mpset = "[[['2', '1']], [['1', '2']]"
+        acc3 = train_and_test_for_draw(3, max_episodes, tim1, logger1, logger2, model_name, args, mpset)
+        mpset = "[[['2', '1']], [['4', '8'], ['1', '2'], ['3', '7']]]"
+        acc4 = train_and_test_for_draw(4, max_episodes, tim1, logger1, logger2, model_name, args, mpset)
         l1, = plt.plot(xs, acc1, color='blue', label='set1')
         l2, = plt.plot(xs, acc2, color='red', label='set2')
         l3, = plt.plot(xs, acc3, color='black', label='set3')
+        l4, = plt.plot(xs, acc4, color='green', label='set4')
         print(acc1)
         print(acc2)
         print(acc3)
+        print(acc4)
         plt.xlabel('Number of epoch')
         plt.ylabel('NDCG@10')
-        plt.legend(handles=[l1, l2, l3], labels=['set1', 'set2', 'set3'], loc='best')
+        plt.legend(handles=[l1, l2, l3, l4], labels=['set1', 'set2', 'set3', 'set4'], loc='best')
         plt.savefig('./acc.jpg')
 
 

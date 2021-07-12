@@ -12,6 +12,7 @@ from copy import deepcopy
 import logging
 import torch.nn as nn
 import env.HAN as HAN
+import matplotlib.pyplot as plt
 
 from env.hgnn import hgnn_env
 
@@ -131,6 +132,25 @@ def main():
         mpset = eval(args.mpset)
         train_and_test(1, max_episodes, tim1, logger1, logger2, model_name, args, mpset)
 
+    if init_method == 'draw':
+        xs = [i for i in range(max_episodes + 1)]
+        mpset = "[[['2', '1']], [['4', '8'], ['1', '2'], ['3', '7']]]"
+        acc1 = train_and_test_for_draw(1, max_episodes, tim1, logger1, logger2, model_name, args, mpset)
+        mpset = "[[['2', '1']], [['1', '2']]"
+        acc2 = train_and_test_for_draw(1, max_episodes, tim1, logger1, logger2, model_name, args, mpset)
+        mpset = "[[['6', '6']], [['4', '8']]"
+        acc3 = train_and_test_for_draw(1, max_episodes, tim1, logger1, logger2, model_name, args, mpset)
+        l1, = plt.plot(xs, acc1, color='blue', label='set1')
+        l2, = plt.plot(xs, acc2, color='red', label='set2')
+        l3, = plt.plot(xs, acc3, color='black', label='set3')
+        print(acc1)
+        print(acc2)
+        print(acc3)
+        plt.xlabel('Number of epoch')
+        plt.ylabel('NDCG@10')
+        plt.legend(handles=[l1, l2, l3], labels=['set1', 'set2', 'set3'], loc='best')
+        plt.savefig('./acc.jpg')
+
 
 def train_and_test(inx, max_episodes, tim1, logger1, logger2, model_name, args, mpset):
     tim2 = time.time()
@@ -142,7 +162,7 @@ def train_and_test(inx, max_episodes, tim1, logger1, logger2, model_name, args, 
     best_i = 0
     # val_list = [0, 0, 0]
     print(env.etypes_lists)
-    for i in range(max_episodes + 1):
+    for i in range(1, max_episodes + 1):
         print('Current epoch: ', i)
         env.train_GNN()
         if i % 1 == 0:
@@ -160,6 +180,34 @@ def train_and_test(inx, max_episodes, tim1, logger1, logger2, model_name, args, 
           , ". This test time: ", (time.time() - tim2) / 60, "min"
           , ". Current time: ", (time.time() - tim1) / 60, "min")
     return best
+
+def train_and_test_for_draw(inx, max_episodes, tim1, logger1, logger2, model_name, args, mpset):
+    tim2 = time.time()
+    env = hgnn_env(logger1, logger2, model_name, args)
+    env.seed(0)
+    use_pretrain(env)
+    env.etypes_lists = mpset
+    best = 0
+    best_i = 0
+    val_list = [0]
+    print(env.etypes_lists)
+    for i in range(1, max_episodes + 1):
+        print('Current epoch: ', i)
+        env.train_GNN()
+        if i % 1 == 0:
+            acc = env.test_batch(logger2)
+            val_list.append(acc)
+            if acc > best:
+                best = acc
+                best_i = i
+                print('Best: ', best, ' Best_i: ', best_i)
+            logger2.info('Best Accuracy: %.5f\tBest_i : %d' % (best, best_i))
+    print("Current test: ", inx, ' Metapath Set: ', str(env.etypes_lists)
+          , '.\n Best: ', best, '. Best_i: ', best_i
+          , ". This test time: ", (time.time() - tim2) / 60, "min"
+          , ". Current time: ", (time.time() - tim1) / 60, "min")
+    return val_list
+
 
 
 if __name__ == '__main__':

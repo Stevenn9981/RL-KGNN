@@ -134,13 +134,13 @@ def main():
 
     if init_method == 'draw':
         xs = [i for i in range(max_episodes + 1)]
-        mpset = "[[['6', '6']], [['4', '8']]]"
+        mpset = [[['6', '6']], [['4', '8']]]
         acc1 = train_and_test_for_draw(1, max_episodes, tim1, logger1, logger2, model_name, args, mpset)
-        mpset = "[[['6', '6'], ['2', '1']], [['4', '8']]]"
+        mpset = [[['6', '6'], ['2', '1']], [['4', '8']]]
         acc2 = train_and_test_for_draw(2, max_episodes, tim1, logger1, logger2, model_name, args, mpset)
-        mpset = "[[['2', '1']], [['1', '2']]]"
+        mpset = [[['2', '1']], [['1', '2']]]
         acc3 = train_and_test_for_draw(3, max_episodes, tim1, logger1, logger2, model_name, args, mpset)
-        mpset = "[[['2', '1']], [['4', '8'], ['1', '2'], ['3', '7']]]"
+        mpset = [[['2', '1']], [['4', '8'], ['1', '2'], ['3', '7']]]
         acc4 = train_and_test_for_draw(4, max_episodes, tim1, logger1, logger2, model_name, args, mpset)
         l1, = plt.plot(xs, acc1, color='blue', label='set1')
         l2, = plt.plot(xs, acc2, color='red', label='set2')

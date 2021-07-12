@@ -191,9 +191,9 @@ def train_and_test_for_draw(inx, max_episodes, tim1, logger1, logger2, model_nam
     env.seed(0)
     use_pretrain(env)
     env.etypes_lists = mpset
-    best = 0
+    best = env.test_batch(logger2)
     best_i = 0
-    val_list = [0]
+    val_list = [best]
     print(env.etypes_lists)
     for i in range(1, max_episodes + 1):
         print('Current epoch: ', i)

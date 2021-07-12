@@ -217,7 +217,7 @@ def main():
                                model_name)
             logger2.info('Best Accuracy: %.5f\tBest_i : %d' % (best, best_i))
             print('Best: ', best, 'Best_i: ', best_i)
-        test_env.train_GNN(True)
+        test_env.train_GNN()
 
     logger2.info("---------------------------------------------------\nStart the performance testing on test dataset:")
     model_checkpoint = torch.load(model_name)

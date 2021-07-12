@@ -129,7 +129,7 @@ def main():
 
     if init_method == 'specify':
         mpset = eval(args.mpset)
-        train_and_test(inx, max_episodes, tim1, logger1, logger2, model_name, args, mpset)
+        train_and_test(1, max_episodes, tim1, logger1, logger2, model_name, args, mpset)
 
 
 def train_and_test(inx, max_episodes, tim1, logger1, logger2, model_name, args, mpset):

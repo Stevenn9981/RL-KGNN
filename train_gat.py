@@ -127,6 +127,10 @@ def main():
                 best_mpset = cur_best_mpset
             print("Current Best Meta_path set: ", str(best_mpset))
 
+    if init_method == 'specify':
+        mpset = eval(args.mpset)
+        train_and_test(inx, max_episodes, tim1, logger1, logger2, model_name, args, mpset)
+
 
 def train_and_test(inx, max_episodes, tim1, logger1, logger2, model_name, args, mpset):
     tim2 = time.time()
@@ -140,7 +144,7 @@ def train_and_test(inx, max_episodes, tim1, logger1, logger2, model_name, args, 
     print(env.etypes_lists)
     for i in range(max_episodes + 1):
         print('Current epoch: ', i)
-        env.train_GNN(True)
+        env.train_GNN()
         if i % 1 == 0:
             acc = env.test_batch(logger2)
             # val_list.append(acc)

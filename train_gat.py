@@ -191,7 +191,7 @@ def train_and_test_for_draw(inx, max_episodes, tim1, logger1, logger2, model_nam
     env.seed(0)
     use_pretrain(env)
     env.etypes_lists = mpset
-    best = env.test_batch(logger2)
+    best = env.eval_batch()
     best_i = 0
     val_list = [best]
     print(env.etypes_lists)
@@ -199,7 +199,7 @@ def train_and_test_for_draw(inx, max_episodes, tim1, logger1, logger2, model_nam
         print('Current epoch: ', i)
         env.train_GNN()
         if i % 1 == 0:
-            acc = env.test_batch(logger2)
+            acc = env.eval_batch()
             val_list.append(acc)
             if acc > best:
                 best = acc

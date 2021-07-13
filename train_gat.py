@@ -69,7 +69,7 @@ def main():
     infor = 'net_pretrain_' + str(args.entity_dim)
     model_name = 'model_' + infor + '.pth'
 
-    max_episodes = 20
+    max_episodes = 60
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     logger1 = get_logger('log', 'logger_' + infor + '.log')

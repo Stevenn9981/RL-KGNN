@@ -315,6 +315,10 @@ class hgnn_env(object):
         next_state, reward, val_acc = [], [], []
         if test:
             print(actions)
+
+        import pdb
+        pdb.set_trace()
+
         for i, act in enumerate(actions):
             if act == STOP:
                 done_list[i] = True

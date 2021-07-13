@@ -345,7 +345,7 @@ class hgnn_env(object):
 
                 if str(self.etypes_lists) not in self.mpset_eval_dict:
                     if test:
-                        for _ in range(3):
+                        for _ in range(5):
                             self.train_GNN(True)
                     else:
                         self.train_GNN()
@@ -374,12 +374,14 @@ class hgnn_env(object):
         done_list, r, reward, val_acc = self.rec_step(actions, logger1, logger2, test, type)
         next_state = self.get_user_state()
 
+        self.model.reset()
         return next_state, reward, done_list, (val_acc, r)
 
     def item_step(self, logger1, logger2, actions, test=False, type=(1, 0)):
         done_list, r, reward, val_acc = self.rec_step(actions, logger1, logger2, test, type)
         next_state = self.get_item_state()
 
+        self.model.reset()
         return next_state, reward, done_list, (val_acc, r)
 
     def class_step(self, logger1, logger2, actions, test=False, type=(0, 'p')):

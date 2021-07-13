@@ -106,10 +106,6 @@ def main():
 
     best_item_val = 0.0
     best_item_i = 0
-
-    import pdb
-    pdb.set_trace()
-
     # Training: Learning meta-policy
     logger2.info("Training Meta-policy on Validation Set")
     for i_episode in range(1, max_episodes+1):

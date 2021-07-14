@@ -161,6 +161,7 @@ def main():
     val_list = [0, 0, 0]
     user_state = env.user_reset()
     item_state = env.item_reset()
+    env.reset_eval_dict()
     mp_set = []
     for i_episode in range(max_timesteps):
         user_action = best_user_policy.eval_step(user_state)

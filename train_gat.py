@@ -94,6 +94,7 @@ def main():
     if init_method == 'random':
         env = hgnn_env(logger1, logger2, model_name, args)
         use_pretrain(env)
+        env.seed(0)
         best = 0
         best_mpset = None
         for inx in range(80):
@@ -106,12 +107,14 @@ def main():
                 best_mpset = deepcopy(mpset)
             if time.time() - tim1 > 200 * 60:
                 break
+        del env
         train_and_test(1, max_episodes, tim1, logger1, logger2, model_name, args, best_mpset)
 
     if init_method == 'greedy':
         sample_num = 10
         best_mpset = [[['2', '1']], [['1', '2']]]
         env = hgnn_env(logger1, logger2, model_name, args)
+        env.seed(0)
         use_pretrain(env)
         for inx in range(4):
             u_s = random.sample(u_set, sample_num)
@@ -179,11 +182,11 @@ def main():
 
 def train_and_eval(env, inx, max_episodes, tim1, logger1, logger2, model_name, args, mpset):
     tim2 = time.time()
-    env.reset_eval_dict()
     env.etypes_lists = mpset
     print(env.etypes_lists)
     env.train_GNN()
     acc = env.eval_batch()
+    env.model.reset()
     print("Current test: ", inx, ' Metapath Set: ', str(env.etypes_lists)
           , '.\n Acc: ', acc
           , ". This test time: ", (time.time() - tim2) / 60, "min"

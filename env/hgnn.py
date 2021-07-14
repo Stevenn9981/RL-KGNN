@@ -464,7 +464,7 @@ class hgnn_env(object):
             cf_total_loss += float(cf_batch_loss)
         # cf_total_loss.backward()
         # self.optimizer.step()
-        print("total_cf_loss: ", float(cf_total_loss))
+        # print("total_cf_loss: ", float(cf_total_loss))
 
     # def calc_kg_loss(self, h, r, pos_t, neg_t):
     #     """

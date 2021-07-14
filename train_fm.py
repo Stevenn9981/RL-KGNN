@@ -59,6 +59,10 @@ def main():
     max_timesteps = 5
     dataset = 'yelp_data'
 
+    torch.manual_seed(1)
+    random.seed(1)
+    np.random.seed(1)
+
     args = parse_args()
 
     infor = '10wna_' + str(args.lr) + '_net_0.0005_' + str(args.nd_batch_size)
@@ -71,7 +75,6 @@ def main():
     logger2 = get_logger('log2', 'logger2_' + infor + '.log')
 
     env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset)
-    env.seed(0)
     use_pretrain(env)
 
     user_agent = DQNAgent(scope='dqn',
@@ -146,7 +149,6 @@ def main():
     logger2.info("Training GNNs with learned meta-policy")
     print("Training GNNs with learned meta-policy")
     new_env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset)
-    new_env.seed(0)
     use_pretrain(new_env)
 
     new_env.user_policy = best_user_policy
@@ -194,7 +196,6 @@ def main():
 
     args.lr = 0.005
     test_env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset)
-    test_env.seed(0)
     test_env.etypes_lists = mp_set
     use_pretrain(test_env)
 

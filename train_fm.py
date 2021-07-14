@@ -162,6 +162,7 @@ def main():
     user_state = env.user_reset()
     item_state = env.item_reset()
     env.reset_eval_dict()
+    print(env.eval_batch(40))
     mp_set = []
     for i_episode in range(max_timesteps):
         user_action = best_user_policy.eval_step(user_state)
@@ -169,6 +170,7 @@ def main():
 
         # new_env.model.reset()
         user_state, _, user_done, (val_acc, _) = env.user_step(logger1, logger2, user_action, True)
+
         # val_acc = new_env.eval_batch(100)
         val_list.append(val_acc)
         if val_acc > best_val_acc:

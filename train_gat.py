@@ -183,7 +183,6 @@ def main():
 def train_and_eval(env, inx, max_episodes, tim1, logger1, logger2, model_name, args, mpset):
     tim2 = time.time()
     env.etypes_lists = mpset
-    print(env.etypes_lists)
     env.train_GNN()
     acc = env.eval_batch()
     env.model.reset()

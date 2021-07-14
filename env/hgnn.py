@@ -22,7 +22,8 @@ from KGDataLoader import *
 
 STOP = 0
 
-NEG_SIZE_TRAIN = 10
+NEG_SIZE_TRAIN = 15
+NEG_SIZE_EVAL = 40
 NEG_SIZE_RANKING = 499
 
 
@@ -357,7 +358,7 @@ class hgnn_env(object):
                 else:
                     val_precision = self.mpset_eval_dict[str(self.etypes_lists)]
             else:
-                val_precision = self.eval_batch(100)
+                val_precision = self.eval_batch(NEG_SIZE_EVAL)
             val_acc.append(val_precision)
 
             self.past_performance.append(val_precision)

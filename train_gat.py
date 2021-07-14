@@ -76,18 +76,36 @@ def main():
     logger2 = get_logger('log2', 'logger2_' + infor + '.log')
 
     u_set = [['2', '1'], ['2', '1', '2', '1'], ['2', '3', '7', '1'], ['2', '4', '8', '1'], ['5', '9'],
-             ['2', '1', '5', '9'], ['2', '1', '6'], ['6', '6'], ['5', '9', '6'], ['6', '5', '9']]
+             ['5', '9', '5', '9'], ['5', '9', '6', '5', '9'], ['5', '9', '5', '9', '6'], ['6', '6', '6', '6', '6'],
+             ['2', '1', '5', '9'], ['2', '1', '6'], ['6', '6'], ['5', '9', '6'], ['6', '5', '9'], ['2', '1', '6', '6'],
+             ['2', '1', '2', '1', '6'], ['6', '6', '6'], ['6', '6', '6', '6'], ['5', '9', '6', '6'],
+             ['5', '9', '6', '6', '6'], ['2', '1', '6', '6', '6'], ['2', '3', '7', '1', '6'], ['2', '4', '8', '1', '6'],
+             ['6', '5', '9', '6'], ['6', '5', '9', '6', '6'], ['2', '1', '6', '2', '1'], ['2', '1', '6', '5', '9']]
+
     i_set = [['1', '2'], ['1', '2', '4', '8'], ['1', '2', '3', '7'], ['1', '6', '2'], ['1', '6', '6', '2'],
-             ['1', '5', '9', '2'], ['4', '8'], ['3', '7'], ['4', '8', '3', '7'], ['3', '7', '4', '8']]
+             ['1', '5', '9', '2'], ['4', '8'], ['3', '7'], ['4', '8', '3', '7'], ['3', '7', '4', '8'],
+             ['1', '6', '2', '4', '8'], ['1', '6', '2', '3', '7'], ['3', '7', '3', '7'], ['1', '6', '6', '6', '2'],
+             ['1', '2', '1', '2'], ['1', '2', '6', '1', '2'], ['1', '5', '9', '6', '2'], ['4', '8', '4', '8']]
 
     init_method = args.init
 
+    print("u_set: ", len(u_set), " i_set: ", len(i_set))
+
     if init_method == 'random':
-        for inx in range(12):
+        env = hgnn_env(logger1, logger2, model_name, args)
+        best = 0
+        best_mpset = None
+        for inx in range(80):
             mpset = [[], []]
             mpset[0] = random.sample(u_set, random.randint(1, 4))
             mpset[1] = random.sample(i_set, random.randint(1, 4))
-            train_and_test(inx, max_episodes, tim1, logger1, logger2, model_name, args, mpset)
+            acc = train_and_eval(env, inx, max_episodes, tim1, logger1, logger2, model_name, args, mpset)
+            if acc > best:
+                best = acc
+                best_mpset = deepcopy(mpset)
+            if time.time() - tim1 > 200 * 60:
+                break
+        train_and_test(1, max_episodes, tim1, logger1, logger2, model_name, args, best_mpset)
 
     if init_method == 'greedy':
         sample_num = 4
@@ -156,6 +174,20 @@ def main():
         plt.savefig('./acc.jpg')
 
 
+def train_and_eval(env, inx, max_episodes, tim1, logger1, logger2, model_name, args, mpset):
+    tim2 = time.time()
+    env.reset_eval_dict()
+    env.etypes_lists = mpset
+    print(env.etypes_lists)
+    env.train_GNN()
+    acc = env.eval_batch()
+    print("Current test: ", inx, ' Metapath Set: ', str(env.etypes_lists)
+          , '.\n Acc: ', acc
+          , ". This test time: ", (time.time() - tim2) / 60, "min"
+          , ". Current time: ", (time.time() - tim1) / 60, "min")
+    return acc
+
+
 def train_and_test(inx, max_episodes, tim1, logger1, logger2, model_name, args, mpset):
     tim2 = time.time()
     env = hgnn_env(logger1, logger2, model_name, args)
@@ -185,6 +217,7 @@ def train_and_test(inx, max_episodes, tim1, logger1, logger2, model_name, args, 
           , ". Current time: ", (time.time() - tim1) / 60, "min")
     return best
 
+
 def train_and_test_for_draw(inx, max_episodes, tim1, logger1, logger2, model_name, args, mpset):
     tim2 = time.time()
     env = hgnn_env(logger1, logger2, model_name, args)
@@ -211,7 +244,6 @@ def train_and_test_for_draw(inx, max_episodes, tim1, logger1, logger2, model_nam
           , ". This test time: ", (time.time() - tim2) / 60, "min"
           , ". Current time: ", (time.time() - tim1) / 60, "min")
     return val_list
-
 
 
 if __name__ == '__main__':

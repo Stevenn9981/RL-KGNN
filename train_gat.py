@@ -108,9 +108,10 @@ def main():
         train_and_test(1, max_episodes, tim1, logger1, logger2, model_name, args, best_mpset)
 
     if init_method == 'greedy':
-        sample_num = 4
+        sample_num = 10
         best_mpset = [[['2', '1']], [['1', '2']]]
-        for inx in range(3):
+        env = hgnn_env(logger1, logger2, model_name, args)
+        for inx in range(4):
             u_s = random.sample(u_set, sample_num)
             i_s = random.sample(i_set, sample_num)
 
@@ -122,7 +123,7 @@ def main():
                 if u_s[i] in mpset[0]:
                     continue
                 mpset[0].append(u_s[i])
-                acc = train_and_test(inx, max_episodes, tim1, logger1, logger2, model_name, args, mpset)
+                acc = train_and_eval(env, inx * sample_num + i, max_episodes, tim1, logger1, logger2, model_name, args, mpset)
                 if acc > u_best_acc:
                     u_best_acc = acc
                     cur_best_mpset = deepcopy(mpset)
@@ -138,7 +139,7 @@ def main():
                 if i_s[i] in mpset[1]:
                     continue
                 mpset[1].append(i_s[i])
-                acc = train_and_test(inx, max_episodes, tim1, logger1, logger2, model_name, args, mpset)
+                acc = train_and_eval(env, inx * sample_num + i, max_episodes, tim1, logger1, logger2, model_name, args, mpset)
                 if acc > u_best_acc:
                     u_best_acc = acc
                     cur_best_mpset = deepcopy(mpset)

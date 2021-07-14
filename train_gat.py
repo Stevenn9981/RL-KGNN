@@ -93,6 +93,7 @@ def main():
 
     if init_method == 'random':
         env = hgnn_env(logger1, logger2, model_name, args)
+        use_pretrain(env)
         best = 0
         best_mpset = None
         for inx in range(80):
@@ -111,6 +112,7 @@ def main():
         sample_num = 10
         best_mpset = [[['2', '1']], [['1', '2']]]
         env = hgnn_env(logger1, logger2, model_name, args)
+        use_pretrain(env)
         for inx in range(4):
             u_s = random.sample(u_set, sample_num)
             i_s = random.sample(i_set, sample_num)

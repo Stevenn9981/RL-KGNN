@@ -571,9 +571,12 @@ class hgnn_env(object):
         time1 = time.time()
         user_ids = list(self.data.train_user_dict.keys())
         user_ids_batch = random.sample(user_ids, min(len(user_ids) - 2, self.args.train_batch_size))
+
+        if not self.eval_neg_dict and neg_num == 40:
+            print("neg_sum: 40")
+
         for u in user_ids_batch:
             if u not in self.eval_neg_dict:
-                print(neg_num)
                 for _ in self.data.train_user_dict[u]:
                     nl = self.data.sample_neg_items_for_u(self.data.train_user_dict, u, neg_num)
                     self.eval_neg_dict[u].extend(nl)

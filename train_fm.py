@@ -163,14 +163,13 @@ def main():
     val_list = [0, 0, 0]
     user_state = env.user_reset()
     item_state = env.item_reset()
-    env.reset_eval_dict()
     print(env.eval_batch(40))
     mp_set = []
     for i_episode in range(max_timesteps):
         user_action = best_user_policy.eval_step(user_state)
         item_action = best_item_policy.eval_step(item_state)
 
-        # new_env.model.reset()
+        env.model.reset()
         user_state, _, user_done, (val_acc, _) = env.user_step(logger1, logger2, user_action, True)
 
         # val_acc = new_env.eval_batch(100)
@@ -182,7 +181,7 @@ def main():
         print("Meta-path set: %s" % (str(env.etypes_lists)))
         logger2.info("Evaluating GNN %d:   Val_Acc: %.5f  Reward: %.5f  best_val_i: %d" % (i_episode, val_acc, reward, best_val_i))
 
-        # new_env.model.reset()
+        env.model.reset()
         item_state, _, item_done, (val_acc, _) = env.item_step(logger1, logger2, item_action, True)
         logger2.info("Meta-path set: %s" % (str(env.etypes_lists)))
         print("Meta-path set: %s" % (str(env.etypes_lists)))

@@ -111,12 +111,12 @@ def main():
         train_and_test(1, max_episodes, tim1, logger1, logger2, model_name, args, best_mpset)
 
     if init_method == 'greedy':
-        sample_num = 10
+        sample_num = 15
         best_mpset = [[['2', '1']], [['1', '2']]]
         env = hgnn_env(logger1, logger2, model_name, args)
         env.seed(0)
         use_pretrain(env)
-        for inx in range(4):
+        for inx in range(3):
             u_s = random.sample(u_set, sample_num)
             i_s = random.sample(i_set, sample_num)
 

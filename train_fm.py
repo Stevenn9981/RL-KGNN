@@ -84,24 +84,24 @@ def main():
                     norm_step=2,
                     batch_size=1,
                     state_shape = env.observation_space.shape,
-                    mlp_layers=[32, 64, 128, 64, 32],
+                    mlp_layers=[32, 64, 32],
                     learning_rate=0.0005,
                     device=torch.device(device)
             )
 
-    # item_agent = DQNAgent(scope='dqn',
-    #                 action_num = env.action_num,
-    #                 replay_memory_size=int(1e4),
-    #                 replay_memory_init_size=500,
-    #                 norm_step=2,
-    #                 batch_size=1,
-    #                 state_shape = env.observation_space.shape,
-    #                 mlp_layers=[32, 64, 128, 64, 32],
-    #                 learning_rate=0.0005,
-    #                 device=torch.device(device)
-    #         )
+    item_agent = DQNAgent(scope='dqn',
+                    action_num = env.action_num,
+                    replay_memory_size=int(1e4),
+                    replay_memory_init_size=500,
+                    norm_step=2,
+                    batch_size=1,
+                    state_shape = env.observation_space.shape,
+                    mlp_layers=[32, 64, 32],
+                    learning_rate=0.0005,
+                    device=torch.device(device)
+            )
 
-    item_agent = user_agent
+    # item_agent = user_agent
 
     env.user_policy = user_agent
     env.item_policy = item_agent
@@ -129,7 +129,7 @@ def main():
                     'Reward': reward},
                     'model/agentpoints/a-user-' + str(val_acc) + '-' + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + '.pth.tar')
 
-    for i_episode in range(1, max_episodes + 1):
+    # for i_episode in range(1, max_episodes + 1):
         loss, reward, (val_acc, reward) = item_agent.item_learn(logger1, logger2, env, max_timesteps) # debug = (val_acc, reward)
         logger2.info("Generated meta-path set: %s" % str(env.etypes_lists))
         print("Generated meta-path set: %s" % str(env.etypes_lists))

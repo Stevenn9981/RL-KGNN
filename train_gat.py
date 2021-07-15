@@ -128,7 +128,7 @@ def main():
                 if u_s[i] in mpset[0]:
                     continue
                 mpset[0].append(u_s[i])
-                acc = train_and_eval(env, inx * sample_num + i, max_episodes, tim1, logger1, logger2, model_name, args, mpset)
+                acc = train_and_eval(env, 2 * inx * sample_num + i, max_episodes, tim1, logger1, logger2, model_name, args, mpset)
                 if acc > u_best_acc:
                     u_best_acc = acc
                     cur_best_mpset = deepcopy(mpset)
@@ -144,7 +144,7 @@ def main():
                 if i_s[i] in mpset[1]:
                     continue
                 mpset[1].append(i_s[i])
-                acc = train_and_eval(env, inx * sample_num + i, max_episodes, tim1, logger1, logger2, model_name, args, mpset)
+                acc = train_and_eval(env, (2 * inx + 1) * sample_num + i, max_episodes, tim1, logger1, logger2, model_name, args, mpset)
                 if acc > u_best_acc:
                     u_best_acc = acc
                     cur_best_mpset = deepcopy(mpset)

@@ -378,14 +378,14 @@ class hgnn_env(object):
         done_list, r, reward, val_acc = self.rec_step(actions, logger1, logger2, test, type)
         next_state = self.get_user_state()
 
-        self.model.reset()
+        # self.model.reset()
         return next_state, reward, done_list, (val_acc, r)
 
     def item_step(self, logger1, logger2, actions, test=False, type=(1, 0)):
         done_list, r, reward, val_acc = self.rec_step(actions, logger1, logger2, test, type)
         next_state = self.get_item_state()
 
-        self.model.reset()
+        # self.model.reset()
         return next_state, reward, done_list, (val_acc, r)
 
     def class_step(self, logger1, logger2, actions, test=False, type=(0, 'p')):
@@ -573,6 +573,7 @@ class hgnn_env(object):
         user_ids_batch = random.sample(user_ids, min(len(user_ids) - 2, self.args.train_batch_size))
         for u in user_ids_batch:
             if u not in self.eval_neg_dict:
+                print(neg_num)
                 for _ in self.data.train_user_dict[u]:
                     nl = self.data.sample_neg_items_for_u(self.data.train_user_dict, u, neg_num)
                     self.eval_neg_dict[u].extend(nl)

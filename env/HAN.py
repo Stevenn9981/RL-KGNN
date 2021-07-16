@@ -15,8 +15,6 @@ import time
 import dgl
 from dgl.nn.pytorch import GATConv, GraphConv
 
-DEGREE_THERSHOLD = 6000
-
 
 class SemanticAttention(nn.Module):
     def __init__(self, in_size, hidden_size=64):
@@ -58,7 +56,7 @@ class HANLayer(nn.Module):
         The output feature
     """
 
-    def __init__(self, in_size, out_size, layer_num_heads, dropout, hidden_size=32):
+    def __init__(self, in_size, out_size, layer_num_heads, dropout, hidden_size=32, threshold=6000):
         super(HANLayer, self).__init__()
 
         # One GAT layer for each meta path based adjacency matrix
@@ -69,6 +67,7 @@ class HANLayer(nn.Module):
         self.semantic_attention = SemanticAttention(in_size=out_size * layer_num_heads)
         self.sg_dict = dict()
         self.large_graph = dict()
+        self.threshold = threshold
 
         self.project = nn.Sequential(
             nn.Linear(out_size * layer_num_heads, hidden_size),
@@ -91,7 +90,7 @@ class HANLayer(nn.Module):
                 print("Meta-path: ", str(mp))
                 graph = dgl.metapath_reachable_graph(g, meta_path)
                 print("Average degree: ", graph.number_of_edges() / graph.number_of_nodes())
-                if graph.number_of_edges() / graph.number_of_nodes() > DEGREE_THERSHOLD:
+                if graph.number_of_edges() / graph.number_of_nodes() > self.threshold:
                     self.large_graph[''.join(mp)] = graph.number_of_edges() / graph.number_of_nodes()
                     meta_paths.remove(meta_path)
                     meta_pathset.remove(list(meta_path))
@@ -140,13 +139,13 @@ class HANLayer(nn.Module):
 
 
 class HAN(nn.Module):
-    def __init__(self, in_size, hidden_size, out_size, num_heads, dropout):
+    def __init__(self, in_size, hidden_size, out_size, num_heads, dropout, threshold=6000):
         super(HAN, self).__init__()
         self.layers = nn.ModuleList()
         self.layers.append(HANLayer(in_size, hidden_size, num_heads[0], dropout))
         for l in range(1, len(num_heads)):
             self.layers.append(HANLayer(hidden_size * num_heads[l - 1],
-                                        hidden_size, num_heads[l], dropout))
+                                        hidden_size, num_heads[l], dropout, threshold))
         self.predict = nn.Linear(hidden_size * num_heads[-1], out_size)
 
     def forward(self, g, h, meta_paths, optimizer, b_ids, test=False):

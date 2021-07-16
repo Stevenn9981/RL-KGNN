@@ -26,6 +26,9 @@ NEG_SIZE_TRAIN = 15
 NEG_SIZE_EVAL = 20
 NEG_SIZE_RANKING = 499
 
+USER_TYPE = 5
+ITEM_TYPE = 0
+
 
 def _L2_loss_mean(x):
     return torch.mean(torch.sum(torch.pow(x, 2), dim=1, keepdim=False) / 2.)
@@ -41,6 +44,7 @@ def score(logits, labels):
     macro_f1 = f1_score(labels, prediction, average='macro')
 
     return accuracy, micro_f1, macro_f1
+
 
 # def main(args):
 #     # If args['hetero'] is True, g would be a heterogeneous graph.
@@ -177,7 +181,8 @@ class hgnn_env(object):
                              hidden_size=32,
                              out_size=num_classes,
                              num_heads=args.num_heads,
-                             dropout=0.6).to(self.device)
+                             dropout=0.6,
+                             threshold=0.4 * self.data.n_items).to(self.device)
             self.embedding_func = nn.Linear(num_classes, 32).to(self.device)
             self._set_action_space(3)
             self.policy = None
@@ -223,23 +228,23 @@ class hgnn_env(object):
         return loss, accuracy, micro_f1, macro_f1
 
     def get_user_embedding(self, u_ids, test=False):
-        h = self.model(self.train_data, self.train_data.x[self.data.node_type_list == 4], self.etypes_lists[0],
+        h = self.model(self.train_data, self.train_data.x[self.data.node_type_list == USER_TYPE], self.etypes_lists[0],
                        self.optimizer, u_ids, test)
         # self.etypes_lists[0] = meta_paths
         return h
 
     def get_item_embedding(self, i_ids, test=False):
-        h = self.model(self.train_data, self.train_data.x[self.data.node_type_list == 0], self.etypes_lists[1],
+        h = self.model(self.train_data, self.train_data.x[self.data.node_type_list == ITEM_TYPE], self.etypes_lists[1],
                        self.optimizer, i_ids, test)
         # self.etypes_lists[1] = meta_paths
         return h
 
     def get_all_user_embedding(self, test=False):
-        all_user_ids = torch.tensor(range(self.train_data.x[self.data.node_type_list == 4].shape[0]))
+        all_user_ids = torch.tensor(range(self.train_data.x[self.data.node_type_list == USER_TYPE].shape[0]))
         return self.get_user_embedding(all_user_ids, test)
 
     def get_all_item_embedding(self, test=False):
-        all_item_ids = torch.tensor(range(self.train_data.x[self.data.node_type_list == 0].shape[0]))
+        all_item_ids = torch.tensor(range(self.train_data.x[self.data.node_type_list == ITEM_TYPE].shape[0]))
         return self.get_item_embedding(all_item_ids, test)
 
     def _set_action_space(self, _max):
@@ -274,7 +279,7 @@ class hgnn_env(object):
         return np.array(state)
 
     def get_user_state(self):
-        nodes = range(self.train_data.x[self.data.node_type_list == 4].shape[0])
+        nodes = range(self.train_data.x[self.data.node_type_list == USER_TYPE].shape[0])
         user_embeds = self.get_all_user_embedding()
         return self.sample_state(user_embeds, nodes)
 
@@ -285,7 +290,7 @@ class hgnn_env(object):
         return state
 
     def get_item_state(self):
-        nodes = range(self.train_data.x[self.data.node_type_list == 0].shape[0])
+        nodes = range(self.train_data.x[self.data.node_type_list == ITEM_TYPE].shape[0])
         item_embeds = self.get_all_item_embedding()
         return self.sample_state(item_embeds, nodes)
 
@@ -299,7 +304,7 @@ class hgnn_env(object):
         nodes = range(self.train_data.x.shape[0])
         b_ids = torch.tensor(range(self.train_data.x.shape[0]))
         class_embeds = self.model(self.train_data, self.train_data.x, self.etypes_lists[0],
-                       self.optimizer, b_ids, test=False)
+                                  self.optimizer, b_ids, test=False)
         # class_embeds = self.embedding_func(class_embeds)
         return self.sample_state(class_embeds, nodes)
 
@@ -374,14 +379,14 @@ class hgnn_env(object):
         return done_list, r, reward, val_acc
 
     def user_step(self, logger1, logger2, actions, test=False,
-                  type=(0, 4)):  # type - (index_of_etpyes_list, index_of_node_type)
+                  type=(0, USER_TYPE)):  # type - (index_of_etpyes_list, index_of_node_type)
         done_list, r, reward, val_acc = self.rec_step(actions, logger1, logger2, test, type)
         next_state = self.get_user_state()
 
         # self.model.reset()
         return next_state, reward, done_list, (val_acc, r)
 
-    def item_step(self, logger1, logger2, actions, test=False, type=(1, 0)):
+    def item_step(self, logger1, logger2, actions, test=False, type=(1, ITEM_TYPE)):
         done_list, r, reward, val_acc = self.rec_step(actions, logger1, logger2, test, type)
         next_state = self.get_item_state()
 
@@ -406,7 +411,8 @@ class hgnn_env(object):
 
         for epoch in range(epoch):
             self.model.train()
-            logits = self.model(self.train_data, self.train_data.x, self.etypes_lists[0], self.optimizer, ids, test=False)
+            logits = self.model(self.train_data, self.train_data.x, self.etypes_lists[0], self.optimizer, ids,
+                                test=False)
             loss = loss_fcn(logits[self.train_mask], self.labels[self.train_mask])
 
             self.optimizer.zero_grad()
@@ -414,14 +420,16 @@ class hgnn_env(object):
             self.optimizer.step()
 
             train_acc, train_micro_f1, train_macro_f1 = score(logits[self.train_mask], self.labels[self.train_mask])
-            val_loss, val_acc, val_micro_f1, val_macro_f1 = self.evaluate(self.model, self.train_data, self.train_data.x,
-                                                                     self.labels, self.val_mask, loss_fcn)
+            val_loss, val_acc, val_micro_f1, val_macro_f1 = self.evaluate(self.model, self.train_data,
+                                                                          self.train_data.x,
+                                                                          self.labels, self.val_mask, loss_fcn)
             early_stop = stopper.step(val_loss.data.item(), val_acc, self.model)
 
             if (epoch + 1) % 20 == 0:
                 print('Epoch {:d} | Train Loss {:.4f} | Train Micro f1 {:.4f} | Train Macro f1 {:.4f} | '
                       'Val Loss {:.4f} | Val Micro f1 {:.4f} | Val Macro f1 {:.4f}'.format(
-                    epoch + 1, loss.item(), train_micro_f1, train_macro_f1, val_loss.item(), val_micro_f1, val_macro_f1))
+                    epoch + 1, loss.item(), train_micro_f1, train_macro_f1, val_loss.item(), val_micro_f1,
+                    val_macro_f1))
 
             if early_stop:
                 break
@@ -509,7 +517,7 @@ class hgnn_env(object):
         """
         tim1 = time.time()
         # pred = self.update_embedding().to(self.device)
-        unode_ids = torch.tensor([user_id - self.data.n_id_start_dict[4] for user_id in user_ids])
+        unode_ids = torch.tensor([user_id - self.data.n_id_start_dict[USER_TYPE] for user_id in user_ids])
 
         # import pdb
         # pdb.set_trace()
@@ -559,8 +567,9 @@ class hgnn_env(object):
 
     def eval_classifier(self):
         loss_fcn = torch.nn.CrossEntropyLoss()
-        val_loss, val_precision, val_micro_f1, val_macro_f1 = self.evaluate(self.model, self.train_data, self.train_data.x,
-                                                                       self.labels, self.val_mask, loss_fcn)
+        val_loss, val_precision, val_micro_f1, val_macro_f1 = self.evaluate(self.model, self.train_data,
+                                                                            self.train_data.x,
+                                                                            self.labels, self.val_mask, loss_fcn)
         print('Test loss {:.4f} | Test Micro f1 {:.4f} | Test Macro f1 {:.4f}'.format(
             val_loss.item(), val_micro_f1, val_macro_f1))
 
@@ -589,8 +598,9 @@ class hgnn_env(object):
             pos_logits = torch.tensor([]).to(self.device)
             neg_logits = torch.tensor([]).to(self.device)
 
-            cf_scores = torch.matmul(u_embeds[[user_id - self.data.n_id_start_dict[4] for user_id in user_ids_batch]],
-                                     i_embeds.transpose(0, 1))
+            cf_scores = torch.matmul(
+                u_embeds[[user_id - self.data.n_id_start_dict[USER_TYPE] for user_id in user_ids_batch]],
+                i_embeds.transpose(0, 1))
             for idx, u in enumerate(user_ids_batch):
                 pos_logits = torch.cat([pos_logits, cf_scores[idx][self.data.train_user_dict[u]]])
                 neg_logits = torch.cat([neg_logits, torch.unsqueeze(cf_scores[idx][self.eval_neg_dict[u]], 1)])
@@ -609,8 +619,9 @@ class hgnn_env(object):
 
     def test_classifier(self, logger2):
         loss_fcn = torch.nn.CrossEntropyLoss()
-        test_loss, test_acc, test_micro_f1, test_macro_f1 = self.evaluate(self.model, self.train_data, self.train_data.x,
-                                                                       self.labels, self.test_mask, loss_fcn)
+        test_loss, test_acc, test_micro_f1, test_macro_f1 = self.evaluate(self.model, self.train_data,
+                                                                          self.train_data.x,
+                                                                          self.labels, self.test_mask, loss_fcn)
         logger2.info('Test loss {:.4f} | Test Micro f1 {:.4f} | Test Macro f1 {:.4f}'.format(
             test_loss.item(), test_micro_f1, test_macro_f1))
         print('Test loss {:.4f} | Test Micro f1 {:.4f} | Test Macro f1 {:.4f}'.format(
@@ -639,8 +650,9 @@ class hgnn_env(object):
             pos_logits = torch.tensor([]).to(self.device)
             neg_logits = torch.tensor([]).to(self.device)
 
-            cf_scores = torch.matmul(u_embeds[[user_id - self.data.n_id_start_dict[4] for user_id in user_ids_batch]],
-                                     i_embeds.transpose(0, 1))
+            cf_scores = torch.matmul(
+                u_embeds[[user_id - self.data.n_id_start_dict[USER_TYPE] for user_id in user_ids_batch]],
+                i_embeds.transpose(0, 1))
             for idx, u in enumerate(user_ids_batch):
                 pos_logits = torch.cat([pos_logits, cf_scores[idx][self.data.test_user_dict[u]]])
                 neg_logits = torch.cat([neg_logits, torch.unsqueeze(cf_scores[idx][self.test_neg_dict[u]], 1)])

@@ -111,9 +111,6 @@ class HANLayer(nn.Module):
 
         # print("Processed Meta-path Set: ", meta_paths)
 
-        import pdb
-        pdb.set_trace()
-
         for i, meta_path in enumerate(meta_paths):
             mp = list(map(str, meta_path))
             graph = self.sg_dict[''.join(mp)]

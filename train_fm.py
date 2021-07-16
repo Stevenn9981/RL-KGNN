@@ -65,7 +65,8 @@ def main():
     infor = '10wna_' + str(args.lr) + '_net_0.0005_' + str(args.nd_batch_size)
     model_name = 'model_' + infor + '.pth'
 
-    max_episodes = 8
+    u_max_episodes = 8
+    i_max_episodes = 10
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     logger1 = get_logger('log', 'logger_' + infor + '.log')
@@ -111,7 +112,7 @@ def main():
     best_item_i = 0
     # Training: Learning meta-policy
     logger2.info("Training Meta-policy on Validation Set")
-    for i_episode in range(1, max_episodes+1):
+    for i_episode in range(1, u_max_episodes+1):
         loss, reward, (val_acc, reward) = user_agent.user_learn(logger1, logger2, env, max_timesteps) # debug = (val_acc, reward)
         logger2.info("Generated meta-path set: %s" % str(env.etypes_lists))
         print("Generated meta-path set: %s" % str(env.etypes_lists))
@@ -127,7 +128,7 @@ def main():
                     'Reward': reward},
                     'model/agentpoints/a-user-' + str(val_acc) + '-' + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + '.pth.tar')
 
-    # for i_episode in range(1, max_episodes + 1):
+    for i_episode in range(1, i_max_episodes + 1):
         loss, reward, (val_acc, reward) = item_agent.item_learn(logger1, logger2, env, max_timesteps) # debug = (val_acc, reward)
         logger2.info("Generated meta-path set: %s" % str(env.etypes_lists))
         print("Generated meta-path set: %s" % str(env.etypes_lists))

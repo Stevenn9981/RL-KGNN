@@ -73,7 +73,7 @@ def main():
 
     env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset)
     env.seed(0)
-    use_pretrain(env)
+    # use_pretrain(env)
 
     user_agent = DQNAgent(scope='dqn',
                     action_num = env.action_num,
@@ -198,7 +198,7 @@ def main():
 
     test_env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset)
     test_env.etypes_lists = mp_set
-    use_pretrain(test_env)
+    # use_pretrain(test_env)
 
 
     best = 0

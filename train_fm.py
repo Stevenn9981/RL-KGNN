@@ -59,9 +59,6 @@ def main():
     max_timesteps = 5
     dataset = 'yelp_data'
 
-    torch.manual_seed(1)
-    random.seed(1)
-    np.random.seed(1)
 
     args = parse_args()
 
@@ -75,6 +72,7 @@ def main():
     logger2 = get_logger('log2', 'logger2_' + infor + '.log')
 
     env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset)
+    env.seed(0)
     use_pretrain(env)
 
     user_agent = DQNAgent(scope='dqn',
@@ -163,7 +161,7 @@ def main():
     val_list = [0, 0, 0]
     user_state = env.user_reset()
     item_state = env.item_reset()
-    print(env.eval_batch(40))
+    env.reset_eval_dict()
     mp_set = []
     for i_episode in range(max_timesteps):
         user_action = best_user_policy.eval_step(user_state)

@@ -23,7 +23,7 @@ from KGDataLoader import *
 STOP = 0
 
 NEG_SIZE_TRAIN = 15
-NEG_SIZE_EVAL = 40
+NEG_SIZE_EVAL = 20
 NEG_SIZE_RANKING = 499
 
 
@@ -572,8 +572,8 @@ class hgnn_env(object):
         user_ids = list(self.data.train_user_dict.keys())
         user_ids_batch = random.sample(user_ids, min(len(user_ids) - 2, self.args.train_batch_size))
 
-        if not self.eval_neg_dict and neg_num == 40:
-            print("neg_sum: 40")
+        if not self.eval_neg_dict and neg_num == NEG_SIZE_EVAL:
+            print("neg_sum: ", NEG_SIZE_EVAL)
 
         for u in user_ids_batch:
             if u not in self.eval_neg_dict:

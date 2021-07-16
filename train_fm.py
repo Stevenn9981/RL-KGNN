@@ -57,10 +57,9 @@ def use_pretrain(env):
 def main():
     torch.backends.cudnn.deterministic=True
     max_timesteps = 5
-    dataset = 'yelp_data'
-
 
     args = parse_args()
+    dataset = args.data_name
 
     infor = '10wna_' + str(args.lr) + '_net_0.0005_' + str(args.nd_batch_size)
     model_name = 'model_' + infor + '.pth'

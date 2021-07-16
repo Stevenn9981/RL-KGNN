@@ -22,8 +22,8 @@ def parse_args():
     parser.add_argument('--seed', type=int, default=123,
                         help='Random seed.')
 
-    parser.add_argument('--data_name', nargs='?', default='last-fm',
-                        help='Choose a dataset from {yelp2018, last-fm, amazon-book}')
+    parser.add_argument('--data_name', nargs='?', default='yelp_data',
+                        help='Choose a dataset from {yelp_data, douban_movie}')
     parser.add_argument('--data_dir', nargs='?', default='data/',
                         help='Input data path.')
 
@@ -205,26 +205,56 @@ class DataLoaderHGNN(object):
         self.n_users_entities = max(max(self.cf_train_data[0]), max(self.cf_test_data[0])) + 1
         self.n_entities = self.n_users_entities - self.n_users
 
-        # 1: B-U 2: U-B 3: B-Ca 4: B-Ci 5: U-Co 6: U-U 7: Ca-B 8: Ci-B 9: Co-U 10: U-U
+        if self.args.data_name == 'yelp_data':
+            '''
+            Only for Yelp dataset
+        
+                Business: 0 (0 - 14283), Category: 1 (14284 - 14794), City: 2 (14795 - 14841),
+                Compliment : 3 (14842 - 14852), User: 4 (14853 - 31091)
+                
+                1: B-U 2: U-B 3: B-Ca 4: B-Ci 5: U-Co 6: U-U 7: Ca-B 8: Ci-B 9: Co-U 10: U-U
+                
+            '''
 
+            node_type_list = np.zeros(self.n_users_entities, dtype=np.int32)
+            node_type_list[:14284] = 0
+            node_type_list[14284:14795] = 1
+            node_type_list[14795:14842] = 2
+            node_type_list[14842:14853] = 3
+            node_type_list[14853:] = 4
+            self.node_type_list = node_type_list
 
-        # Only for Yelp dataset
-        node_type_list = np.zeros(self.n_users_entities, dtype=np.int32)
-        node_type_list[:14284] = 0
-        node_type_list[14284:14795] = 1
-        node_type_list[14795:14842] = 2
-        node_type_list[14842:14853] = 3
-        node_type_list[14853:] = 4
-        self.node_type_list = node_type_list
+            self.n_id_start_dict = {0: 0, 1: 14284, 2: 14795, 3: 14842, 4: 14853}
 
-        self.n_id_start_dict = {0: 0, 1: 14284, 2: 14795, 3: 14842, 4: 14853}
+            self.metapath_transform_dict = {1: ['1', '2'], 2: ['2', '1'], 3: ['3', '7'], 7: ['3', '7'], 4: ['4', '8'],
+                                            8: ['4', '8'], 5: ['5', '9'],
+                                            9: ['5', '9'], 6: ['6'], 10: ['6']}
 
-        self.metapath_transform_dict = {1: ['1', '2'], 2: ['2', '1'], 3: ['3', '7'], 7: ['3', '7'], 4: ['4', '8'],
-                                        8: ['4', '8'], 5: ['5', '9'],
-                                        9: ['5', '9'], 6: ['6'], 10: ['6']}
+            self.n_types = max(node_type_list) + 1
+        elif self.args.data_name == 'douban_movie':
+            '''
+            Only for Douban-Movie dataset
+                1: M-U 2: U-M 3: M-A 4: M-D 5: M-T 6: U-G 7: U-U 8: A-M 9: D-M 10: T-M 11: G-U 12: U-U
 
+                Movie: 0 (0 - 12676), Actor: 1 (12677 - 18987), Director: 2 (18988 - 21436),
+                Type : 3 (21437 - 21474), Group: 4 (21475 - 24227), User: 5 (24228 - 37594)
+            '''
+            node_type_list = np.zeros(self.n_users_entities, dtype=np.int32)
+            node_type_list[:12677] = 0
+            node_type_list[12677:18988] = 1
+            node_type_list[18988:21437] = 2
+            node_type_list[21437:21475] = 3
+            node_type_list[21475:24228] = 4
+            node_type_list[24228:] = 5
+            self.node_type_list = node_type_list
 
-        self.n_types = max(node_type_list) + 1
+            self.n_id_start_dict = {0: 0, 1: 12677, 2: 18988, 3: 21437, 4: 21475, 5: 24228}
+
+            self.metapath_transform_dict = {1: ['1', '2'], 2: ['2', '1'], 3: ['3', '8'], 8: ['3', '8'], 4: ['4', '9'],
+                                            9: ['4', '9'], 5: ['5', '10'], 6: ['6', '11'], 11: ['6', '11'],
+                                            10: ['5', '10'], 7: ['7'], 12: ['12']}
+            self.n_types = max(node_type_list) + 1
+
 
         self.cf_train_data = (
             np.array(list(self.cf_train_data[0])).astype(np.int32), self.cf_train_data[1].astype(np.int32))
@@ -303,8 +333,9 @@ class DataLoaderHGNN(object):
 
     def create_graph(self, kg_data, n_nodes):
         '''
-        Business: 0 (0 - 14283), Category: 1 (14284 - 14794), City: 2 (14795 - 14841),
-        Compliment : 3 (14842 - 14852), User: 4 (14853 - 31091)
+        Yelp_data:
+            Business: 0 (0 - 14283), Category: 1 (14284 - 14794), City: 2 (14795 - 14841),
+            Compliment : 3 (14842 - 14852), User: 4 (14853 - 31091)
         '''
 
         node_type_list = torch.from_numpy(self.node_type_list)

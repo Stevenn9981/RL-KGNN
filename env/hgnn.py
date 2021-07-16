@@ -123,6 +123,14 @@ class hgnn_env(object):
         # print(args.data_dir)
         lr = args.lr
         self.task = task
+        global USER_TYPE
+        global ITEM_TYPE
+        if dataset == 'yelp_data':
+            USER_TYPE = 4
+            ITEM_TYPE = 0
+        elif dataset == 'double_movie':
+            USER_TYPE = 5
+            ITEM_TYPE = 0
         # print(data.train_graph)
         # data.train_graph.adj = to_dense_adj(data.train_graph.edge_index, edge_attr=data.train_graph.edge_attr)
         # adj_dist = dict()

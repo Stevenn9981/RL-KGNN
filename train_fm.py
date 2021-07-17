@@ -64,7 +64,7 @@ def main():
     infor = '10wna_' + str(args.lr) + '_net_0.0005_' + str(args.nd_batch_size)
     model_name = 'model_' + infor + '.pth'
 
-    u_max_episodes = 8
+    u_max_episodes = 10
     i_max_episodes = 10
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -167,7 +167,7 @@ def main():
         user_action = best_user_policy.eval_step(user_state)
         item_action = best_item_policy.eval_step(item_state)
 
-        env.model.reset()
+        # env.model.reset()
         user_state, _, user_done, (val_acc, _) = env.user_step(logger1, logger2, user_action, True)
 
         # val_acc = new_env.eval_batch(100)
@@ -179,7 +179,7 @@ def main():
         print("Meta-path set: %s" % (str(env.etypes_lists)))
         logger2.info("Evaluating GNN %d:   Val_Acc: %.5f  Reward: %.5f  best_val_i: %d" % (i_episode, val_acc, reward, best_val_i))
 
-        env.model.reset()
+        # env.model.reset()
         item_state, _, item_done, (val_acc, _) = env.item_step(logger1, logger2, item_action, True)
         logger2.info("Meta-path set: %s" % (str(env.etypes_lists)))
         print("Meta-path set: %s" % (str(env.etypes_lists)))

@@ -82,23 +82,23 @@ class MFbpr(object):
 
             self.U_np = self.U.eval()
             self.V_np = self.V.eval()
-            # if iteration == 100:
-            #     fw = open('./data/user_embedding', 'w')
-            #     fw2 = open('./data/item_embedding', 'w')
-            #     line = ''
-            #     for u in range(1, len(self.U_np)):
-            #         line += str(u + 14852) + ' '
-            #         for f in self.U_np[u]:
-            #             line += str(f) + ' '
-            #         line += '\n'
-            #     fw.write(line)
-            #     line = ''
-            #     for v in range(1, len(self.V_np)):
-            #         line += str(v - 1) + ' '
-            #         for f in self.V_np[v]:
-            #             line += str(f) + ' '
-            #         line += '\n'
-            #     fw2.write(line)
+            if iteration == 100:
+                fw = open('./data/douban.user_embedding', 'w')
+                fw2 = open('./data/douban.item_embedding', 'w')
+                line = ''
+                for u in range(1, len(self.U_np)):
+                    line += str(u + 24227) + ' '
+                    for f in self.U_np[u]:
+                        line += str(f) + ' '
+                    line += '\n'
+                fw.write(line)
+                line = ''
+                for v in range(1, len(self.V_np)):
+                    line += str(v - 1) + ' '
+                    for f in self.V_np[v]:
+                        line += str(f) + ' '
+                    line += '\n'
+                fw2.write(line)
 
             if iteration % 10 == 0:
                 topK = 3

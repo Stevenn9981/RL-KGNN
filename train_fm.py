@@ -121,11 +121,6 @@ def main():
             best_user_i = i_episode
         logger2.info("Training Meta-policy: %d    Val_Acc: %.5f    Avg_reward: %.5f    Best_Acc:  %.5f    Best_i: %d "
                      % (i_episode, val_acc, reward, best_user_val, best_user_i))
-        torch.save({'q_estimator_qnet_state_dict': user_agent.q_estimator.qnet.state_dict(),
-                    'target_estimator_qnet_state_dict': user_agent.target_estimator.qnet.state_dict(),
-                    'Val': val_acc,
-                    'Reward': reward},
-                    'model/agentpoints/a-user-' + str(val_acc) + '-' + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + '.pth.tar')
 
     for i_episode in range(1, i_max_episodes + 1):
         loss, reward, (val_acc, reward) = item_agent.item_learn(logger1, logger2, env, max_timesteps) # debug = (val_acc, reward)
@@ -137,11 +132,6 @@ def main():
             best_item_i = i_episode
         logger2.info("Training Meta-policy: %d    Val_Acc: %.5f    Avg_reward: %.5f    Best_Acc:  %.5f    Best_i: %d "
                      % (i_episode, val_acc, reward, best_item_val, best_item_i))
-        torch.save({'q_estimator_qnet_state_dict': item_agent.q_estimator.qnet.state_dict(),
-                    'target_estimator_qnet_state_dict': item_agent.target_estimator.qnet.state_dict(),
-                    'Val': val_acc,
-                    'Reward': reward},
-                    'model/agentpoints/a-item-' + str(val_acc) + '-' + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + '.pth.tar')
 
     # del env
 
@@ -153,6 +143,18 @@ def main():
 
     env.user_policy = best_user_policy
     env.item_policy = best_item_policy
+
+    torch.save({'q_estimator_qnet_state_dict': best_user_policy.q_estimator.qnet.state_dict(),
+                'target_estimator_qnet_state_dict': best_user_policy.target_estimator.qnet.state_dict(),
+                'Val': best_user_val},
+               'model/agentpoints/a-best-user-' + str(best_user_val) + '-' + time.strftime("%Y-%m-%d %H:%M:%S",
+                                                                                time.localtime()) + '.pth.tar')
+
+    torch.save({'q_estimator_qnet_state_dict': best_item_policy.q_estimator.qnet.state_dict(),
+                'target_estimator_qnet_state_dict': best_item_policy.target_estimator.qnet.state_dict(),
+                'Val': best_item_val},
+               'model/agentpoints/a-best-item-' + str(best_item_val) + '-' + time.strftime("%Y-%m-%d %H:%M:%S",
+                                                                                time.localtime()) + '.pth.tar')
 
     b_i = 0
     best_val_i = 0

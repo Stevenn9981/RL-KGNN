@@ -33,11 +33,11 @@ def use_pretrain(env, dataset='yelp_data'):
     if dataset == 'yelp_data':
         print('./data/yelp_data/embedding/user.embedding_' + str(env.data.entity_dim))
         fr1 = open('./data/yelp_data/embedding/user.embedding_' + str(env.data.entity_dim), 'r')
-        fr2 = open('./data/yelp_data/embedding/business.embedding_' + str(env.data.entity_dim), 'r')
+        fr2 = open('./data/yelp_data/embedding/item.embedding_' + str(env.data.entity_dim), 'r')
     elif dataset == 'douban_movie':
         print('./data/douban_movie/embedding/user.embedding_' + str(env.data.entity_dim))
         fr1 = open('./data/douban_movie/embedding/user.embedding_' + str(env.data.entity_dim), 'r')
-        fr2 = open('./data/douban_movie/embedding/movie.embedding_' + str(env.data.entity_dim), 'r')
+        fr2 = open('./data/douban_movie/embedding/item.embedding_' + str(env.data.entity_dim), 'r')
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -79,7 +79,7 @@ def main():
 
     env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset)
     env.seed(0)
-    # use_pretrain(env, dataset)
+    use_pretrain(env, dataset)
 
     user_agent = DQNAgent(scope='dqn',
                           action_num=env.action_num,
@@ -210,7 +210,7 @@ def main():
 
     test_env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset)
     test_env.etypes_lists = mp_set
-    # use_pretrain(test_env, dataset)
+    use_pretrain(test_env, dataset)
 
     best = 0
     best_i = 0

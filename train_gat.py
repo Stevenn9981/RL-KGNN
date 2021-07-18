@@ -34,7 +34,7 @@ def get_logger(logger_name, log_file, level=logging.INFO):
 def use_pretrain(env):
     print('./data/yelp_data/embedding/user.embedding_' + str(env.data.entity_dim))
     fr1 = open('./data/yelp_data/embedding/user.embedding_' + str(env.data.entity_dim), 'r')
-    fr2 = open('./data/yelp_data/embedding/business.embedding_' + str(env.data.entity_dim), 'r')
+    fr2 = open('./data/yelp_data/embedding/item.embedding_' + str(env.data.entity_dim), 'r')
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -131,7 +131,8 @@ def main():
                 if u_s[i] in mpset[0]:
                     continue
                 mpset[0].append(u_s[i])
-                acc = train_and_eval(env, 2 * inx * sample_num + i, max_episodes, tim1, logger1, logger2, model_name, args, mpset)
+                acc = train_and_eval(env, 2 * inx * sample_num + i, max_episodes, tim1, logger1, logger2, model_name,
+                                     args, mpset)
                 if acc > u_best_acc:
                     u_best_acc = acc
                     cur_best_mpset = deepcopy(mpset)
@@ -147,7 +148,8 @@ def main():
                 if i_s[i] in mpset[1]:
                     continue
                 mpset[1].append(i_s[i])
-                acc = train_and_eval(env, (2 * inx + 1) * sample_num + i, max_episodes, tim1, logger1, logger2, model_name, args, mpset)
+                acc = train_and_eval(env, (2 * inx + 1) * sample_num + i, max_episodes, tim1, logger1, logger2,
+                                     model_name, args, mpset)
                 if acc > u_best_acc:
                     u_best_acc = acc
                     cur_best_mpset = deepcopy(mpset)
@@ -156,7 +158,6 @@ def main():
             print("Current Best Meta_path set: ", str(best_mpset))
 
         train_and_test(1, max_episodes, tim1, logger1, logger2, model_name, args, best_mpset)
-
 
     if init_method == 'specify':
         mpset = eval(args.mpset)

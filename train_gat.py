@@ -155,6 +155,9 @@ def main():
                 best_mpset = cur_best_mpset
             print("Current Best Meta_path set: ", str(best_mpset))
 
+        train_and_test(1, max_episodes, tim1, logger1, logger2, model_name, args, best_mpset)
+
+
     if init_method == 'specify':
         mpset = eval(args.mpset)
         train_and_test(1, max_episodes, tim1, logger1, logger2, model_name, args, mpset)

@@ -17,7 +17,7 @@ def LoadRatingFile_HoldKOut(filename, splitter, K):
     num_ratings = 0
     num_item = 0
 
-    trainfile = 'data/yelp.train.rating'
+    trainfile = 'data/douban.train.rating'
     with open(trainfile, "r") as f:
         line = f.readline()
         while line != None and line != "":
@@ -34,8 +34,8 @@ def LoadRatingFile_HoldKOut(filename, splitter, K):
     num_user = len(train)
     num_item = num_item + 1
 
-    testfile = 'data/yelp.test.rating'
-    with open(trainfile, "r") as f:
+    testfile = 'data/douban.test.rating'
+    with open(testfile, "r") as f:
         line = f.readline()
         while line != None and line != "":
             arr = line.split()

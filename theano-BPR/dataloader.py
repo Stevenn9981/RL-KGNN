@@ -4,7 +4,7 @@ Created on Apr 12, 2016
 @author: hexiangnan
 '''
         
-def LoadRatingFile_HoldKOut(filename, splitter, K):
+def LoadRatingFile_HoldKOut():
     """
     Each line of .rating file is: userId(starts from 0), itemId, ratingScore, time
     Each element of train is the [[item1, time1], [item2, time2] of the user, sorted by time

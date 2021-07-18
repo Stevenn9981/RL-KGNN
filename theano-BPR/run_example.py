@@ -12,9 +12,9 @@ import multiprocessing as mp
 if __name__ == '__main__':
     # Load data
     dataset = "data/douban.rating"
-    splitter = "\t"
-    hold_k_out = 1
-    train, test, num_user, num_item, num_ratings = LoadRatingFile_HoldKOut(dataset, splitter, hold_k_out)
+    # splitter = "\t"
+    # hold_k_out = 1
+    train, test, num_user, num_item, num_ratings = LoadRatingFile_HoldKOut()
     print("Load data (%s) done." % (dataset))
     print("#users: %d, #items: %d, #ratings: %d" % (num_user, num_item, num_ratings))
 

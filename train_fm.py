@@ -28,10 +28,16 @@ def get_logger(logger_name, log_file, level=logging.INFO):
 
     return logging.getLogger(logger_name)
 
-def use_pretrain(env):
-    print('./data/yelp_data/embedding/user.embedding_' + str(env.data.entity_dim))
-    fr1 = open('./data/yelp_data/embedding/user.embedding_' + str(env.data.entity_dim), 'r')
-    fr2 = open('./data/yelp_data/embedding/business.embedding_' + str(env.data.entity_dim), 'r')
+
+def use_pretrain(env, dataset='yelp_data'):
+    if dataset == 'yelp_data':
+        print('./data/yelp_data/embedding/user.embedding_' + str(env.data.entity_dim))
+        fr1 = open('./data/yelp_data/embedding/user.embedding_' + str(env.data.entity_dim), 'r')
+        fr2 = open('./data/yelp_data/embedding/business.embedding_' + str(env.data.entity_dim), 'r')
+    elif dataset == 'douban_movie':
+        print('./data/douban_movie/embedding/user.embedding_' + str(env.data.entity_dim))
+        fr1 = open('./data/douban_movie/embedding/user.embedding_' + str(env.data.entity_dim), 'r')
+        fr2 = open('./data/douban_movie/embedding/movie.embedding_' + str(env.data.entity_dim), 'r')
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -55,7 +61,7 @@ def use_pretrain(env):
 
 
 def main():
-    torch.backends.cudnn.deterministic=True
+    torch.backends.cudnn.deterministic = True
     max_timesteps = 5
 
     args = parse_args()
@@ -73,31 +79,31 @@ def main():
 
     env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset)
     env.seed(0)
-    # use_pretrain(env)
+    # use_pretrain(env, dataset)
 
     user_agent = DQNAgent(scope='dqn',
-                    action_num = env.action_num,
-                    replay_memory_size=int(1e4),
-                    replay_memory_init_size=500,
-                    norm_step=2,
-                    batch_size=1,
-                    state_shape = env.observation_space.shape,
-                    mlp_layers=[32, 64, 32],
-                    learning_rate=0.0005,
-                    device=torch.device(device)
-            )
+                          action_num=env.action_num,
+                          replay_memory_size=int(1e4),
+                          replay_memory_init_size=500,
+                          norm_step=2,
+                          batch_size=1,
+                          state_shape=env.observation_space.shape,
+                          mlp_layers=[32, 64, 32],
+                          learning_rate=0.0005,
+                          device=torch.device(device)
+                          )
 
     item_agent = DQNAgent(scope='dqn',
-                    action_num = env.action_num,
-                    replay_memory_size=int(1e4),
-                    replay_memory_init_size=500,
-                    norm_step=2,
-                    batch_size=1,
-                    state_shape = env.observation_space.shape,
-                    mlp_layers=[32, 64, 32],
-                    learning_rate=0.0005,
-                    device=torch.device(device)
-            )
+                          action_num=env.action_num,
+                          replay_memory_size=int(1e4),
+                          replay_memory_init_size=500,
+                          norm_step=2,
+                          batch_size=1,
+                          state_shape=env.observation_space.shape,
+                          mlp_layers=[32, 64, 32],
+                          learning_rate=0.0005,
+                          device=torch.device(device)
+                          )
 
     # item_agent = user_agent
 
@@ -111,23 +117,25 @@ def main():
     best_item_i = 0
     # Training: Learning meta-policy
     logger2.info("Training Meta-policy on Validation Set")
-    for i_episode in range(1, u_max_episodes+1):
-        loss, reward, (val_acc, reward) = user_agent.user_learn(logger1, logger2, env, max_timesteps) # debug = (val_acc, reward)
+    for i_episode in range(1, u_max_episodes + 1):
+        loss, reward, (val_acc, reward) = user_agent.user_learn(logger1, logger2, env,
+                                                                max_timesteps)  # debug = (val_acc, reward)
         logger2.info("Generated meta-path set: %s" % str(env.etypes_lists))
         print("Generated meta-path set: %s" % str(env.etypes_lists))
-        if val_acc > best_user_val: # check whether gain improvement on validation set
-            best_user_policy = deepcopy(user_agent) # save the best policy
+        if val_acc > best_user_val:  # check whether gain improvement on validation set
+            best_user_policy = deepcopy(user_agent)  # save the best policy
             best_user_val = val_acc
             best_user_i = i_episode
         logger2.info("Training Meta-policy: %d    Val_Acc: %.5f    Avg_reward: %.5f    Best_Acc:  %.5f    Best_i: %d "
                      % (i_episode, val_acc, reward, best_user_val, best_user_i))
 
     for i_episode in range(1, i_max_episodes + 1):
-        loss, reward, (val_acc, reward) = item_agent.item_learn(logger1, logger2, env, max_timesteps) # debug = (val_acc, reward)
+        loss, reward, (val_acc, reward) = item_agent.item_learn(logger1, logger2, env,
+                                                                max_timesteps)  # debug = (val_acc, reward)
         logger2.info("Generated meta-path set: %s" % str(env.etypes_lists))
         print("Generated meta-path set: %s" % str(env.etypes_lists))
-        if val_acc > best_item_val: # check whether gain improvement on validation set
-            best_item_policy = deepcopy(item_agent) # save the best policy
+        if val_acc > best_item_val:  # check whether gain improvement on validation set
+            best_item_policy = deepcopy(item_agent)  # save the best policy
             best_item_val = val_acc
             best_item_i = i_episode
         logger2.info("Training Meta-policy: %d    Val_Acc: %.5f    Avg_reward: %.5f    Best_Acc:  %.5f    Best_i: %d "
@@ -148,13 +156,13 @@ def main():
                 'target_estimator_qnet_state_dict': best_user_policy.target_estimator.qnet.state_dict(),
                 'Val': best_user_val},
                'model/agentpoints/a-best-user-' + str(best_user_val) + '-' + time.strftime("%Y-%m-%d %H:%M:%S",
-                                                                                time.localtime()) + '.pth.tar')
+                                                                                           time.localtime()) + '.pth.tar')
 
     torch.save({'q_estimator_qnet_state_dict': best_item_policy.q_estimator.qnet.state_dict(),
                 'target_estimator_qnet_state_dict': best_item_policy.target_estimator.qnet.state_dict(),
                 'Val': best_item_val},
                'model/agentpoints/a-best-item-' + str(best_item_val) + '-' + time.strftime("%Y-%m-%d %H:%M:%S",
-                                                                                time.localtime()) + '.pth.tar')
+                                                                                           time.localtime()) + '.pth.tar')
 
     b_i = 0
     best_val_i = 0
@@ -179,7 +187,8 @@ def main():
             best_val_acc = val_acc
         logger2.info("Meta-path set: %s" % (str(env.etypes_lists)))
         print("Meta-path set: %s" % (str(env.etypes_lists)))
-        logger2.info("Evaluating GNN %d:   Val_Acc: %.5f  Reward: %.5f  best_val_i: %d" % (i_episode, val_acc, reward, best_val_i))
+        logger2.info("Evaluating GNN %d:   Val_Acc: %.5f  Reward: %.5f  best_val_i: %d" % (
+        i_episode, val_acc, reward, best_val_i))
 
         # env.model.reset()
         item_state, _, item_done, (val_acc, _) = env.item_step(logger1, logger2, item_action, True)
@@ -190,7 +199,8 @@ def main():
         if val_acc > best_val_acc:
             mp_set = deepcopy(env.etypes_lists)
             best_val_acc = val_acc
-        logger2.info("Evaluating GNN %d:   Val_Acc: %.5f  Reward: %.5f  best_val_i: %d" % (i_episode, val_acc, reward, best_val_i))
+        logger2.info("Evaluating GNN %d:   Val_Acc: %.5f  Reward: %.5f  best_val_i: %d" % (
+        i_episode, val_acc, reward, best_val_i))
 
     del env
 
@@ -200,8 +210,7 @@ def main():
 
     test_env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset)
     test_env.etypes_lists = mp_set
-    # use_pretrain(test_env)
-
+    # use_pretrain(test_env, dataset)
 
     best = 0
     best_i = 0
@@ -215,9 +224,9 @@ def main():
                 if os.path.exists(model_name):
                     os.remove(model_name)
                 torch.save({'state_dict': test_env.model.state_dict(),
-                                'optimizer': test_env.optimizer.state_dict(),
-                                'Embedding': test_env.train_data.x},
-                               model_name)
+                            'optimizer': test_env.optimizer.state_dict(),
+                            'Embedding': test_env.train_data.x},
+                           model_name)
             logger2.info('Best Accuracy: %.5f\tBest_i : %d' % (best, best_i))
             print('Best: ', best, 'Best_i: ', best_i)
         test_env.train_GNN()

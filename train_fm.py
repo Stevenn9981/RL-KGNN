@@ -151,6 +151,7 @@ def main():
 
     env.user_policy = best_user_policy
     env.item_policy = best_item_policy
+    env.model.reset()
 
     torch.save({'q_estimator_qnet_state_dict': best_user_policy.q_estimator.qnet.state_dict(),
                 'target_estimator_qnet_state_dict': best_user_policy.target_estimator.qnet.state_dict(),

@@ -72,7 +72,7 @@ def main():
     HAN.DEGREE_THERSHOLD = 80000
     dataset = args.data_name
 
-    infor = 'pretrain_' + str(args.args.data_name)
+    infor = 'pretrain_' + str(args.data_name)
     model_name = 'model_' + infor + '.pth'
 
     max_episodes = 60

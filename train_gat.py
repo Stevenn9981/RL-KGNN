@@ -75,7 +75,7 @@ def main():
     infor = 'pretrain_' + str(args.data_name)
     model_name = 'model_' + infor + '.pth'
 
-    max_episodes = 60
+    max_episodes = 100
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     logger1 = get_logger('log', 'logger_' + infor + '.log')

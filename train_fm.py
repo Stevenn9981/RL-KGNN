@@ -88,7 +88,7 @@ def main():
                           norm_step=2,
                           batch_size=1,
                           state_shape=env.observation_space.shape,
-                          mlp_layers=[32, 64, 32],
+                          mlp_layers=[32, 64, 128, 64, 32],
                           learning_rate=0.0005,
                           device=torch.device(device)
                           )
@@ -100,7 +100,7 @@ def main():
                           norm_step=2,
                           batch_size=1,
                           state_shape=env.observation_space.shape,
-                          mlp_layers=[32, 64, 32],
+                          mlp_layers=[32, 64, 128, 64, 32],
                           learning_rate=0.0005,
                           device=torch.device(device)
                           )
@@ -177,7 +177,7 @@ def main():
         user_action = best_user_policy.eval_step(user_state)
         item_action = best_item_policy.eval_step(item_state)
 
-        # env.model.reset()
+        env.model.reset()
         user_state, _, user_done, (val_acc, _) = env.user_step(logger1, logger2, user_action, True)
 
         # val_acc = new_env.eval_batch(100)
@@ -190,7 +190,7 @@ def main():
         logger2.info("Evaluating GNN %d:   Val_Acc: %.5f  Reward: %.5f  best_val_i: %d" % (
         i_episode, val_acc, reward, best_val_i))
 
-        # env.model.reset()
+        env.model.reset()
         item_state, _, item_done, (val_acc, _) = env.item_step(logger1, logger2, item_action, True)
         logger2.info("Meta-path set: %s" % (str(env.etypes_lists)))
         print("Meta-path set: %s" % (str(env.etypes_lists)))

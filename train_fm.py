@@ -70,8 +70,8 @@ def main():
     infor = '10wna_' + str(args.lr) + '_net_0.0005_' + str(args.nd_batch_size)
     model_name = 'model_' + infor + '.pth'
 
-    u_max_episodes = 10
-    i_max_episodes = 10
+    u_max_episodes = 8
+    i_max_episodes = 8
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     logger1 = get_logger('log', 'logger_' + infor + '.log')
@@ -93,19 +93,19 @@ def main():
                           device=torch.device(device)
                           )
 
-    item_agent = DQNAgent(scope='dqn',
-                          action_num=env.action_num,
-                          replay_memory_size=int(1e4),
-                          replay_memory_init_size=500,
-                          norm_step=2,
-                          batch_size=1,
-                          state_shape=env.observation_space.shape,
-                          mlp_layers=[32, 64, 128, 64, 32],
-                          learning_rate=0.0005,
-                          device=torch.device(device)
-                          )
+    # item_agent = DQNAgent(scope='dqn',
+    #                       action_num=env.action_num,
+    #                       replay_memory_size=int(1e4),
+    #                       replay_memory_init_size=500,
+    #                       norm_step=2,
+    #                       batch_size=1,
+    #                       state_shape=env.observation_space.shape,
+    #                       mlp_layers=[32, 64, 128, 64, 32],
+    #                       learning_rate=0.0005,
+    #                       device=torch.device(device)
+    #                       )
 
-    # item_agent = user_agent
+    item_agent = user_agent
 
     env.user_policy = user_agent
     env.item_policy = item_agent

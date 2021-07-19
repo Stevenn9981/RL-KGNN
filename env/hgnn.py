@@ -123,6 +123,7 @@ class hgnn_env(object):
         # print(args.data_dir)
         lr = args.lr
         self.task = task
+        dataset = args.data_name
         global USER_TYPE
         global ITEM_TYPE
         if dataset == 'yelp_data':

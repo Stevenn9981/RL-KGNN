@@ -90,7 +90,7 @@ class HANLayer(nn.Module):
                 print("Meta-path: ", str(mp))
                 graph = dgl.metapath_reachable_graph(g, meta_path)
                 print("Average degree: ", graph.number_of_edges() / graph.number_of_nodes())
-                if graph.number_of_edges() / graph.number_of_nodes() > self.threshold:
+                if graph.number_of_edges() / graph.number_of_nodes() > self.threshold * graph.number_of_nodes():
                     self.large_graph[''.join(mp)] = graph.number_of_edges() / graph.number_of_nodes()
                     meta_paths.remove(meta_path)
                     meta_pathset.remove(list(meta_path))
@@ -139,7 +139,7 @@ class HANLayer(nn.Module):
 
 
 class HAN(nn.Module):
-    def __init__(self, in_size, hidden_size, out_size, num_heads, dropout, threshold=6000):
+    def __init__(self, in_size, hidden_size, out_size, num_heads, dropout, threshold=0.6):
         super(HAN, self).__init__()
         self.layers = nn.ModuleList()
         self.layers.append(HANLayer(in_size, hidden_size, num_heads[0], dropout))

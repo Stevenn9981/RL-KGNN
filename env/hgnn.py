@@ -294,7 +294,7 @@ class hgnn_env(object):
 
     def user_reset(self):
         self.etypes_lists = [[['2', '1']], [['1', '2']]]
-        state = self.get_user_state() + self.get_item_state()
+        state = self.get_user_state()
         self.optimizer.zero_grad()
         return state
 
@@ -305,7 +305,7 @@ class hgnn_env(object):
 
     def item_reset(self):
         self.etypes_lists = [[['2', '1']], [['1', '2']]]
-        state = self.get_item_state() + self.get_user_state()
+        state = self.get_item_state()
         self.optimizer.zero_grad()
         return state
 
@@ -359,10 +359,10 @@ class hgnn_env(object):
                     map(lambda x: list(x), set(map(lambda x: tuple(x), self.etypes_lists[type[0]]))))
 
                 if str(self.etypes_lists) not in self.mpset_eval_dict:
-                    if test:
-                        for _ in range(5):
-                            self.train_GNN(True)
-                    else:
+                    # if test:
+                    #     for _ in range(5):
+                    #         self.train_GNN(True)
+                    # else:
                         self.train_GNN()
 
             if not test:
@@ -390,16 +390,16 @@ class hgnn_env(object):
     def user_step(self, logger1, logger2, actions, test=False,
                   type=(0, USER_TYPE)):  # type - (index_of_etpyes_list, index_of_node_type)
         done_list, r, reward, val_acc = self.rec_step(actions, logger1, logger2, test, type)
-        next_state = self.get_user_state() + self.get_item_state()
+        next_state = self.get_user_state()
 
-        # self.model.reset()
+        self.model.reset()
         return next_state, reward, done_list, (val_acc, r)
 
     def item_step(self, logger1, logger2, actions, test=False, type=(1, ITEM_TYPE)):
         done_list, r, reward, val_acc = self.rec_step(actions, logger1, logger2, test, type)
-        next_state = self.get_user_state() + self.get_item_state()
+        next_state = self.get_item_state()
 
-        # self.model.reset()
+        self.model.reset()
         return next_state, reward, done_list, (val_acc, r)
 
     def class_step(self, logger1, logger2, actions, test=False, type=(0, 'p')):

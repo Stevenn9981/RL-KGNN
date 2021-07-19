@@ -31,10 +31,15 @@ def get_logger(logger_name, log_file, level=logging.INFO):
     return logging.getLogger(logger_name)
 
 
-def use_pretrain(env):
-    print('./data/yelp_data/embedding/user.embedding_' + str(env.data.entity_dim))
-    fr1 = open('./data/yelp_data/embedding/user.embedding_' + str(env.data.entity_dim), 'r')
-    fr2 = open('./data/yelp_data/embedding/item.embedding_' + str(env.data.entity_dim), 'r')
+def use_pretrain(env, dataset='yelp_data'):
+    if dataset == 'yelp_data':
+        print('./data/yelp_data/embedding/user.embedding_' + str(env.data.entity_dim))
+        fr1 = open('./data/yelp_data/embedding/user.embedding_' + str(env.data.entity_dim), 'r')
+        fr2 = open('./data/yelp_data/embedding/item.embedding_' + str(env.data.entity_dim), 'r')
+    elif dataset == 'douban_movie':
+        print('./data/douban_movie/embedding/user.embedding_' + str(env.data.entity_dim))
+        fr1 = open('./data/douban_movie/embedding/user.embedding_' + str(env.data.entity_dim), 'r')
+        fr2 = open('./data/douban_movie/embedding/item.embedding_' + str(env.data.entity_dim), 'r')
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -65,8 +70,9 @@ def main():
 
     args = parse_args()
     HAN.DEGREE_THERSHOLD = 80000
+    dataset = args.data_name
 
-    infor = 'net_pretrain_' + str(args.entity_dim)
+    infor = 'pretrain_' + str(args.args.data_name)
     model_name = 'model_' + infor + '.pth'
 
     max_episodes = 60
@@ -93,7 +99,7 @@ def main():
 
     if init_method == 'random':
         env = hgnn_env(logger1, logger2, model_name, args)
-        use_pretrain(env)
+        use_pretrain(env, dataset)
         env.seed(0)
         best = 0
         best_mpset = None
@@ -115,7 +121,7 @@ def main():
         best_mpset = [[['2', '1']], [['1', '2']]]
         env = hgnn_env(logger1, logger2, model_name, args)
         env.seed(0)
-        use_pretrain(env)
+        use_pretrain(env, dataset)
         for gnn in env.model.layers:
             gnn.threshold = 80000
 
@@ -204,7 +210,7 @@ def train_and_test(inx, max_episodes, tim1, logger1, logger2, model_name, args, 
     tim2 = time.time()
     env = hgnn_env(logger1, logger2, model_name, args)
     env.seed(0)
-    use_pretrain(env)
+    use_pretrain(env, args.data_name)
     for gnn in env.model.layers:
         gnn.threshold = 80000
     env.etypes_lists = mpset
@@ -236,7 +242,7 @@ def train_and_test_for_draw(inx, max_episodes, tim1, logger1, logger2, model_nam
     tim2 = time.time()
     env = hgnn_env(logger1, logger2, model_name, args)
     env.seed(0)
-    use_pretrain(env)
+    use_pretrain(env, args.data_name)
     env.etypes_lists = mpset
     best = env.eval_batch()
     best_i = 0

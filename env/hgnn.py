@@ -451,7 +451,8 @@ class hgnn_env(object):
             self.train_classifier(test)
 
     def train_recommender(self, test):
-        n_cf_batch = 5 * self.data.n_cf_train // self.data.cf_batch_size + 1
+        # n_cf_batch = 5 * self.data.n_cf_train // self.data.cf_batch_size + 1
+        n_cf_batch = 1
         cf_total_loss = 0
         for iter in range(1, n_cf_batch + 1):
             #     print("current iter: ", iter, " ", n_cf_batch)

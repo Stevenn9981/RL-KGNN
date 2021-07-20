@@ -645,10 +645,9 @@ class hgnn_env(object):
         with torch.no_grad():
             for u in user_ids_batch:
                 if u not in self.test_neg_dict:
+                    nl = self.data.sample_neg_items_for_u_test(self.data.train_user_dict, self.data.test_user_dict,
+                                                               u, NEG_SIZE_RANKING)
                     for _ in self.data.test_user_dict[u]:
-                        nl = self.data.sample_neg_items_for_u_test(self.data.train_user_dict, self.data.test_user_dict,
-                                                                   u,
-                                                                   NEG_SIZE_RANKING)
                         self.test_neg_dict[u].extend(nl)
             # self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))
             # all_embed = self.update_embedding().to(self.device)

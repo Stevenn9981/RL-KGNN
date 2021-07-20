@@ -71,7 +71,7 @@ def main():
     model_name = 'model_' + infor + '.pth'
 
     u_max_episodes = 8
-    i_max_episodes = 8
+    i_max_episodes = 10
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     logger1 = get_logger('log', 'logger_' + infor + '.log')

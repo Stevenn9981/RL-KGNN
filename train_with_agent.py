@@ -105,12 +105,12 @@ def main():
                           device=torch.device(device)
                           )
 
-    model_checkpoint = torch.load("model/agentpoints/a-best-user-0.7478440999984741-2021-07-19 22:10:52.pth.tar", map_location=torch.device(device))
+    model_checkpoint = torch.load("test_model/a-best-user-0.7478440999984741-2021-07-19 22:10:52.pth.tar", map_location=torch.device(device))
 
     best_user_policy.q_estimator.qnet.load_state_dict(model_checkpoint['q_estimator_qnet_state_dict'])
     best_user_policy.target_estimator.qnet.load_state_dict(model_checkpoint['target_estimator_qnet_state_dict'])
 
-    model_checkpoint = torch.load("model/agentpoints/a-best-item-0.7593446969985962-2021-07-19 22:10:52.pth.tar", map_location=torch.device(device))
+    model_checkpoint = torch.load("test_model/a-best-item-0.7593446969985962-2021-07-19 22:10:52.pth.tar", map_location=torch.device(device))
 
     best_item_policy.q_estimator.qnet.load_state_dict(model_checkpoint['q_estimator_qnet_state_dict'])
     best_item_policy.target_estimator.qnet.load_state_dict(model_checkpoint['target_estimator_qnet_state_dict'])

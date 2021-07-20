@@ -195,7 +195,7 @@ def main():
         logger2.info("Evaluating GNN %d:   Val_Acc: %.5f  Reward: %.5f  best_val_i: %d" % (
         i_episode, val_acc, reward, best_val_i))
 
-        env.model.reset()
+        # env.model.reset()
         item_state, _, item_done, (val_acc, _) = env.item_step(logger1, logger2, item_action, True)
         logger2.info("Meta-path set: %s" % (str(env.etypes_lists)))
         print("Meta-path set: %s" % (str(env.etypes_lists)))

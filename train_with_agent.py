@@ -28,10 +28,16 @@ def get_logger(logger_name, log_file, level=logging.INFO):
 
     return logging.getLogger(logger_name)
 
-def use_pretrain(env):
-    print('./data/yelp_data/embedding/class.embedding_' + str(env.data.entity_dim))
-    fr1 = open('./data/yelp_data/embedding/class.embedding_' + str(env.data.entity_dim), 'r')
-    fr2 = open('./data/yelp_data/embedding/business.embedding_' + str(env.data.entity_dim), 'r')
+
+def use_pretrain(env, dataset='yelp_data'):
+    if dataset == 'yelp_data':
+        print('./data/yelp_data/embedding/user.embedding_' + str(env.data.entity_dim))
+        fr1 = open('./data/yelp_data/embedding/user.embedding_' + str(env.data.entity_dim), 'r')
+        fr2 = open('./data/yelp_data/embedding/item.embedding_' + str(env.data.entity_dim), 'r')
+    elif dataset == 'douban_movie':
+        print('./data/douban_movie/embedding/user.embedding_' + str(env.data.entity_dim))
+        fr1 = open('./data/douban_movie/embedding/user.embedding_' + str(env.data.entity_dim), 'r')
+        fr2 = open('./data/douban_movie/embedding/item.embedding_' + str(env.data.entity_dim), 'r')
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -55,81 +61,143 @@ def use_pretrain(env):
 
 
 def main():
-    torch.backends.cudnn.deterministic=True
-    max_timesteps = 4
-    max_episodes = 5
-    dataset = 'ACMRaw'
+    torch.backends.cudnn.deterministic = True
+    max_timesteps = 5
 
     args = parse_args()
+    dataset = args.data_name
 
-    infor = 'classification_' + str(args.lr) + '_' + str(args.nd_batch_size)
+    infor = '10wna_' + str(args.lr) + '_net_0.0005_' + str(args.nd_batch_size)
     model_name = 'model_' + infor + '.pth'
 
+    u_max_episodes = 8
+    i_max_episodes = 8
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     logger1 = get_logger('log', 'logger_' + infor + '.log')
     logger2 = get_logger('log2', 'logger2_' + infor + '.log')
 
+    env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset)
+    env.seed(0)
+    use_pretrain(env, dataset)
+
+    best_user_policy = DQNAgent(scope='dqn',
+                          action_num=env.action_num,
+                          replay_memory_size=int(1e4),
+                          replay_memory_init_size=500,
+                          norm_step=3,
+                          batch_size=1,
+                          state_shape=env.observation_space.shape,
+                          mlp_layers=[32, 64, 128, 64, 32],
+                          learning_rate=0.005,
+                          device=torch.device(device)
+                          )
+
+    best_item_policy = DQNAgent(scope='dqn',
+                          action_num=env.action_num,
+                          replay_memory_size=int(1e4),
+                          replay_memory_init_size=500,
+                          norm_step=2,
+                          batch_size=1,
+                          state_shape=env.observation_space.shape,
+                          mlp_layers=[32, 64, 128, 64, 32],
+                          learning_rate=0.005,
+                          device=torch.device(device)
+                          )
+
+    model_checkpoint = torch.load("model/agentpoints/a-best-user-0.7478440999984741-2021-07-19 22:10:52.pth.tar", map_location=torch.device(device))
+
+    best_user_policy.q_estimator.qnet.load_state_dict(model_checkpoint['q_estimator_qnet_state_dict'])
+    best_user_policy.target_estimator.qnet.load_state_dict(model_checkpoint['target_estimator_qnet_state_dict'])
+
+    model_checkpoint = torch.load("model/agentpoints/a-best-item-0.7593446969985962-2021-07-19 22:10:52.pth.tar", map_location=torch.device(device))
+
+    best_item_policy.q_estimator.qnet.load_state_dict(model_checkpoint['q_estimator_qnet_state_dict'])
+    best_item_policy.target_estimator.qnet.load_state_dict(model_checkpoint['target_estimator_qnet_state_dict'])
 
 
     # Testing: Apply meta-policy to train a new GNN
     logger2.info("Training GNNs with learned meta-policy")
     print("Training GNNs with learned meta-policy")
-    new_env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset, task='classification')
-    new_env.seed(0)
+    # new_env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset)
+    # use_pretrain(new_env)
 
-    best_class_policy = DQNAgent(scope='dqn',
-                    action_num = new_env.action_num,
-                    replay_memory_size=int(1e4),
-                    replay_memory_init_size=500,
-                    norm_step=2,
-                    batch_size=1,
-                    state_shape = new_env.observation_space.shape,
-                    mlp_layers=[32, 64, 128, 64, 32],
-                    learning_rate=0.0005,
-                    device=torch.device(device)
-            )
+    env.user_policy = best_user_policy
+    env.item_policy = best_item_policy
 
-    model_checkpoint = torch.load("class-0.9451371571072319-2021-07-06 07:09:38.pth.tar", map_location=torch.device(device))
-
-    best_class_policy.q_estimator.qnet.load_state_dict(model_checkpoint['q_estimator_qnet_state_dict'])
-    best_class_policy.target_estimator.qnet.load_state_dict(model_checkpoint['target_estimator_qnet_state_dict'])
-
+    b_i = 0
     best_val_i = 0
     best_val_acc = 0
+    val_acc = reward = 0
     val_list = [0, 0, 0]
-    class_state = new_env.class_reset()
-    class_stop = False
+    user_state = env.user_reset()
+    item_state = env.item_reset()
     mp_set = []
     for i_episode in range(max_timesteps):
-        class_action = best_class_policy.eval_step(class_state)
-        class_state, _, class_stop, (_, _) = new_env.class_step(logger1, logger2, class_action, True)
-        val_acc = new_env.test_batch(logger2)
+        A = best_user_policy.predict_batch(user_state)
+        user_action = np.random.choice(np.arange(len(A)), p=A, size=user_state.shape[0])
+        A = best_user_policy.predict_batch(item_state)
+        item_action = np.random.choice(np.arange(len(A)), p=A, size=item_state.shape[0])
+
+        env.model.reset()
+        user_state, _, user_done, (val_acc, _) = env.user_step(logger1, logger2, user_action, True)
+
+        # val_acc = new_env.eval_batch(100)
         val_list.append(val_acc)
         if val_acc > best_val_acc:
-            mp_set = new_env.etypes_lists
+            mp_set = deepcopy(env.etypes_lists)
             best_val_acc = val_acc
-        logger2.info("Meta-path set: %s" % (str(new_env.etypes_lists)))
-        print("Meta-path set: %s" % (str(new_env.etypes_lists)))
-        logger2.info("Evaluating GNN %d:   Val_Acc: %.5f  best_val_i: %d" % (i_episode, val_acc, best_val_i))
-        if val_list[-1] < val_list[-2] < val_list[-3] < val_list[-4]:
-            break
-    del new_env
+        logger2.info("Meta-path set: %s" % (str(env.etypes_lists)))
+        print("Meta-path set: %s" % (str(env.etypes_lists)))
+        logger2.info("Evaluating GNN %d:   Val_Acc: %.5f  Reward: %.5f  best_val_i: %d" % (
+        i_episode, val_acc, reward, best_val_i))
+
+        env.model.reset()
+        item_state, _, item_done, (val_acc, _) = env.item_step(logger1, logger2, item_action, True)
+        logger2.info("Meta-path set: %s" % (str(env.etypes_lists)))
+        print("Meta-path set: %s" % (str(env.etypes_lists)))
+        # val_acc = new_env.eval_batch(100)
+        val_list.append(val_acc)
+        if val_acc > best_val_acc:
+            mp_set = deepcopy(env.etypes_lists)
+            best_val_acc = val_acc
+        logger2.info("Evaluating GNN %d:   Val_Acc: %.5f  Reward: %.5f  best_val_i: %d" % (
+        i_episode, val_acc, reward, best_val_i))
+
+    del env
 
     logger2.info("Start testing meta-path set generated by RL agent")
     logger2.info("Generated meta-path set: %s" % str(mp_set))
     print("Start testing meta-path set generated by RL agent. Generated meta-path set: %s" % str(mp_set))
 
-    args.lr = 0.005
-    test_env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset, task='classification')
-    test_env.seed(0)
+    test_env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset)
     test_env.etypes_lists = mp_set
+    use_pretrain(test_env, dataset)
 
+    best = 0
+    best_i = 0
+    for i in range(100):
+        print('Current epoch: ', i)
+        if i % 1 == 0:
+            acc = test_env.test_batch(logger2)
+            if acc > best:
+                best = acc
+                best_i = i
+                if os.path.exists(model_name):
+                    os.remove(model_name)
+                torch.save({'state_dict': test_env.model.state_dict(),
+                            'optimizer': test_env.optimizer.state_dict(),
+                            'Embedding': test_env.train_data.x},
+                           model_name)
+            logger2.info('Best Accuracy: %.5f\tBest_i : %d' % (best, best_i))
+            print('Best: ', best, 'Best_i: ', best_i)
+        test_env.train_GNN()
 
-    print('start testing')
-    test_env.train_GNN(True)
+    logger2.info("---------------------------------------------------\nStart the performance testing on test dataset:")
+    model_checkpoint = torch.load(model_name)
+    test_env.model.load_state_dict(model_checkpoint['state_dict'])
+    test_env.train_data.x = model_checkpoint['Embedding']
     test_env.test_batch(logger2)
-
 
 
 if __name__ == '__main__':

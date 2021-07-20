@@ -229,7 +229,7 @@ def train_and_test(inx, max_episodes, tim1, logger1, logger2, model_name, args, 
                 best_i = i
                 print('Best: ', best, ' Best_i: ', best_i)
             logger2.info('Best Accuracy: %.5f\tBest_i : %d' % (best, best_i))
-        if i - best_i > 10:
+        if i - best_i > 15:
             break
     print("Current test: ", inx, ' Metapath Set: ', str(env.etypes_lists)
           , '.\n Best: ', best, '. Best_i: ', best_i

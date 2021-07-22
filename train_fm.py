@@ -123,7 +123,7 @@ def main():
         logger2.info("Generated meta-path set: %s" % str(env.etypes_lists))
         print("Generated meta-path set: %s" % str(env.etypes_lists))
         if val_acc > best_user_val:  # check whether gain improvement on validation set
-            best_user_policy = deepcopy(user_agent)  # save the best policy
+            # best_user_policy = deepcopy(user_agent)  # save the best policy
             best_user_val = val_acc
             best_user_i = i_episode
         logger2.info("Training Meta-policy: %d    Val_Acc: %.5f    Avg_reward: %.5f    Best_Acc:  %.5f    Best_i: %d "
@@ -135,7 +135,7 @@ def main():
         logger2.info("Generated meta-path set: %s" % str(env.etypes_lists))
         print("Generated meta-path set: %s" % str(env.etypes_lists))
         if val_acc > best_item_val:  # check whether gain improvement on validation set
-            best_item_policy = deepcopy(item_agent)  # save the best policy
+            # best_item_policy = deepcopy(item_agent)  # save the best policy
             best_item_val = val_acc
             best_item_i = i_episode
         logger2.info("Training Meta-policy: %d    Val_Acc: %.5f    Avg_reward: %.5f    Best_Acc:  %.5f    Best_i: %d "
@@ -148,6 +148,9 @@ def main():
     print("Training GNNs with learned meta-policy")
     # new_env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset)
     # use_pretrain(new_env)
+
+    best_user_policy = user_agent
+    best_item_policy = item_agent
 
     env.user_policy = best_user_policy
     env.item_policy = best_item_policy

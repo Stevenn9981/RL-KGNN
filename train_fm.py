@@ -14,7 +14,7 @@ import torch.nn as nn
 
 from env.hgnn import hgnn_env
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '0,1,2'
+# os.environ['CUDA_VISIBLE_DEVICES'] = '0,1,2'
 
 
 def get_logger(logger_name, log_file, level=logging.INFO):

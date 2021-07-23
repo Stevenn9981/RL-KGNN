@@ -361,7 +361,7 @@ class DataLoaderHGNN(object):
             e_n_dict[str(row[1])] = [row[3], row[4]]
         graph = dgl.heterograph(relations)
 
-        x = torch.randn(n_nodes, self.entity_dim)
+        x = nn.Parameter(torch.randn(n_nodes, self.entity_dim))
         nn.init.xavier_uniform_(x, gain=nn.init.calculate_gain('relu'))
         for i in range(5):
             node_feature[i] = x[node_type_list == i]

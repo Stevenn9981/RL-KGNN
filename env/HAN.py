@@ -121,7 +121,7 @@ class HANLayer(nn.Module):
             # if graph.number_of_edges() / graph.number_of_nodes() > DEGREE_THERSHOLD:
             #     meta_paths.remove(meta_path)
             #     continue
-            sampler = dgl.dataloading.MultiLayerNeighborSampler([500])
+            sampler = dgl.dataloading.MultiLayerNeighborSampler([300])
             dataloader = dgl.dataloading.NodeDataLoader(
                 graph, torch.LongTensor(list(set(b_ids.tolist()))), sampler, torch.device(device),
                 batch_size=len(b_ids),

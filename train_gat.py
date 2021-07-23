@@ -43,7 +43,7 @@ def use_pretrain(env, dataset='yelp_data'):
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-    emb = env.train_data.x.weight
+    emb = env.train_data.x.data
     emb.requires_grad = False
 
     for line in fr1.readlines():

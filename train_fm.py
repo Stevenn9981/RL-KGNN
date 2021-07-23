@@ -129,7 +129,7 @@ def main():
         logger2.info("Training Meta-policy: %d    Val_Acc: %.5f    Avg_reward: %.5f    Best_Acc:  %.5f    Best_i: %d "
                      % (i_episode, val_acc, reward, best_user_val, best_user_i))
 
-    for i_episode in range(1, i_max_episodes + 1):
+    # for i_episode in range(1, i_max_episodes + 1):
         loss, reward, (val_acc, reward) = item_agent.item_learn(logger1, logger2, env,
                                                                 max_timesteps)  # debug = (val_acc, reward)
         logger2.info("Generated meta-path set: %s" % str(env.etypes_lists))

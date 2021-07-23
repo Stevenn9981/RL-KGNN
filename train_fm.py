@@ -178,12 +178,12 @@ def main():
     env.reset_eval_dict()
     mp_set = []
     for i_episode in range(max_timesteps):
-        A = best_user_policy.predict_batch(user_state)
-        user_action = np.random.choice(np.arange(len(A)), p=A, size=user_state.shape[0])
-        A = best_user_policy.predict_batch(item_state)
-        item_action = np.random.choice(np.arange(len(A)), p=A, size=item_state.shape[0])
-        # user_action = best_user_policy.eval_step(user_state)
-        # item_action = best_item_policy.eval_step(item_state)
+        # A = best_user_policy.predict_batch(user_state)
+        # user_action = np.random.choice(np.arange(len(A)), p=A, size=user_state.shape[0])
+        # A = best_user_policy.predict_batch(item_state)
+        # item_action = np.random.choice(np.arange(len(A)), p=A, size=item_state.shape[0])
+        user_action = best_user_policy.eval_step(user_state)
+        item_action = best_item_policy.eval_step(item_state)
 
         env.model.reset()
         user_state, _, user_done, (val_acc, _) = env.user_step(logger1, logger2, user_action, True)

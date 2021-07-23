@@ -266,19 +266,26 @@ class hgnn_env(object):
         self.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
 
     def reset(self):
-        state = self.cal_state()
+        state = self.cal_user_state()
         # state = self.train_data.x[0]
         if self.task == 'classification':
             state = self.get_class_state()[0]
         self.optimizer.zero_grad()
         return state
 
-    def cal_state(self):
+    def cal_user_state(self):
         state = [0] * (self.data.n_relations + 1)
-        for mpset in self.etypes_lists:
-            for mp in mpset:
-                for rel in mp:
-                    state[int(rel)] += 1
+        for mp in self.etypes_lists[0]:
+            for rel in mp:
+                state[int(rel)] += 1
+        v = np.array(state, dtype=np.float32)
+        return np.expand_dims(v / (np.linalg.norm(v) + 1e-16), axis=0)
+
+    def cal_item_state(self):
+        state = [0] * (self.data.n_relations + 1)
+        for mp in self.etypes_lists[1]:
+            for rel in mp:
+                state[int(rel)] += 1
         v = np.array(state, dtype=np.float32)
         return np.expand_dims(v / (np.linalg.norm(v) + 1e-16), axis=0)
 
@@ -301,12 +308,12 @@ class hgnn_env(object):
         # nodes = range(self.train_data.x[self.data.node_type_list == USER_TYPE].shape[0])
         # user_embeds = self.get_all_user_embedding()
         # return self.sample_state(user_embeds, nodes)
-        return self.cal_state()
+        return self.cal_user_state()
 
     def user_reset(self):
         self.etypes_lists = [[['2', '1']], [['1', '2']]]
         # state = self.get_user_state()
-        state = self.cal_state()
+        state = self.cal_user_state()
         self.optimizer.zero_grad()
         return state
 
@@ -314,12 +321,12 @@ class hgnn_env(object):
         # nodes = range(self.train_data.x[self.data.node_type_list == ITEM_TYPE].shape[0])
         # item_embeds = self.get_all_item_embedding()
         # return self.sample_state(item_embeds, nodes)
-        return self.cal_state()
+        return self.cal_item_state()
 
     def item_reset(self):
         # self.etypes_lists = [[['2', '1']], [['1', '2']]]
         # state = self.get_item_state()
-        state = self.cal_state()
+        state = self.cal_item_state()
         self.optimizer.zero_grad()
         return state
 
@@ -406,14 +413,14 @@ class hgnn_env(object):
                   type=(0, USER_TYPE)):  # type - (index_of_etpyes_list, index_of_node_type)
         done_list, r, reward, val_acc = self.rec_step(actions, logger1, logger2, test, type)
         # next_state = self.get_user_state()
-        next_state = self.cal_state()
+        next_state = self.cal_user_state()
         self.model.reset()
         return next_state, reward, done_list, (val_acc, r)
 
     def item_step(self, logger1, logger2, actions, test=False, type=(1, ITEM_TYPE)):
         done_list, r, reward, val_acc = self.rec_step(actions, logger1, logger2, test, type)
         # next_state = self.get_item_state()
-        next_state = self.cal_state()
+        next_state = self.cal_item_state()
         self.model.reset()
         return next_state, reward, done_list, (val_acc, r)
 

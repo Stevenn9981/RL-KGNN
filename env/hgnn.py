@@ -306,6 +306,8 @@ class hgnn_env(object):
         nodes = range(self.train_data.x[self.data.node_type_list == USER_TYPE].shape[0])
         user_embeds = self.get_all_user_embedding()
         # return self.sample_state(user_embeds, nodes)
+        print(self.cal_user_state().shape)
+        print(self.sample_state(user_embeds, nodes).shape)
         return np.concatenate([self.cal_user_state(), self.sample_state(user_embeds, nodes)])
 
     def user_reset(self):

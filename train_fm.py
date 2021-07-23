@@ -93,19 +93,19 @@ def main():
                           device=torch.device(device)
                           )
 
-    # item_agent = DQNAgent(scope='dqn',
-    #                       action_num=env.action_num,
-    #                       replay_memory_size=int(1e4),
-    #                       replay_memory_init_size=500,
-    #                       norm_step=2,
-    #                       batch_size=1,
-    #                       state_shape=env.observation_space.shape,
-    #                       mlp_layers=[32, 64, 32],
-    #                       learning_rate=0.005,
-    #                       device=torch.device(device)
-    #                       )
+    item_agent = DQNAgent(scope='dqn',
+                          action_num=env.action_num,
+                          replay_memory_size=int(1e4),
+                          replay_memory_init_size=500,
+                          norm_step=2,
+                          batch_size=1,
+                          state_shape=env.observation_space.shape,
+                          mlp_layers=[32, 64, 32],
+                          learning_rate=0.005,
+                          device=torch.device(device)
+                          )
 
-    item_agent = user_agent
+    # item_agent = user_agent
 
     env.user_policy = user_agent
     env.item_policy = item_agent

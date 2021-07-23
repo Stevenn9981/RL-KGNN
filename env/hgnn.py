@@ -264,7 +264,7 @@ class hgnn_env(object):
         self.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
 
     def reset(self):
-        state = self.cal_user_state()
+        state = np.concatenate([self.cal_user_state(), self.sample_state(user_embeds, nodes)])
         # state = self.train_data.x[0]
         if self.task == 'classification':
             state = self.get_class_state()[0]
@@ -303,10 +303,10 @@ class hgnn_env(object):
         return np.array(state)
 
     def get_user_state(self):
-        # nodes = range(self.train_data.x[self.data.node_type_list == USER_TYPE].shape[0])
-        # user_embeds = self.get_all_user_embedding()
+        nodes = range(self.train_data.x[self.data.node_type_list == USER_TYPE].shape[0])
+        user_embeds = self.get_all_user_embedding()
         # return self.sample_state(user_embeds, nodes)
-        return self.cal_user_state()
+        return np.concatenate([self.cal_user_state(), self.sample_state(user_embeds, nodes)])
 
     def user_reset(self):
         self.etypes_lists = [[['2', '1']], [['1', '2']]]
@@ -316,10 +316,10 @@ class hgnn_env(object):
         return state
 
     def get_item_state(self):
-        # nodes = range(self.train_data.x[self.data.node_type_list == ITEM_TYPE].shape[0])
-        # item_embeds = self.get_all_item_embedding()
+        nodes = range(self.train_data.x[self.data.node_type_list == ITEM_TYPE].shape[0])
+        item_embeds = self.get_all_item_embedding()
         # return self.sample_state(item_embeds, nodes)
-        return self.cal_item_state()
+        return np.concatenate([self.cal_item_state(), self.sample_state(item_embeds, nodes)])
 
     def item_reset(self):
         # self.etypes_lists = [[['2', '1']], [['1', '2']]]

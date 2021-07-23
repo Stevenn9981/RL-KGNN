@@ -7,7 +7,6 @@ import torch
 import torch.nn as nn
 import numpy as np
 import pandas as pd
-# from torch_geometric.data import Data
 import dgl
 import time
 import logging

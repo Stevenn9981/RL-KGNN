@@ -389,13 +389,12 @@ class hgnn_env(object):
                 val_precision = self.eval_batch(NEG_SIZE_EVAL)
             val_acc.append(val_precision)
 
-            self.past_performance.append(val_precision)
             baseline = np.mean(np.array(self.past_performance[-self.baseline_experience:]))
             rew = 100 * (val_precision - baseline)
             if actions[0] == STOP:
                 rew = 0
             reward.append(rew)
-
+            self.past_performance.append(val_precision)
             logger1.info("Val acc: %.5f  reward: %.5f" % (val_precision, rew))
             logger1.info("-----------------------------------------------------------------------")
         r = np.mean(np.array(reward))

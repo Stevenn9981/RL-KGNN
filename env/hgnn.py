@@ -264,7 +264,7 @@ class hgnn_env(object):
         self.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
 
     def reset(self):
-        state = np.concatenate([self.cal_user_state(), self.sample_state(user_embeds, nodes)])
+        state = self.get_user_state()
         # state = self.train_data.x[0]
         if self.task == 'classification':
             state = self.get_class_state()[0]

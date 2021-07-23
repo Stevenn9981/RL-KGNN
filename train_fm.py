@@ -71,7 +71,7 @@ def main():
     model_name = 'model_' + infor + '.pth'
 
     u_max_episodes = 8
-    i_max_episodes = 10
+    i_max_episodes = 8
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     logger1 = get_logger('log', 'logger_' + infor + '.log')
@@ -88,7 +88,7 @@ def main():
                           norm_step=3,
                           batch_size=1,
                           state_shape=env.observation_space.shape,
-                          mlp_layers=[32, 64, 128, 64, 32],
+                          mlp_layers=[32, 64, 32],
                           learning_rate=0.005,
                           device=torch.device(device)
                           )
@@ -100,7 +100,7 @@ def main():
                           norm_step=2,
                           batch_size=1,
                           state_shape=env.observation_space.shape,
-                          mlp_layers=[32, 64, 128, 64, 32],
+                          mlp_layers=[32, 64, 32],
                           learning_rate=0.005,
                           device=torch.device(device)
                           )

@@ -317,7 +317,7 @@ class hgnn_env(object):
         return self.cal_state()
 
     def item_reset(self):
-        self.etypes_lists = [[['2', '1']], [['1', '2']]]
+        # self.etypes_lists = [[['2', '1']], [['1', '2']]]
         # state = self.get_item_state()
         state = self.cal_state()
         self.optimizer.zero_grad()

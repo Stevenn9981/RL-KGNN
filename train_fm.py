@@ -87,7 +87,7 @@ def main():
                           replay_memory_init_size=500,
                           norm_step=1,
                           batch_size=1,
-                          state_shape=env.observation_space.shape,
+                          state_shape=env.obs.shape,
                           mlp_layers=[32, 64, 32],
                           learning_rate=0.005,
                           device=torch.device(device)
@@ -99,7 +99,7 @@ def main():
                           replay_memory_init_size=500,
                           norm_step=2,
                           batch_size=1,
-                          state_shape=env.observation_space.shape,
+                          state_shape=env.obs.shape,
                           mlp_layers=[32, 64, 32],
                           learning_rate=0.005,
                           device=torch.device(device)

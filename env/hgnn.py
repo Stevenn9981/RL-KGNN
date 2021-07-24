@@ -200,8 +200,8 @@ class hgnn_env(object):
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr, weight_decay=weight_decay)
         if task == "classification":
             self.optimizer.add_param_group({'params': self.embedding_func.parameters()})
-        obs = self.reset()
-        self._set_observation_space(obs)
+        self.obs = self.reset()
+        self._set_observation_space(self.obs)
         # self.W_R = torch.randn(self.data.n_relations + 1, self.data.entity_dim,
         #                        self.data.relation_dim).to(self.device)
         # nn.init.xavier_uniform_(self.W_R, gain=nn.init.calculate_gain('relu'))

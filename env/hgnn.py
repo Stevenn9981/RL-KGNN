@@ -322,7 +322,7 @@ class hgnn_env(object):
         return np.concatenate([self.cal_item_state(), self.sample_state(item_embeds, nodes)], axis=1)
 
     def item_reset(self):
-        # self.etypes_lists = [[['2', '1']], [['1', '2']]]
+        self.etypes_lists = [[['2', '1']], [['1', '2']]]
         # state = self.get_item_state()
         state = self.cal_item_state()
         self.optimizer.zero_grad()

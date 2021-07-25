@@ -176,6 +176,7 @@ class DQNAgent(object):
 
     def user_learn(self, logger1, logger2, env, total_timesteps):
         next_state_batch = env.user_reset()
+        print(next_state_batch.shape)
         for t in range(total_timesteps):
             A = self.predict_batch(next_state_batch)
             best_actions = np.random.choice(np.arange(len(A)), p=A, size=next_state_batch.shape[0])

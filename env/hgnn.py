@@ -394,6 +394,9 @@ class hgnn_env(object):
                 val_precision = self.eval_batch(NEG_SIZE_EVAL)
             val_acc.append(val_precision)
 
+            import pdb
+            pdb.set_trace()
+
             if len(self.past_performance) == 0:
                 self.past_performance.append(val_precision)
 

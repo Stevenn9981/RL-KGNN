@@ -310,8 +310,8 @@ class hgnn_env(object):
 
     def user_reset(self):
         self.etypes_lists = [[['2', '1']], [['1', '2']]]
-        # state = self.get_user_state()
-        state = self.cal_user_state()
+        state = self.get_user_state()
+        # state = self.cal_user_state()
         self.optimizer.zero_grad()
         return state
 
@@ -323,8 +323,8 @@ class hgnn_env(object):
 
     def item_reset(self):
         self.etypes_lists = [[['2', '1']], [['1', '2']]]
-        # state = self.get_item_state()
-        state = self.cal_item_state()
+        state = self.get_item_state()
+        # state = self.cal_item_state()
         self.optimizer.zero_grad()
         return state
 

@@ -217,12 +217,18 @@ class hgnn_env(object):
         # self.buffers = {i: [] for i in range(max_layer)}
         # self.buffers = collections.defaultdict(list)
         self.past_performance = []
+        self.init = -1
 
         # self.meta_path_dict = collections.defaultdict(list)
         # self.meta_path_instances_dict = collections.defaultdict(list)
         # self.meta_path_graph_edges = collections.defaultdict(set)
 
         logger1.info('Data initialization done')
+
+    def reset_past_performance(self):
+        if self.init == -1:
+            self.init = self.eval_batch()
+        self.past_performance = [self.init]
 
     def evaluate(self, model, g, features, labels, mask, loss_func):
         self.model.eval()
@@ -265,6 +271,7 @@ class hgnn_env(object):
 
     def reset(self):
         self.etypes_lists = [[['2', '1']], [['1', '2']]]
+        self.reset_past_performance()
         state = self.get_user_state()
         # state = self.train_data.x[0]
         if self.task == 'classification':
@@ -311,6 +318,7 @@ class hgnn_env(object):
 
     def user_reset(self):
         self.etypes_lists = [[['2', '1']], [['1', '2']]]
+        self.reset_past_performance()
         state = self.get_user_state()
         # state = self.cal_user_state()
         self.optimizer.zero_grad()
@@ -324,6 +332,7 @@ class hgnn_env(object):
 
     def item_reset(self):
         self.etypes_lists = [[['2', '1']], [['1', '2']]]
+        self.reset_past_performance()
         state = self.get_item_state()
         # state = self.cal_item_state()
         self.optimizer.zero_grad()

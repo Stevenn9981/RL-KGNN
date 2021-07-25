@@ -264,6 +264,7 @@ class hgnn_env(object):
         self.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
 
     def reset(self):
+        self.etypes_lists = [[['2', '1']], [['1', '2']]]
         state = self.get_user_state()
         # state = self.train_data.x[0]
         if self.task == 'classification':
@@ -393,9 +394,6 @@ class hgnn_env(object):
             else:
                 val_precision = self.eval_batch(NEG_SIZE_EVAL)
             val_acc.append(val_precision)
-
-            import pdb
-            pdb.set_trace()
 
             if len(self.past_performance) == 0:
                 self.past_performance.append(val_precision)

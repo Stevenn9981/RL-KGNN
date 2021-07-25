@@ -81,8 +81,6 @@ class HANLayer(nn.Module):
     def forward(self, g, h, meta_pathset, optimizer, b_ids, test=False):
         meta_paths = list(tuple(meta_path) for meta_path in meta_pathset)
         semantic_embeddings = []
-        import pdb
-        pdb.set_trace()
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         for meta_path in meta_paths[:]:
             mp = list(map(str, meta_path))

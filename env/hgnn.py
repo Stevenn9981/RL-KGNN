@@ -122,6 +122,8 @@ class hgnn_env(object):
         lr = args.lr
         self.task = task
         dataset = args.data_name
+        self.past_performance = []
+        self.init = -1
         global USER_TYPE
         global ITEM_TYPE
         if dataset == 'yelp_data':
@@ -216,8 +218,6 @@ class hgnn_env(object):
         # buffers for updating
         # self.buffers = {i: [] for i in range(max_layer)}
         # self.buffers = collections.defaultdict(list)
-        self.past_performance = []
-        self.init = -1
 
         # self.meta_path_dict = collections.defaultdict(list)
         # self.meta_path_instances_dict = collections.defaultdict(list)

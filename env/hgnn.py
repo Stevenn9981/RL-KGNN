@@ -117,6 +117,7 @@ class hgnn_env(object):
         self.model_name = model_name
         self.cur_best = 0
         self.args = args
+        self.cf_l2loss_lambda = args.cf_l2loss_lambda
         # args.data_dir = path
         # print(args.data_dir)
         lr = args.lr
@@ -208,7 +209,6 @@ class hgnn_env(object):
         #                        self.data.relation_dim).to(self.device)
         # nn.init.xavier_uniform_(self.W_R, gain=nn.init.calculate_gain('relu'))
 
-        self.cf_l2loss_lambda = args.cf_l2loss_lambda
         # self.kg_l2loss_lambda = args.kg_l2loss_lambda
 
         self.baseline_experience = 5
@@ -273,7 +273,6 @@ class hgnn_env(object):
 
     def reset(self):
         self.etypes_lists = [[['2', '1']], [['1', '2']]]
-        self.reset_past_performance()
         state = self.get_user_state()
         # state = self.train_data.x[0]
         if self.task == 'classification':

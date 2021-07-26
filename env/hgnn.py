@@ -211,7 +211,7 @@ class hgnn_env(object):
         self.cf_l2loss_lambda = args.cf_l2loss_lambda
         # self.kg_l2loss_lambda = args.kg_l2loss_lambda
 
-        self.baseline_experience = 1
+        self.baseline_experience = 5
         # print(adj_dist)
         # print(data.train_graph.x[random.sample(range(data.train_graph.x.shape[0]), 5)])
 
@@ -227,6 +227,8 @@ class hgnn_env(object):
 
     def reset_past_performance(self):
         if self.init == -1:
+            self.model.train()
+            self.train_GNN()
             self.init = self.eval_batch()
         self.past_performance = [self.init]
 

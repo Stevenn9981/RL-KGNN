@@ -197,6 +197,7 @@ class hgnn_env(object):
             self._set_action_space(3)
             self.policy = None
 
+        self.useless_act = set()
         self.mpset_eval_dict = dict()
         self.nd_batch_size = args.nd_batch_size
         self.rl_batch_size = args.rl_batch_size
@@ -366,6 +367,10 @@ class hgnn_env(object):
                 else:
                     self.train_GNN()
             else:
+                if act in self.useless_act:
+                    reward.append(-100)
+                    val_acc.append(0)
+                    continue
                 augment_mp = self.metapath_transform_dict[act]
                 for i in range(len(self.etypes_lists[type[0]])):
                     mp = self.etypes_lists[type[0]][i]
@@ -392,6 +397,10 @@ class hgnn_env(object):
                     #         self.train_GNN(True)
                     # else:
                         self.train_GNN()
+                import pdb
+                pdb.set_trace()
+                if self.model.layers[0].useless_flag:
+                    self.useless_act.add(act)
             if not test:
                 if str(self.etypes_lists) not in self.mpset_eval_dict:
                     val_precision = self.eval_batch()
@@ -408,11 +417,8 @@ class hgnn_env(object):
             rew = 100 * (val_precision - baseline)
             if actions[0] == STOP or len(self.past_performance) == 0:
                 rew = 0
-            import pdb
-            pdb.set_trace()
-            if self.model.layers[0].useless_flag:
+            if act in self.useless_act:
                 rew = -100
-                val_acc = 0
             reward.append(rew)
             val_acc.append(val_precision)
             self.past_performance.append(val_precision)

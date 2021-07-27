@@ -770,20 +770,20 @@ class hgnn_env(object):
     #     # ndcg_k = sum(np.concatenate(ndcg)) / n_users
     #     return cf_scores, precision_k, recall_k  # , ndcg_k
 
-    def cf_score(self, g, user_ids, item_ids):
-        """
-        user_ids:   number of users to evaluate   (n_eval_users)
-        item_ids:   number of items to evaluate   (n_eval_items)
-        """
-        g.x.weight = nn.Parameter(g.x.weight.to(self.device))
-        g = g.to(self.device)
-        all_embed = g.x(g.node_idx)  # (n_users + n_entities, cf_concat_dim)
-        user_embed = all_embed[user_ids]  # (n_eval_users, cf_concat_dim)
-        item_embed = all_embed[item_ids]  # (n_eval_items, cf_concat_dim)
-
-        # Equation (12)
-        cf_score = torch.matmul(user_embed, item_embed.transpose(0, 1))  # (n_eval_users, n_eval_items)
-        return cf_score
+    # def cf_score(self, g, user_ids, item_ids):
+    #     """
+    #     user_ids:   number of users to evaluate   (n_eval_users)
+    #     item_ids:   number of items to evaluate   (n_eval_items)
+    #     """
+    #     g.x.weight = nn.Parameter(g.x.weight.to(self.device))
+    #     g = g.to(self.device)
+    #     all_embed = g.x(g.node_idx)  # (n_users + n_entities, cf_concat_dim)
+    #     user_embed = all_embed[user_ids]  # (n_eval_users, cf_concat_dim)
+    #     item_embed = all_embed[item_ids]  # (n_eval_items, cf_concat_dim)
+    #
+    #     # Equation (12)
+    #     cf_score = torch.matmul(user_embed, item_embed.transpose(0, 1))  # (n_eval_users, n_eval_items)
+    #     return cf_score
 
     def metrics(self, batch_pos, batch_nega, training=True):
         hit_num1 = 0.0

@@ -58,7 +58,7 @@ def parse_args():
     parser.add_argument('--mess_dropout', nargs='?', default='[0.1, 0.1, 0.1]',
                         help='Dropout probability w.r.t. message dropout for each deep layer. 0: no dropout.')
 
-    parser.add_argument('--kg_l2loss_lambda', type=float, default=0,
+    parser.add_argument('--kg_l2loss_lambda', type=float, default=1e-5,
                         help='Lambda when calculating KG l2 loss.')
     parser.add_argument('--cf_l2loss_lambda', type=float, default=1e-5,
                         help='Lambda when calculating CF l2 loss.')
@@ -361,7 +361,7 @@ class DataLoaderHGNN(object):
             e_n_dict[str(row[1])] = [row[3], row[4]]
         graph = dgl.heterograph(relations)
 
-        x = nn.Parameter(torch.randn(n_nodes, self.entity_dim))
+        x = torch.randn(n_nodes, self.entity_dim)
         nn.init.xavier_uniform_(x, gain=nn.init.calculate_gain('relu'))
         for i in range(5):
             node_feature[i] = x[node_type_list == i]

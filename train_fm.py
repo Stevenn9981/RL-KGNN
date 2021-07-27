@@ -56,8 +56,8 @@ def use_pretrain(env, dataset='yelp_data'):
         embedding = list(map(float, embedding))
         emb[id] = torch.tensor(embedding)
 
-    emb.requires_grad = True
-    env.train_data.x = nn.Parameter(emb).to(device)
+    # emb.requires_grad = True
+    env.train_data.x = emb.to(device)
 
 
 def main():

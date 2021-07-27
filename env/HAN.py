@@ -56,7 +56,7 @@ class HANLayer(nn.Module):
         The output feature
     """
 
-    def __init__(self, in_size, out_size, layer_num_heads, dropout, hidden_size, threshold):
+    def __init__(self, in_size, out_size, layer_num_heads, dropout, hidden_size=32, threshold=0.6):
         super(HANLayer, self).__init__()
 
         # One GAT layer for each meta path based adjacency matrix
@@ -68,7 +68,6 @@ class HANLayer(nn.Module):
         self.sg_dict = dict()
         self.large_graph = dict()
         self.threshold = threshold
-        self.useless_flag = False
 
         self.project = nn.Sequential(
             nn.Linear(out_size * layer_num_heads, hidden_size),
@@ -80,7 +79,6 @@ class HANLayer(nn.Module):
         self.gat_layers.load_state_dict(self.rest_layers.state_dict())
 
     def forward(self, g, h, meta_pathset, optimizer, b_ids, test=False):
-        self.useless_flag = False
         meta_paths = list(tuple(meta_path) for meta_path in meta_pathset)
         semantic_embeddings = []
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -95,8 +93,7 @@ class HANLayer(nn.Module):
                     self.large_graph[''.join(mp)] = graph.number_of_edges() / graph.number_of_nodes()
                     meta_paths.remove(meta_path)
                     meta_pathset.remove(list(meta_path))
-                    self.useless_flag = True
-                    print("Prepare dense meta-path graph: ", time.time() - tim1)
+                    print("Prepare meta-path graph: ", time.time() - tim1)
                     continue
                 self.sg_dict[''.join(mp)] = graph
                 gatconv = nn.ModuleDict({''.join(mp): GATConv(self.in_size, self.out_size, self.layer_num_heads,
@@ -108,7 +105,6 @@ class HANLayer(nn.Module):
                 optimizer.add_param_group({'params': gatconv.parameters()})
                 print("Prepare meta-path graph: ", time.time() - tim1)
             elif ''.join(mp) in self.large_graph:
-                self.useless_flag = True
                 meta_pathset.remove(list(meta_path))
                 meta_paths.remove(meta_path)
 
@@ -142,13 +138,13 @@ class HANLayer(nn.Module):
 
 
 class HAN(nn.Module):
-    def __init__(self, in_size, hidden_size, out_size, num_heads, dropout, threshold=0.5):
+    def __init__(self, in_size, hidden_size, out_size, num_heads, dropout, threshold=0.6):
         super(HAN, self).__init__()
         self.layers = nn.ModuleList()
-        self.layers.append(HANLayer(in_size, hidden_size, num_heads[0], dropout, hidden_size=32, threshold=threshold))
+        self.layers.append(HANLayer(in_size, hidden_size, num_heads[0], dropout))
         for l in range(1, len(num_heads)):
             self.layers.append(HANLayer(hidden_size * num_heads[l - 1],
-                                        hidden_size, num_heads[l], dropout, hidden_size=32, threshold=threshold))
+                                        hidden_size, num_heads[l], dropout, threshold=threshold))
         self.predict = nn.Linear(hidden_size * num_heads[-1], out_size)
 
     def forward(self, g, h, meta_paths, optimizer, b_ids, test=False):

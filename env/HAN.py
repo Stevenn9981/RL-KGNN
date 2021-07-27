@@ -56,7 +56,7 @@ class HANLayer(nn.Module):
         The output feature
     """
 
-    def __init__(self, in_size, out_size, layer_num_heads, dropout, hidden_size=32, threshold=0.6):
+    def __init__(self, in_size, out_size, layer_num_heads, dropout, hidden_size, threshold):
         super(HANLayer, self).__init__()
 
         # One GAT layer for each meta path based adjacency matrix
@@ -138,13 +138,13 @@ class HANLayer(nn.Module):
 
 
 class HAN(nn.Module):
-    def __init__(self, in_size, hidden_size, out_size, num_heads, dropout, threshold=0.6):
+    def __init__(self, in_size, hidden_size, out_size, num_heads, dropout, threshold=0.5):
         super(HAN, self).__init__()
         self.layers = nn.ModuleList()
-        self.layers.append(HANLayer(in_size, hidden_size, num_heads[0], dropout))
+        self.layers.append(HANLayer(in_size, hidden_size, num_heads[0], dropout, hidden_size=32, threshold=threshold))
         for l in range(1, len(num_heads)):
             self.layers.append(HANLayer(hidden_size * num_heads[l - 1],
-                                        hidden_size, num_heads[l], dropout, threshold=threshold))
+                                        hidden_size, num_heads[l], dropout, hidden_size=32, threshold=threshold))
         self.predict = nn.Linear(hidden_size * num_heads[-1], out_size)
 
     def forward(self, g, h, meta_paths, optimizer, b_ids, test=False):

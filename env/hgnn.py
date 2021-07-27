@@ -191,8 +191,8 @@ class hgnn_env(object):
                              hidden_size=32,
                              out_size=num_classes,
                              num_heads=args.num_heads,
-                             dropout=0.6,
-                             threshold=0.5 * self.data.n_items).to(self.device)
+                             dropout=0.1,
+                             threshold=0.5).to(self.device)
             self.embedding_func = nn.Linear(num_classes, 32).to(self.device)
             self._set_action_space(3)
             self.policy = None

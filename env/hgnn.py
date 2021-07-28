@@ -422,8 +422,6 @@ class hgnn_env(object):
 
     def user_step(self, logger1, logger2, actions, test=False,
                   type=(0, USER_TYPE)):  # type - (index_of_etpyes_list, index_of_node_type)
-        import pdb
-        pdb.set_trace()
         tmpmp = copy.deepcopy(self.etypes_lists)
         self.user_useless_act = False
         done_list, r, reward, val_acc = self.rec_step(actions, logger1, logger2, test, type)

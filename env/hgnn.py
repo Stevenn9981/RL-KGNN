@@ -191,12 +191,14 @@ class hgnn_env(object):
                              hidden_size=32,
                              out_size=num_classes,
                              num_heads=args.num_heads,
-                             dropout=0.6,
+                             dropout=0.1,
                              threshold=0.5).to(self.device)
             self.embedding_func = nn.Linear(num_classes, 32).to(self.device)
             self._set_action_space(3)
             self.policy = None
 
+        self.user_useless_act = False
+        self.item_useless_act = False
         self.mpset_eval_dict = dict()
         self.nd_batch_size = args.nd_batch_size
         self.rl_batch_size = args.rl_batch_size
@@ -391,8 +393,7 @@ class hgnn_env(object):
                     #     for _ in range(5):
                     #         self.train_GNN(True)
                     # else:
-                        self.train_GNN()
-
+                        self.train_GNN(act)
             if not test:
                 if str(self.etypes_lists) not in self.mpset_eval_dict:
                     val_precision = self.eval_batch()
@@ -401,7 +402,6 @@ class hgnn_env(object):
                     val_precision = self.mpset_eval_dict[str(self.etypes_lists)]
             else:
                 val_precision = self.eval_batch(NEG_SIZE_EVAL)
-            val_acc.append(val_precision)
 
             if len(self.past_performance) == 0:
                 self.past_performance.append(val_precision)
@@ -411,6 +411,7 @@ class hgnn_env(object):
             if actions[0] == STOP or len(self.past_performance) == 0:
                 rew = 0
             reward.append(rew)
+            val_acc.append(val_precision)
             self.past_performance.append(val_precision)
             logger1.info("Val acc: %.5f  reward: %.5f" % (val_precision, rew))
             logger1.info("-----------------------------------------------------------------------")
@@ -421,15 +422,21 @@ class hgnn_env(object):
 
     def user_step(self, logger1, logger2, actions, test=False,
                   type=(0, USER_TYPE)):  # type - (index_of_etpyes_list, index_of_node_type)
+        import pdb
+        pdb.set_trace()
+        self.user_useless_act = False
         done_list, r, reward, val_acc = self.rec_step(actions, logger1, logger2, test, type)
-        # next_state = self.get_user_state()
+        if self.user_useless_act:
+            r, reward, val_acc = -100, [-100], 0
         next_state = self.get_user_state()
         self.model.reset()
         return next_state, reward, done_list, (val_acc, r)
 
     def item_step(self, logger1, logger2, actions, test=False, type=(1, ITEM_TYPE)):
+        self.item_useless_act = False
         done_list, r, reward, val_acc = self.rec_step(actions, logger1, logger2, test, type)
-        # next_state = self.get_item_state()
+        if self.item_useless_act:
+            r, reward, val_acc = -100, [-100], 0
         next_state = self.get_item_state()
         self.model.reset()
         return next_state, reward, done_list, (val_acc, r)
@@ -476,13 +483,13 @@ class hgnn_env(object):
                 break
         stopper.load_checkpoint(self.model)
 
-    def train_GNN(self, test=False):
+    def train_GNN(self, act=STOP, test=False):
         if self.task == 'rec':
-            self.train_recommender(test)
+            self.train_recommender(test, act)
         elif self.task == 'classification':
             self.train_classifier(test)
 
-    def train_recommender(self, test):
+    def train_recommender(self, test, act=STOP):
         n_cf_batch = self.data.n_cf_train // self.data.cf_batch_size + 1
         # n_cf_batch = 1
         cf_total_loss = 0
@@ -497,7 +504,7 @@ class hgnn_env(object):
             # print("generate batch: ", time2 - time1)
             cf_batch_loss = self.calc_cf_loss(cf_batch_user,
                                               cf_batch_pos_item,
-                                              cf_batch_neg_item, test)
+                                              cf_batch_neg_item, test, act)
 
             time3 = time.time()
             # print("calculate loss: ", time3 - time2)
@@ -551,7 +558,7 @@ class hgnn_env(object):
     #     loss = kg_loss + self.kg_l2loss_lambda * l2_loss
     #     return loss
 
-    def calc_cf_loss(self, user_ids, item_pos_ids, item_neg_ids, test=False):
+    def calc_cf_loss(self, user_ids, item_pos_ids, item_neg_ids, test=False, act=STOP):
         """
         user_ids:       (cf_batch_size)
         item_pos_ids:   (cf_batch_size)
@@ -569,10 +576,15 @@ class hgnn_env(object):
         tim2 = time.time()
         # print("get user embedding: ", tim2 - tim1)
 
+        if self.model.layers[0].useless_flag:
+            self.user_useless_act = True
+
         # item_pos_embed = self.get_item_embedding(item_pos_ids)
         i_embeds = self.get_all_item_embedding(test)
         tim3 = time.time()
         # print("get item embedding: ", tim3 - tim2)
+        if self.model.layers[0].useless_flag:
+            self.item_useless_act = True
 
         # item_neg_embed = self.get_item_embedding(item_neg_ids)
         # tim4 = time.time()

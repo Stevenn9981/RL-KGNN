@@ -92,8 +92,6 @@ class HANLayer(nn.Module):
                 graph = dgl.metapath_reachable_graph(g, meta_path)
                 print("Average degree: ", graph.number_of_edges() / graph.number_of_nodes())
                 if graph.number_of_edges() / graph.number_of_nodes() > self.threshold * graph.number_of_nodes():
-                    import pdb
-                    pdb.set_trace()
                     self.large_graph[''.join(mp)] = graph.number_of_edges() / graph.number_of_nodes()
                     meta_paths.remove(meta_path)
                     meta_pathset.remove(list(meta_path))

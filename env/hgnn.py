@@ -433,8 +433,6 @@ class hgnn_env(object):
 
     def item_step(self, logger1, logger2, actions, test=False, type=(1, ITEM_TYPE)):
         self.item_useless_act = False
-        import pdb
-        pdb.set_trace()
         tmpmp = copy.deepcopy(self.etypes_lists)
         done_list, r, reward, val_acc = self.rec_step(actions, logger1, logger2, test, type)
         if actions[0] != STOP and tmpmp == self.etypes_lists:

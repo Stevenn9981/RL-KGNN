@@ -424,9 +424,10 @@ class hgnn_env(object):
                   type=(0, USER_TYPE)):  # type - (index_of_etpyes_list, index_of_node_type)
         import pdb
         pdb.set_trace()
+        tmpmp = copy.deepcopy(self.etypes_lists)
         self.user_useless_act = False
         done_list, r, reward, val_acc = self.rec_step(actions, logger1, logger2, test, type)
-        if self.user_useless_act:
+        if self.user_useless_act and tmpmp == self.etypes_lists:
             r, reward, val_acc = -100, [-100], 0
         next_state = self.get_user_state()
         self.model.reset()
@@ -434,8 +435,9 @@ class hgnn_env(object):
 
     def item_step(self, logger1, logger2, actions, test=False, type=(1, ITEM_TYPE)):
         self.item_useless_act = False
+        tmpmp = copy.deepcopy(self.etypes_lists)
         done_list, r, reward, val_acc = self.rec_step(actions, logger1, logger2, test, type)
-        if self.item_useless_act:
+        if self.item_useless_act and tmpmp == self.etypes_lists:
             r, reward, val_acc = -100, [-100], 0
         next_state = self.get_item_state()
         self.model.reset()

@@ -427,6 +427,9 @@ class hgnn_env(object):
         done_list, r, reward, val_acc = self.rec_step(actions, logger1, logger2, test, type)
         if actions[0] != STOP and tmpmp == self.etypes_lists:
             r, reward, val_acc = -100, [-100], 0
+        elif tmpmp != self.etypes_lists:
+            r *= 100
+            reward[0] *= 100
         next_state = self.get_user_state()
         self.model.reset()
         return next_state, reward, done_list, (val_acc, r)
@@ -437,6 +440,9 @@ class hgnn_env(object):
         done_list, r, reward, val_acc = self.rec_step(actions, logger1, logger2, test, type)
         if actions[0] != STOP and tmpmp == self.etypes_lists:
             r, reward, val_acc = -100, [-100], 0
+        elif tmpmp != self.etypes_lists:
+            r *= 100
+            reward[0] *= 100
         next_state = self.get_item_state()
         self.model.reset()
         return next_state, reward, done_list, (val_acc, r)

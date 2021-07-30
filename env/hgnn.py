@@ -426,7 +426,7 @@ class hgnn_env(object):
         elif tmpmp != self.etypes_lists:
             r *= 10
             reward[0] *= 10
-        logger2.info("Val acc: %.5f  reward: %.5f" % (val_acc, r))
+        logger2.info("Action: %d  Val acc: %.5f  reward: %.5f" % (actions[0], val_acc, r))
         return done_list, r, reward, val_acc
 
     def user_step(self, logger1, logger2, actions, test=False,

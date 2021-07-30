@@ -415,6 +415,7 @@ class hgnn_env(object):
             reward.append(rew)
             val_acc.append(val_precision)
             self.past_performance.append(val_precision)
+            logger1.info("Action: %d" % act)
             logger1.info("Val acc: %.5f  reward: %.5f" % (val_precision, rew))
             logger1.info("-----------------------------------------------------------------------")
         r = np.mean(np.array(reward))

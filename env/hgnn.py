@@ -232,6 +232,7 @@ class hgnn_env(object):
             self.model.train()
             self.train_GNN()
             self.init = self.eval_batch()
+            self.model.reset()
         self.past_performance = [self.init]
 
     def evaluate(self, model, g, features, labels, mask, loss_func):

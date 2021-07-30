@@ -453,7 +453,6 @@ class hgnn_env(object):
         #     r *= 10
         #     reward[0] *= 10
         next_state = self.get_item_state()
-        logger2.info("Val acc: %.5f  reward: %.5f" % (val_acc, r))
         self.model.reset()
         return next_state, reward, done_list, (val_acc, r)
 

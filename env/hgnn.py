@@ -357,6 +357,7 @@ class hgnn_env(object):
     def rec_step(self, actions, logger1, logger2, test, type):
         self.model.train()
         self.optimizer.zero_grad()
+        tmpmp = copy.deepcopy(self.etypes_lists)
         done_list = [False] * len(actions)
         next_state, reward, val_acc = [], [], []
         if test:
@@ -418,32 +419,37 @@ class hgnn_env(object):
             logger1.info("-----------------------------------------------------------------------")
         r = np.mean(np.array(reward))
         val_acc = np.mean(val_acc)
-        return done_list, r, reward, val_acc
-
-    def user_step(self, logger1, logger2, actions, test=False,
-                  type=(0, USER_TYPE)):  # type - (index_of_etpyes_list, index_of_node_type)
-        tmpmp = copy.deepcopy(self.etypes_lists)
-        self.user_useless_act = False
-        done_list, r, reward, val_acc = self.rec_step(actions, logger1, logger2, test, type)
         if actions[0] != STOP and tmpmp == self.etypes_lists:
             r, reward, val_acc = -1000, [-1000], 0
         elif tmpmp != self.etypes_lists:
             r *= 10
             reward[0] *= 10
-        next_state = self.get_user_state()
         logger2.info("Val acc: %.5f  reward: %.5f" % (val_acc, r))
+        return done_list, r, reward, val_acc
+
+    def user_step(self, logger1, logger2, actions, test=False,
+                  type=(0, USER_TYPE)):  # type - (index_of_etpyes_list, index_of_node_type)
+        # tmpmp = copy.deepcopy(self.etypes_lists)
+        self.user_useless_act = False
+        done_list, r, reward, val_acc = self.rec_step(actions, logger1, logger2, test, type)
+        # if actions[0] != STOP and tmpmp == self.etypes_lists:
+        #     r, reward, val_acc = -1000, [-1000], 0
+        # elif tmpmp != self.etypes_lists:
+        #     r *= 10
+        #     reward[0] *= 10
+        next_state = self.get_user_state()
         self.model.reset()
         return next_state, reward, done_list, (val_acc, r)
 
     def item_step(self, logger1, logger2, actions, test=False, type=(1, ITEM_TYPE)):
         self.item_useless_act = False
-        tmpmp = copy.deepcopy(self.etypes_lists)
+        # tmpmp = copy.deepcopy(self.etypes_lists)
         done_list, r, reward, val_acc = self.rec_step(actions, logger1, logger2, test, type)
-        if actions[0] != STOP and tmpmp == self.etypes_lists:
-            r, reward, val_acc = -1000, [-1000], 0
-        elif tmpmp != self.etypes_lists:
-            r *= 10
-            reward[0] *= 10
+        # if actions[0] != STOP and tmpmp == self.etypes_lists:
+        #     r, reward, val_acc = -1000, [-1000], 0
+        # elif tmpmp != self.etypes_lists:
+        #     r *= 10
+        #     reward[0] *= 10
         next_state = self.get_item_state()
         logger2.info("Val acc: %.5f  reward: %.5f" % (val_acc, r))
         self.model.reset()

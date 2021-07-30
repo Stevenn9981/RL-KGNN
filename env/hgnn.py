@@ -422,7 +422,7 @@ class hgnn_env(object):
         r = np.mean(np.array(reward))
         val_acc = np.mean(val_acc)
         if actions[0] != STOP and tmpmp == self.etypes_lists:
-            r, reward, val_acc = -1000, [-1000], 0
+            r, reward = -1000, [-1000]
         elif tmpmp != self.etypes_lists:
             r *= 10
             reward[0] *= 10

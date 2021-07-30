@@ -213,7 +213,7 @@ class hgnn_env(object):
 
         # self.kg_l2loss_lambda = args.kg_l2loss_lambda
 
-        self.baseline_experience = 5
+        self.baseline_experience = 1
         # print(adj_dist)
         # print(data.train_graph.x[random.sample(range(data.train_graph.x.shape[0]), 5)])
 
@@ -418,7 +418,6 @@ class hgnn_env(object):
             logger1.info("-----------------------------------------------------------------------")
         r = np.mean(np.array(reward))
         val_acc = np.mean(val_acc)
-        logger2.info("Val acc: %.5f  reward: %.5f" % (val_acc, r))
         return done_list, r, reward, val_acc
 
     def user_step(self, logger1, logger2, actions, test=False,
@@ -427,11 +426,12 @@ class hgnn_env(object):
         self.user_useless_act = False
         done_list, r, reward, val_acc = self.rec_step(actions, logger1, logger2, test, type)
         if actions[0] != STOP and tmpmp == self.etypes_lists:
-            r, reward, val_acc = -100, [-100], 0
+            r, reward, val_acc = -1000, [-1000], 0
         elif tmpmp != self.etypes_lists:
             r *= 10
             reward[0] *= 10
         next_state = self.get_user_state()
+        logger2.info("Val acc: %.5f  reward: %.5f" % (val_acc, r))
         self.model.reset()
         return next_state, reward, done_list, (val_acc, r)
 
@@ -440,11 +440,12 @@ class hgnn_env(object):
         tmpmp = copy.deepcopy(self.etypes_lists)
         done_list, r, reward, val_acc = self.rec_step(actions, logger1, logger2, test, type)
         if actions[0] != STOP and tmpmp == self.etypes_lists:
-            r, reward, val_acc = -100, [-100], 0
+            r, reward, val_acc = -1000, [-1000], 0
         elif tmpmp != self.etypes_lists:
             r *= 10
             reward[0] *= 10
         next_state = self.get_item_state()
+        logger2.info("Val acc: %.5f  reward: %.5f" % (val_acc, r))
         self.model.reset()
         return next_state, reward, done_list, (val_acc, r)
 

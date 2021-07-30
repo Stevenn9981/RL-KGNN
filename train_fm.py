@@ -67,7 +67,7 @@ def main():
     args = parse_args()
     dataset = args.data_name
 
-    infor = '10wna_' + str(args.lr) + '_net_0.0005_' + str(args.nd_batch_size)
+    infor = 'rl_' + str(args.data_name)
     model_name = 'model_' + infor + '.pth'
 
     u_max_episodes = 15

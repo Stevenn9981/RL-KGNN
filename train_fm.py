@@ -118,8 +118,8 @@ def main():
     # Training: Learning meta-policy
     logger2.info("Training Meta-policy on Validation Set")
 
-    env.reset_past_performance()
     for i_episode in range(1, i_max_episodes + 1):
+        env.reset_past_performance()
         loss, reward, (val_acc, reward) = item_agent.item_learn(logger1, logger2, env,
                                                                 max_timesteps)  # debug = (val_acc, reward)
         logger2.info("Generated meta-path set: %s" % str(env.etypes_lists))
@@ -131,8 +131,8 @@ def main():
         logger2.info("Training Meta-policy: %d    Val_Acc: %.5f    Avg_reward: %.5f    Best_Acc:  %.5f    Best_i: %d "
                      % (i_episode, val_acc, reward, best_item_val, best_item_i))
 
-    env.reset_past_performance()
     for i_episode in range(1, u_max_episodes + 1):
+        env.reset_past_performance()
         loss, reward, (val_acc, reward) = user_agent.user_learn(logger1, logger2, env,
                                                                 max_timesteps)  # debug = (val_acc, reward)
         logger2.info("Generated meta-path set: %s" % str(env.etypes_lists))

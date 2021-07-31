@@ -67,11 +67,11 @@ def main():
     args = parse_args()
     dataset = args.data_name
 
-    infor = 'rl_' + str(args.data_name)
+    infor = 'rl_' + str(args.data_name) + '_' + str(args.log)
     model_name = 'model_' + infor + '.pth'
 
-    u_max_episodes = 25
-    i_max_episodes = 25
+    u_max_episodes = 15
+    i_max_episodes = 15
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     logger1 = get_logger('log', 'logger_' + infor + '.log')

@@ -421,14 +421,27 @@ class hgnn_env(object):
             logger1.info("-----------------------------------------------------------------------")
         r = np.mean(np.array(reward))
         val_acc = np.mean(val_acc)
-        if actions[0] != STOP and tmpmp == self.etypes_lists:
+
+        if actions[0] != STOP and self.meta_path_equal(tmpmp):
             r, reward = -1000, [-1000]
-        elif tmpmp != self.etypes_lists:
+        elif not self.meta_path_equal(tmpmp):
             r *= 10
             reward[0] *= 10
         logger2.info("Action: %d  Val acc: %.5f  reward: %.5f" % (actions[0], val_acc, r))
         logger2.info("Meta-path Set: %s" % str(self.etypes_lists))
         return done_list, r, reward, val_acc
+
+    def meta_path_equal(self, tmp):
+        mpset = copy.deepcopy(self.etypes_lists)
+        tmp[0].sort()
+        tmp[1].sort()
+        mpset[0].sort()
+        mpset[1].sort()
+        if tmp[0] == mpset[0] and tmp[1] == mpset[1]:
+            return True
+        else:
+            return False
+
 
     def user_step(self, logger1, logger2, actions, test=False,
                   type=(0, USER_TYPE)):  # type - (index_of_etpyes_list, index_of_node_type)

@@ -96,8 +96,8 @@ def parse_args():
     parser.add_argument('--patience', type=int, default=10, help='Patience. Default is 10.')
     parser.add_argument('--repeat', type=int, default=1,
                         help='Repeat the training and testing for N times. Default is 1.')
-    parser.add_argument('--save-postfix', default='Yelp',
-                        help='Postfix for the saved model and result. Default is Yelp.')
+    parser.add_argument('--log', default='',
+                        help='Name in log')
     parser.add_argument('--mpset', default="[[['2', '1']], [['1', '2']]]",
                         help='Meta-path Set.')
     parser.add_argument('--init', default="RL",

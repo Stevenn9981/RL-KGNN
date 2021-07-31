@@ -424,7 +424,7 @@ class hgnn_env(object):
         val_acc = np.mean(val_acc)
 
         if actions[0] != STOP and self.meta_path_equal(tmpmp):
-            r, reward = -100, [-10]
+            r, reward = -50, [-50]
         elif not self.meta_path_equal(tmpmp):
             r *= 10
             reward[0] *= 10

@@ -153,8 +153,8 @@ def main():
     # new_env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset)
     # use_pretrain(new_env)
 
-    # best_user_policy = user_agent
-    # best_item_policy = item_agent
+    best_user_policy = user_agent
+    best_item_policy = item_agent
 
     env.user_policy = best_user_policy
     env.item_policy = best_item_policy

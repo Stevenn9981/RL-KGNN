@@ -332,6 +332,7 @@ class hgnn_env(object):
         nodes = range(self.train_data.x[self.data.node_type_list == ITEM_TYPE].shape[0])
         item_embeds = self.get_all_item_embedding()
         # return self.sample_state(item_embeds, nodes)
+        # return self.cal_item_state()
         return np.concatenate([self.cal_item_state(), self.sample_state(item_embeds, nodes)], axis=1)
 
     def item_reset(self):
@@ -423,7 +424,7 @@ class hgnn_env(object):
         val_acc = np.mean(val_acc)
 
         if actions[0] != STOP and self.meta_path_equal(tmpmp):
-            r, reward = -1000, [-1000]
+            r, reward = -100, [-10]
         elif not self.meta_path_equal(tmpmp):
             r *= 10
             reward[0] *= 10
@@ -445,27 +446,15 @@ class hgnn_env(object):
 
     def user_step(self, logger1, logger2, actions, test=False,
                   type=(0, USER_TYPE)):  # type - (index_of_etpyes_list, index_of_node_type)
-        # tmpmp = copy.deepcopy(self.etypes_lists)
         self.user_useless_act = False
         done_list, r, reward, val_acc = self.rec_step(actions, logger1, logger2, test, type)
-        # if actions[0] != STOP and tmpmp == self.etypes_lists:
-        #     r, reward, val_acc = -1000, [-1000], 0
-        # elif tmpmp != self.etypes_lists:
-        #     r *= 10
-        #     reward[0] *= 10
         next_state = self.get_user_state()
         self.model.reset()
         return next_state, reward, done_list, (val_acc, r)
 
     def item_step(self, logger1, logger2, actions, test=False, type=(1, ITEM_TYPE)):
         self.item_useless_act = False
-        # tmpmp = copy.deepcopy(self.etypes_lists)
         done_list, r, reward, val_acc = self.rec_step(actions, logger1, logger2, test, type)
-        # if actions[0] != STOP and tmpmp == self.etypes_lists:
-        #     r, reward, val_acc = -1000, [-1000], 0
-        # elif tmpmp != self.etypes_lists:
-        #     r *= 10
-        #     reward[0] *= 10
         next_state = self.get_item_state()
         self.model.reset()
         return next_state, reward, done_list, (val_acc, r)

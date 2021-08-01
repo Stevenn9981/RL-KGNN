@@ -318,8 +318,8 @@ class hgnn_env(object):
         nodes = range(self.train_data.x[self.data.node_type_list == USER_TYPE].shape[0])
         user_embeds = self.get_all_user_embedding()
         # return self.sample_state(user_embeds, nodes)
-        # return self.cal_user_state()
-        return np.concatenate([self.cal_user_state(), self.sample_state(user_embeds, nodes)], axis=1)
+        return self.cal_user_state()
+        # return np.concatenate([self.cal_user_state(), self.sample_state(user_embeds, nodes)], axis=1)
 
     def user_reset(self):
         self.etypes_lists = [[['2', '1']], [['1', '2']]]
@@ -332,8 +332,8 @@ class hgnn_env(object):
         nodes = range(self.train_data.x[self.data.node_type_list == ITEM_TYPE].shape[0])
         item_embeds = self.get_all_item_embedding()
         # return self.sample_state(item_embeds, nodes)
-        # return self.cal_item_state()
-        return np.concatenate([self.cal_item_state(), self.sample_state(item_embeds, nodes)], axis=1)
+        return self.cal_item_state()
+        # return np.concatenate([self.cal_item_state(), self.sample_state(item_embeds, nodes)], axis=1)
 
     def item_reset(self):
         self.etypes_lists = [[['2', '1']], [['1', '2']]]
@@ -424,7 +424,7 @@ class hgnn_env(object):
         val_acc = np.mean(val_acc)
 
         if actions[0] != STOP and self.meta_path_equal(tmpmp):
-            r, reward = -50, [-50]
+            r, reward = -100, [-100]
         elif not self.meta_path_equal(tmpmp):
             r *= 10
             reward[0] *= 10

@@ -225,9 +225,8 @@ class DataLoaderHGNN(object):
 
             self.n_id_start_dict = {0: 0, 1: 14284, 2: 14795, 3: 14842, 4: 14853}
 
-            self.metapath_transform_dict = {1: ['1', '2'], 2: ['2', '1'], 3: ['3', '7'], 7: ['3', '7'], 4: ['4', '8'],
-                                            8: ['4', '8'], 5: ['5', '9'],
-                                            9: ['5', '9'], 6: ['6'], 10: ['6']}
+            self.metapath_transform_dict = {1: ['1', '2'], 2: ['2', '1'], 3: ['3', '7'], 4: ['4', '8'],
+                                            5: ['5', '9'], 6: ['6']}
 
             self.n_types = max(node_type_list) + 1
         elif self.args.data_name == 'douban_movie':
@@ -249,9 +248,8 @@ class DataLoaderHGNN(object):
 
             self.n_id_start_dict = {0: 0, 1: 12677, 2: 18988, 3: 21437, 4: 21475, 5: 24228}
 
-            self.metapath_transform_dict = {1: ['1', '2'], 2: ['2', '1'], 3: ['3', '8'], 8: ['3', '8'], 4: ['4', '9'],
-                                            9: ['4', '9'], 5: ['5', '10'], 6: ['6', '11'], 11: ['6', '11'],
-                                            10: ['5', '10'], 7: ['7'], 12: ['7']}
+            self.metapath_transform_dict = {1: ['1', '2'], 2: ['2', '1'], 3: ['3', '8'], 4: ['4', '9'],
+                                            5: ['5', '10'], 6: ['6', '11'], 7: ['7']}
             self.n_types = max(node_type_list) + 1
 
 

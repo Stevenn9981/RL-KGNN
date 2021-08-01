@@ -165,7 +165,7 @@ class hgnn_env(object):
             self.train_data = data.train_graph
             self.train_data.x = self.train_data.x.to(self.device)
             self.train_data.node_idx = self.train_data.node_idx.to(self.device)
-            self._set_action_space(data.n_relations + 1)
+            self._set_action_space(len(data.metapath_transform_dict) + 1)
             self.user_policy = None
             self.item_policy = None
             self.eval_neg_dict = collections.defaultdict(list)

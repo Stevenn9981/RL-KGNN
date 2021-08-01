@@ -311,7 +311,7 @@ class DQNAgent(object):
 
         # Perform gradient descent update
         state_batch = np.array(state_batch)
-
+        print("action_batch, target_batch: ", action_batch, target_batch)
         loss = self.q_estimator.update(state_batch, action_batch, target_batch)
 
         # Update the target estimator

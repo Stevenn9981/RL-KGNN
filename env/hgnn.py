@@ -424,10 +424,7 @@ class hgnn_env(object):
         val_acc = np.mean(val_acc)
 
         if actions[0] != STOP and self.meta_path_equal(tmpmp):
-            r, reward = -100, [-100]
-        elif not self.meta_path_equal(tmpmp):
-            r *= 10
-            reward[0] *= 10
+            r, reward = -10, [-10]
         logger2.info("Action: %d  Val acc: %.5f  reward: %.5f" % (actions[0], val_acc, r))
         logger2.info("Meta-path Set: %s" % str(self.etypes_lists))
         return done_list, r, reward, val_acc

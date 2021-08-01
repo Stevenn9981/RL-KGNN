@@ -411,7 +411,9 @@ class hgnn_env(object):
                 self.past_performance.append(val_precision)
 
             baseline = np.mean(np.array(self.past_performance[-self.baseline_experience:]))
-            rew = 100 * (val_precision - baseline)
+            rew = 10 * (val_precision - baseline)
+            if rew > 1:
+                rew = 1
             if actions[0] == STOP or len(self.past_performance) == 0:
                 rew = 0
             reward.append(rew)
@@ -424,7 +426,7 @@ class hgnn_env(object):
         val_acc = np.mean(val_acc)
 
         if actions[0] != STOP and self.meta_path_equal(tmpmp):
-            r, reward = -10, [-10]
+            r, reward = -1, [-1]
         logger2.info("Action: %d  Val acc: %.5f  reward: %.5f" % (actions[0], val_acc, r))
         logger2.info("Meta-path Set: %s" % str(self.etypes_lists))
         return done_list, r, reward, val_acc

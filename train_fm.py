@@ -226,7 +226,7 @@ def main():
 
     best = 0
     best_i = 0
-    for i in range(100):
+    for i in range(150):
         print('Current epoch: ', i)
         if i % 1 == 0:
             acc = test_env.test_batch(logger2)

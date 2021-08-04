@@ -230,8 +230,8 @@ class hgnn_env(object):
     def reset_past_performance(self):
         if self.init == -1:
             self.model.train()
-            self.etypes_lists = [[['2', '1']], [['1', '2']]]
-            self.train_GNN()
+            # self.etypes_lists = [[['2', '1']], [['1', '2']]]
+            # self.train_GNN()
             self.init = self.eval_batch()
             self.model.reset()
         self.past_performance = [self.init]

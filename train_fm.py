@@ -79,7 +79,7 @@ def main():
 
     env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset)
     env.seed(0)
-    # use_pretrain(env, dataset)
+    use_pretrain(env, dataset)
 
     user_agent = DQNAgent(scope='dqn',
                           action_num=env.action_num,

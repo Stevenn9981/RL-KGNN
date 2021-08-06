@@ -412,9 +412,11 @@ class hgnn_env(object):
                 self.past_performance.append(val_precision)
 
             baseline = np.mean(np.array(self.past_performance[-self.baseline_experience:]))
-            rew = 10 * (val_precision - baseline)
-            if rew > 1:
-                rew = 1
+            rew = 5 * (val_precision - baseline)
+            if rew > 0.5:
+                rew = 0.5
+            elif rew < -0.5:
+                rew = -0.5
             if actions[0] == STOP or len(self.past_performance) == 0:
                 rew = 0
             reward.append(rew)
@@ -427,7 +429,7 @@ class hgnn_env(object):
         val_acc = np.mean(val_acc)
 
         if actions[0] != STOP and self.meta_path_equal(tmpmp):
-            r, reward = -1, [-1]
+            r, reward = -0.5, [-0.5]
         logger2.info("Action: %d  Val acc: %.5f  reward: %.5f" % (actions[0], val_acc, r))
         logger2.info("Meta-path Set: %s" % str(self.etypes_lists))
         return done_list, r, reward, val_acc
@@ -511,7 +513,7 @@ class hgnn_env(object):
         n_cf_batch = self.data.n_cf_train // self.data.cf_batch_size + 1
         # n_cf_batch = 1
         cf_total_loss = 0
-        for iter in range(1, n_cf_batch + 1):
+        for iter in range(1, 2 * n_cf_batch + 1):
             #     print("current iter: ", iter, " ", n_cf_batch)
             time1 = time.time()
             cf_batch_user, cf_batch_pos_item, cf_batch_neg_item = self.data.generate_cf_batch(self.data.train_user_dict)

@@ -178,6 +178,7 @@ class DQNAgent(object):
         next_state_batch = env.user_reset()
         for t in range(total_timesteps):
             A = self.predict_batch(next_state_batch)
+            logger2.info("Eval Step: %d" % self.eval_step(next_state_batch))
             best_actions = np.random.choice(np.arange(len(A)), p=A, size=next_state_batch.shape[0])
             state_batch = next_state_batch
             next_state_batch, reward_batch, done_batch, debug = env.user_step(logger1, logger2,

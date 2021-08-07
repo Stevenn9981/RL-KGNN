@@ -513,7 +513,7 @@ class hgnn_env(object):
         n_cf_batch = self.data.n_cf_train // self.data.cf_batch_size + 1
         # n_cf_batch = 1
         cf_total_loss = 0
-        for iter in range(1, 2 * n_cf_batch + 1):
+        for iter in range(1, n_cf_batch + 1):
             #     print("current iter: ", iter, " ", n_cf_batch)
             time1 = time.time()
             cf_batch_user, cf_batch_pos_item, cf_batch_neg_item = self.data.generate_cf_batch(self.data.train_user_dict)

@@ -61,8 +61,8 @@ class HERec:
         self.initialize()
 
     def write_graph(self, graph, metapath, mpfile):
-        if not os.path.exists('../data/' + self.dataset + '/metapaths/'):
-            os.mkdir('../data/' + self.dataset + '/metapaths')
+        if not os.path.exists('./data/' + self.dataset + '/metapaths/'):
+            os.mkdir('./data/' + self.dataset + '/metapaths')
         U, V = graph.edges()
         U = U.tolist()
         V = V.tolist()
@@ -83,8 +83,8 @@ class HERec:
 
         ctn = 0
         for metapath in metapaths:
-            sourcefile = '../data/' + self.dataset + '/embedding/' + ''.join(metapath) + '.embedding'
-            mpfile = '../data/' + self.dataset + '/metapaths/' + ''.join(metapath) + '.txt'
+            sourcefile = './data/' + self.dataset + '/embedding/' + ''.join(metapath) + '.embedding'
+            mpfile = './data/' + self.dataset + '/metapaths/' + ''.join(metapath) + '.txt'
             if not os.path.exists(sourcefile):
                 subgraph = dgl.metapath_reachable_graph(self.graph, metapath)
                 self.write_graph(subgraph, metapath, mpfile)

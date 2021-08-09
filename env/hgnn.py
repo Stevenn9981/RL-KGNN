@@ -5,6 +5,7 @@ import torch.nn.functional as F
 import collections
 import numpy as np
 
+from env.HERec import HERec
 from env.HAN import HAN
 from metrics import *
 import time
@@ -164,7 +165,8 @@ class hgnn_env(object):
                     dropout=0).to(
                     self.device)
             elif task == 'herec':
-                self.model =
+                self.model = HERec(data.n_users, data.n_items, self.etypes_lists[0], self.etypes_lists[1],
+                                   args, dataset, 1)
             self.train_data = data.train_graph
             self.train_data.x = self.train_data.x.to(self.device)
             self.train_data.node_idx = self.train_data.node_idx.to(self.device)
@@ -401,7 +403,7 @@ class hgnn_env(object):
                     #     for _ in range(5):
                     #         self.train_GNN(True)
                     # else:
-                        self.train_GNN(act)
+                    self.train_GNN(act)
             if not test:
                 if str(self.etypes_lists) not in self.mpset_eval_dict:
                     val_precision = self.eval_batch()
@@ -415,7 +417,7 @@ class hgnn_env(object):
                 self.past_performance.append(val_precision)
 
             baseline = np.mean(np.array(self.past_performance[-self.baseline_experience:]))
-            rew = 10 * (val_precision - baseline)
+            rew = 15 * (val_precision - baseline)
             if rew > 1:
                 rew = 1
             elif rew < -1:
@@ -447,7 +449,6 @@ class hgnn_env(object):
             return True
         else:
             return False
-
 
     def user_step(self, logger1, logger2, actions, test=False,
                   type=(0, USER_TYPE)):  # type - (index_of_etpyes_list, index_of_node_type)

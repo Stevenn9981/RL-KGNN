@@ -21,7 +21,7 @@ def parse_args():
     parser.add_argument('--seed', type=int, default=123,
                         help='Random seed.')
 
-    parser.add_argument('--task', nargs='?', default='herec',
+    parser.add_argument('--task', nargs='?', default='rec',
                         help='Choose a task from {rec, herec, classification}')
 
     parser.add_argument('--data_name', nargs='?', default='yelp_data',

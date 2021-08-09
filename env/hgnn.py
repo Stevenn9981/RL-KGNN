@@ -150,18 +150,21 @@ class hgnn_env(object):
         # data.train_graph.adj_dist = adj_dist
         # data.train_graph.attr_dict = attr_dict
 
-        if task == 'rec':
+        if task == 'rec' or task == 'herec':
             self.etypes_lists = eval(args.mpset)
             self.data = DataLoaderHGNN(logger1, args, dataset)
             self.metapath_transform_dict = self.data.metapath_transform_dict
             data = self.data
-            self.model = HAN(
-                in_size=data.entity_dim,
-                hidden_size=args.hidden_dim,
-                out_size=data.entity_dim,
-                num_heads=args.num_heads,
-                dropout=0).to(
-                self.device)
+            if task == 'rec':
+                self.model = HAN(
+                    in_size=data.entity_dim,
+                    hidden_size=args.hidden_dim,
+                    out_size=data.entity_dim,
+                    num_heads=args.num_heads,
+                    dropout=0).to(
+                    self.device)
+            elif task == 'herec':
+                self.model =
             self.train_data = data.train_graph
             self.train_data.x = self.train_data.x.to(self.device)
             self.train_data.node_idx = self.train_data.node_idx.to(self.device)
@@ -429,7 +432,7 @@ class hgnn_env(object):
         val_acc = np.mean(val_acc)
 
         if actions[0] != STOP and self.meta_path_equal(tmpmp):
-            r, reward = -0.5, [-0.5]
+            r, reward = -1, [-1]
         logger2.info("Action: %d  Val acc: %.5f  reward: %.5f" % (actions[0], val_acc, r))
         logger2.info("Meta-path Set: %s" % str(self.etypes_lists))
         return done_list, r, reward, val_acc

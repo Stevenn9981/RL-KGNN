@@ -165,8 +165,7 @@ class hgnn_env(object):
                     dropout=0).to(
                     self.device)
             elif task == 'herec':
-                self.model = HERec(data.n_users, data.n_items, self.etypes_lists[0], self.etypes_lists[1],
-                                   args, dataset, 1)
+                self.model = HERec(data.n_users, data.n_items, self.etypes_lists, args, 1)
             self.train_data = data.train_graph
             self.train_data.x = self.train_data.x.to(self.device)
             self.train_data.node_idx = self.train_data.node_idx.to(self.device)

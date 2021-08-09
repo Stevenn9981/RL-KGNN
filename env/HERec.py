@@ -10,7 +10,7 @@ import torch
 
 
 class HERec:
-    def __init__(self, unum, inum, user_metapaths, item_metapaths, args, dataset, steps):
+    def __init__(self, unum, inum, metapaths, args, steps):
         self.unum = unum
         self.inum = inum
         self.ratedim = 10
@@ -27,6 +27,9 @@ class HERec:
         self.reg_v = 1
         self.optimal_i = 0
 
+        user_metapaths = metapaths[0]
+        item_metapaths = metapaths[1]
+
         self.user_metapathnum = len(user_metapaths)
         self.item_metapathnum = len(item_metapaths)
 
@@ -39,7 +42,7 @@ class HERec:
         self.Y, self.item_metapathdims = self.load_embedding(item_metapaths, inum)
         print('Load user embeddings finished.')
 
-        data_dir = os.path.join(args.data_dir, dataset)
+        data_dir = os.path.join(args.data_dir, args.data_name)
         trainfile = os.path.join(data_dir, 'ub_0.8.train')
         testfile = os.path.join(data_dir, 'ub_0.8.test')
 
@@ -48,6 +51,7 @@ class HERec:
         print('train size : ', len(self.R))
         print('test size : ', len(self.T))
 
+        self.eval_neg_dict = collections.defaultdict(list)
         self.test_neg_dict = collections.defaultdict(list)
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -60,7 +64,7 @@ class HERec:
 
         ctn = 0
         for metapath in metapaths:
-            sourcefile = '../data/embeddings/' + metapath
+            sourcefile = '../data/embeddings/' + ''.join(metapath)
             # print sourcefile
             with open(sourcefile) as infile:
 
@@ -74,7 +78,7 @@ class HERec:
                     i = int(arr[0]) - 1
                     for j in range(k):
                         X[i][ctn][j] = float(arr[j + 1])
-                print('metapath ', metapath, 'numbers ', n)
+                print('metapath: ', metapath, 'numbers: ', n)
             ctn += 1
         return X, metapathdims
 
@@ -249,7 +253,10 @@ class HERec:
             if (abs(perror - cerror) < 0.0001):
                 break
             print('step ', step, 'crror : ', sqrt(cerror))
-            NDCG = self.test_batch()
+            if self.steps == 1:
+                NDCG = self.eval_batch()
+            else:
+                NDCG = self.test_batch()
             ndcg.append(NDCG)
             print('NDCG@10: ', NDCG)
             endtime = time.time()
@@ -260,6 +267,31 @@ class HERec:
         # self.test_batch()
         # et = time.time()
         # print('test time: ', et - st)
+
+    def eval_batch(self):
+        time1 = time.time()
+        user_ids = list(self.train_user_dict.keys())
+        user_ids_batch = user_ids[:]
+
+        for u in user_ids_batch:
+            if u not in self.eval_neg_dict:
+                for _ in self.train_user_dict[u]:
+                    nl = self.sample_neg_items_for_u_test(self.train_user_dict, self.train_user_dict, u, 10)
+                    self.eval_neg_dict[u].extend(nl)
+
+        pos_logits = torch.tensor([])
+        neg_logits = torch.tensor([])
+
+        scores = self.get_ratings()
+
+        for u in user_ids_batch:
+            pos_logits = torch.cat([pos_logits, torch.from_numpy(scores[u][self.test_user_dict[u]])])
+            neg_logits = torch.cat([neg_logits, torch.unsqueeze(torch.from_numpy(scores[u][self.eval_neg_dict[u]]), 1)])
+
+        NDCG10 = self.metrics(pos_logits, neg_logits)
+        print("Evaluate NDCG10 : %.4f" % (NDCG10.item()))
+
+        return NDCG10.cpu().item()
 
     def test_batch(self):
         user_ids = list(self.test_user_dict.keys())
@@ -281,8 +313,8 @@ class HERec:
             neg_logits = torch.cat([neg_logits, torch.unsqueeze(torch.from_numpy(scores[u][self.test_neg_dict[u]]), 1)])
 
         HR1, HR3, HR10, HR20, NDCG10, NDCG20 = self.metrics(pos_logits, neg_logits, training=False)
-        print("HR1 : %.4f, HR3 : %.4f, HR10 : %.4f, HR20 : %.4f, NDCG10 : %.4f, NDCG20 : %.4f" % (
-        HR1, HR3, HR10, HR20, NDCG10.item(), NDCG20.item()))
+        print("Test: HR1 : %.4f, HR3 : %.4f, HR10 : %.4f, HR20 : %.4f, NDCG10 : %.4f, NDCG20 : %.4f" % (
+            HR1, HR3, HR10, HR20, NDCG10.item(), NDCG20.item()))
 
         return NDCG10.cpu().item()
 

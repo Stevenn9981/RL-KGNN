@@ -412,11 +412,11 @@ class hgnn_env(object):
                 self.past_performance.append(val_precision)
 
             baseline = np.mean(np.array(self.past_performance[-self.baseline_experience:]))
-            rew = 5 * (val_precision - baseline)
-            if rew > 0.5:
-                rew = 0.5
-            elif rew < -0.5:
-                rew = -0.5
+            rew = 10 * (val_precision - baseline)
+            if rew > 1:
+                rew = 1
+            elif rew < -1:
+                rew = -1
             if actions[0] == STOP or len(self.past_performance) == 0:
                 rew = 0
             reward.append(rew)

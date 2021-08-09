@@ -45,84 +45,16 @@ def score(logits, labels):
     return accuracy, micro_f1, macro_f1
 
 
-# def main(args):
-#     # If args['hetero'] is True, g would be a heterogeneous graph.
-#     # Otherwise, it will be a list of homogeneous graphs.
-#     g, features, labels, num_classes, train_idx, val_idx, test_idx, train_mask, \
-#     val_mask, test_mask = load_data(args['dataset'])
-#
-#     if hasattr(torch, 'BoolTensor'):
-#         train_mask = train_mask.bool()
-#         val_mask = val_mask.bool()
-#         test_mask = test_mask.bool()
-#
-#     features = features.to(args['device'])
-#     labels = labels.to(args['device'])
-#     train_mask = train_mask.to(args['device'])
-#     val_mask = val_mask.to(args['device'])
-#     test_mask = test_mask.to(args['device'])
-#
-#     if args['hetero']:
-#         from model_hetero import HAN
-#         model = HAN(meta_paths=[['pa', 'ap'], ['pf', 'fp']],
-#                     in_size=features.shape[1],
-#                     hidden_size=args['hidden_units'],
-#                     out_size=num_classes,
-#                     num_heads=args['num_heads'],
-#                     dropout=args['dropout']).to(args['device'])
-#         g = g.to(args['device'])
-#     else:
-#         from model import HAN
-#         model = HAN(num_meta_paths=len(g),
-#                     in_size=features.shape[1],
-#                     hidden_size=args['hidden_units'],
-#                     out_size=num_classes,
-#                     num_heads=args['num_heads'],
-#                     dropout=args['dropout']).to(args['device'])
-#         g = [graph.to(args['device']) for graph in g]
-#
-#     stopper = EarlyStopping(patience=args['patience'])
-#     loss_fcn = torch.nn.CrossEntropyLoss()
-#     optimizer = torch.optim.Adam(model.parameters(), lr=args['lr'],
-#                                  weight_decay=args['weight_decay'])
-#
-#     for epoch in range(args['num_epochs']):
-#         model.train()
-#         logits = model(g, features)
-#         loss = loss_fcn(logits[train_mask], labels[train_mask])
-#
-#         optimizer.zero_grad()
-#         loss.backward()
-#         optimizer.step()
-#
-#         train_acc, train_micro_f1, train_macro_f1 = score(logits[train_mask], labels[train_mask])
-#         val_loss, val_acc, val_micro_f1, val_macro_f1 = evaluate(model, g, features, labels, val_mask, loss_fcn)
-#         early_stop = stopper.step(val_loss.data.item(), val_acc, model)
-#
-#         print('Epoch {:d} | Train Loss {:.4f} | Train Micro f1 {:.4f} | Train Macro f1 {:.4f} | '
-#               'Val Loss {:.4f} | Val Micro f1 {:.4f} | Val Macro f1 {:.4f}'.format(
-#             epoch + 1, loss.item(), train_micro_f1, train_macro_f1, val_loss.item(), val_micro_f1, val_macro_f1))
-#
-#         if early_stop:
-#             break
-#
-#     stopper.load_checkpoint(model)
-#     test_loss, test_acc, test_micro_f1, test_macro_f1 = evaluate(model, g, features, labels, test_mask, loss_fcn)
-#     print('Test loss {:.4f} | Test Micro f1 {:.4f} | Test Macro f1 {:.4f}'.format(
-#         test_loss.item(), test_micro_f1, test_macro_f1))
-
-
 class hgnn_env(object):
-    def __init__(self, logger1, logger2, model_name, args, dataset='yelp_data', weight_decay=1e-5, task='rec'):
+    def __init__(self, logger1, logger2, model_name, args, dataset='yelp_data', weight_decay=1e-5):
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.model_name = model_name
         self.cur_best = 0
         self.args = args
         self.cf_l2loss_lambda = args.cf_l2loss_lambda
-        # args.data_dir = path
-        # print(args.data_dir)
         lr = args.lr
-        self.task = task
+        self.task = args.task
+        task = self.task
         dataset = args.data_name
         self.past_performance = []
         self.init = -1
@@ -134,22 +66,6 @@ class hgnn_env(object):
         elif dataset == 'double_movie':
             USER_TYPE = 5
             ITEM_TYPE = 0
-        # print(data.train_graph)
-        # data.train_graph.adj = to_dense_adj(data.train_graph.edge_index, edge_attr=data.train_graph.edge_attr)
-        # adj_dist = dict()
-        # attr_dict = dict()
-        # for i, attr in enumerate(data.train_graph.edge_attr):
-        #     if data.train_graph.edge_index[0][i].item() not in adj_dist:
-        #         adj_dist[data.train_graph.edge_index[0][i].item()] = dict()
-        #     if attr.item() not in adj_dist[data.train_graph.edge_index[0][i].item()]:
-        #         adj_dist[data.train_graph.edge_index[0][i].item()][attr.item()] = set()
-        #     if attr.item() not in attr_dict:
-        #         attr_dict[attr.item()] = set()
-        #     attr_dict[attr.item()].add(data.train_graph.edge_index[0][i].item())
-        #     adj_dist[data.train_graph.edge_index[0][i].item()][attr.item()].add(
-        #         data.train_graph.edge_index[1][i].item())
-        # data.train_graph.adj_dist = adj_dist
-        # data.train_graph.attr_dict = attr_dict
 
         if task == 'rec' or task == 'herec':
             self.etypes_lists = eval(args.mpset)
@@ -165,7 +81,7 @@ class hgnn_env(object):
                     dropout=0).to(
                     self.device)
             elif task == 'herec':
-                self.model = HERec(data.n_users, data.n_items, self.etypes_lists, args, 1)
+                self.model = HERec(data, self.etypes_lists, args, 1)
             self.train_data = data.train_graph
             self.train_data.x = self.train_data.x.to(self.device)
             self.train_data.node_idx = self.train_data.node_idx.to(self.device)
@@ -201,12 +117,13 @@ class hgnn_env(object):
             self._set_action_space(3)
             self.policy = None
 
-        self.user_useless_act = False
-        self.item_useless_act = False
         self.mpset_eval_dict = dict()
         self.nd_batch_size = args.nd_batch_size
         self.rl_batch_size = args.rl_batch_size
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr, weight_decay=weight_decay)
+        if task != "herec":
+            self.optimizer = torch.optim.Adam(self.model.parameters(), lr, weight_decay=weight_decay)
+        else:
+            self.optimizer = None
         if task == "classification":
             self.optimizer.add_param_group({'params': self.embedding_func.parameters()})
         self.obs = self.reset()
@@ -218,26 +135,18 @@ class hgnn_env(object):
         # self.kg_l2loss_lambda = args.kg_l2loss_lambda
 
         self.baseline_experience = 1
-        # print(adj_dist)
-        # print(data.train_graph.x[random.sample(range(data.train_graph.x.shape[0]), 5)])
-
-        # buffers for updating
-        # self.buffers = {i: [] for i in range(max_layer)}
-        # self.buffers = collections.defaultdict(list)
-
-        # self.meta_path_dict = collections.defaultdict(list)
-        # self.meta_path_instances_dict = collections.defaultdict(list)
-        # self.meta_path_graph_edges = collections.defaultdict(set)
-
         logger1.info('Data initialization done')
 
     def reset_past_performance(self):
         if self.init == -1:
-            self.model.train()
+            if self.optimizer:
+                self.model.train()
+                self.optimizer.zero_grad()
             # self.etypes_lists = [[['2', '1']], [['1', '2']]]
             # self.train_GNN()
             self.init = self.eval_batch()
-            self.model.reset()
+            if self.optimizer:
+                self.model.reset()
         self.past_performance = [self.init]
 
     def evaluate(self, model, g, features, labels, mask, loss_func):
@@ -285,7 +194,8 @@ class hgnn_env(object):
         # state = self.train_data.x[0]
         if self.task == 'classification':
             state = self.get_class_state()[0]
-        self.optimizer.zero_grad()
+        if self.optimizer:
+            self.optimizer.zero_grad()
         return state
 
     def cal_user_state(self):
@@ -321,7 +231,7 @@ class hgnn_env(object):
 
     def get_user_state(self):
         nodes = range(self.train_data.x[self.data.node_type_list == USER_TYPE].shape[0])
-        user_embeds = self.get_all_user_embedding()
+        # user_embeds = self.get_all_user_embedding()
         # return self.sample_state(user_embeds, nodes)
         return self.cal_user_state()
         # return np.concatenate([self.cal_user_state(), self.sample_state(user_embeds, nodes)], axis=1)
@@ -330,12 +240,13 @@ class hgnn_env(object):
         self.etypes_lists = [[['2', '1']], [['1', '2']]]
         state = self.get_user_state()
         # state = self.cal_user_state()
-        self.optimizer.zero_grad()
+        if self.optimizer:
+            self.optimizer.zero_grad()
         return state
 
     def get_item_state(self):
         nodes = range(self.train_data.x[self.data.node_type_list == ITEM_TYPE].shape[0])
-        item_embeds = self.get_all_item_embedding()
+        # item_embeds = self.get_all_item_embedding()
         # return self.sample_state(item_embeds, nodes)
         return self.cal_item_state()
         # return np.concatenate([self.cal_item_state(), self.sample_state(item_embeds, nodes)], axis=1)
@@ -344,7 +255,8 @@ class hgnn_env(object):
         self.etypes_lists = [[['2', '1']], [['1', '2']]]
         state = self.get_item_state()
         # state = self.cal_item_state()
-        self.optimizer.zero_grad()
+        if self.optimizer:
+            self.optimizer.zero_grad()
         return state
 
     def get_class_state(self):
@@ -362,8 +274,11 @@ class hgnn_env(object):
         return state
 
     def rec_step(self, actions, logger1, logger2, test, type):
-        self.model.train()
-        self.optimizer.zero_grad()
+        if self.optimizer:
+            self.model.train()
+            self.optimizer.zero_grad()
+        else:
+            self.model = HERec(self.data, self.etypes_lists, self.args, 1)
         tmpmp = copy.deepcopy(self.etypes_lists)
         done_list = [False] * len(actions)
         next_state, reward, val_acc = [], [], []
@@ -398,10 +313,6 @@ class hgnn_env(object):
                     map(lambda x: list(x), set(map(lambda x: tuple(x), self.etypes_lists[type[0]]))))
 
                 if str(self.etypes_lists) not in self.mpset_eval_dict:
-                    # if test:
-                    #     for _ in range(5):
-                    #         self.train_GNN(True)
-                    # else:
                     self.train_GNN(act)
             if not test:
                 if str(self.etypes_lists) not in self.mpset_eval_dict:
@@ -451,17 +362,17 @@ class hgnn_env(object):
 
     def user_step(self, logger1, logger2, actions, test=False,
                   type=(0, USER_TYPE)):  # type - (index_of_etpyes_list, index_of_node_type)
-        self.user_useless_act = False
         done_list, r, reward, val_acc = self.rec_step(actions, logger1, logger2, test, type)
         next_state = self.get_user_state()
-        self.model.reset()
+        if self.optimizer:
+            self.model.reset()
         return next_state, reward, done_list, (val_acc, r)
 
     def item_step(self, logger1, logger2, actions, test=False, type=(1, ITEM_TYPE)):
-        self.item_useless_act = False
         done_list, r, reward, val_acc = self.rec_step(actions, logger1, logger2, test, type)
         next_state = self.get_item_state()
-        self.model.reset()
+        if self.optimizer:
+            self.model.reset()
         return next_state, reward, done_list, (val_acc, r)
 
     def class_step(self, logger1, logger2, actions, test=False, type=(0, 'p')):
@@ -511,6 +422,8 @@ class hgnn_env(object):
             self.train_recommender(test, act)
         elif self.task == 'classification':
             self.train_classifier(test)
+        elif self.task == 'herec':
+            self.model.recommend()
 
     def train_recommender(self, test, act=STOP):
         n_cf_batch = self.data.n_cf_train // self.data.cf_batch_size + 1
@@ -599,15 +512,11 @@ class hgnn_env(object):
         tim2 = time.time()
         # print("get user embedding: ", tim2 - tim1)
 
-        if self.model.layers[0].useless_flag:
-            self.user_useless_act = True
 
         # item_pos_embed = self.get_item_embedding(item_pos_ids)
         i_embeds = self.get_all_item_embedding(test)
         tim3 = time.time()
         # print("get item embedding: ", tim3 - tim2)
-        if self.model.layers[0].useless_flag:
-            self.item_useless_act = True
 
         # item_neg_embed = self.get_item_embedding(item_neg_ids)
         # tim4 = time.time()
@@ -641,6 +550,8 @@ class hgnn_env(object):
             return self.eval_recommender(neg_num)
         elif self.task == 'classification':
             return self.eval_classifier()
+        elif self.task == 'herec':
+            return self.model.eval_batch()
 
     def eval_classifier(self):
         loss_fcn = torch.nn.CrossEntropyLoss()
@@ -693,6 +604,8 @@ class hgnn_env(object):
             return self.test_recommender(logger2)
         elif self.task == 'classification':
             return self.test_classifier(logger2)
+        elif self.task == 'herec':
+            return self.model.test_batch()
 
     def test_classifier(self, logger2):
         loss_fcn = torch.nn.CrossEntropyLoss()
@@ -741,84 +654,6 @@ class hgnn_env(object):
             print(
                 f"Test: HR1 : {HR1:.4f}, HR3 : {HR3:.4f}, HR10 : {HR10:.4f}, NDCG10 : {NDCG10.item():.4f}, NDCG20 : {NDCG20.item():.4f}")
         return NDCG10.cpu().item()
-
-    # def test_train_batch(self):
-    #     self.model.eval()
-    #     user_ids = list(self.data.train_user_dict.keys())
-    #     user_ids_batch = user_ids
-    #
-    #     neg_dict = collections.defaultdict(list)
-    #     NDCG10 = 0
-    #
-    #     with torch.no_grad():
-    #         for u in user_ids_batch:
-    #             for _ in self.data.train_user_dict[u]:
-    #                 nl = self.data.sample_neg_items_for_u(self.data.train_user_dict, u, NEG_SIZE_RANKING)
-    #                 neg_dict[u].extend(nl)
-    #         # self.train_data.x.weight = nn.Parameter(self.train_data.x.weight.to(self.device))
-    #         all_embed = self.update_embedding().to(
-    #             self.device)
-    #
-    #         pos_logits = torch.tensor([]).to(self.device)
-    #         neg_logits = torch.tensor([]).to(self.device)
-    #
-    #         cf_scores = torch.matmul(all_embed[user_ids_batch],
-    #                                  all_embed[torch.arange(self.data.n_items, dtype=torch.long)].transpose(0, 1))
-    #         for idx, u in enumerate(user_ids_batch):
-    #             pos_logits = torch.cat([pos_logits, cf_scores[idx][self.data.train_user_dict[u]]])
-    #             neg_logits = torch.cat([neg_logits, torch.unsqueeze(cf_scores[idx][neg_dict[u]], 1)])
-    #
-    #         HR3, HR10, HR20, NDCG10, NDCG20 = self.metrics(pos_logits, neg_logits, training=False)
-    #         print(
-    #             f"TRAINING DATA: HR3 : {HR3:.4f}, HR10 : {HR10:.4f}, NDCG10 : {HR20:.4f}, NDCG20 : {NDCG10.item():.4f}")
-    #
-    #     return NDCG10.cpu().item()
-
-    # def evaluate(self, model, train_graph, train_user_dict, test_user_dict, user_ids_batches, item_ids, K):
-    #     model.eval()
-    #
-    #     n_users = len(test_user_dict.keys())
-    #     item_ids_batch = item_ids.cpu().numpy()
-    #
-    #     cf_scores = []
-    #     precision = []
-    #     recall = []
-    #     # ndcg = []
-    #
-    #     with torch.no_grad():
-    #         for user_ids_batch in user_ids_batches:
-    #             cf_scores_batch = self.cf_score(train_graph, user_ids_batch, item_ids)  # (n_batch_users, n_eval_items)
-    #             cf_scores_batch = cf_scores_batch.cpu()
-    #             user_ids_batch = user_ids_batch.cpu().numpy()
-    #             precision_batch, recall_batch = calc_metrics_at_k(cf_scores_batch, train_user_dict,
-    #                                                               test_user_dict, user_ids_batch,
-    #                                                               item_ids_batch, K)
-    #
-    #             cf_scores.append(cf_scores_batch.numpy())
-    #             precision.append(precision_batch)
-    #             recall.append(recall_batch)
-    #             # ndcg.append(ndcg_batch)
-    #
-    #     cf_scores = np.concatenate(cf_scores, axis=0)
-    #     precision_k = sum(np.concatenate(precision)) / n_users
-    #     recall_k = sum(np.concatenate(recall)) / n_users
-    #     # ndcg_k = sum(np.concatenate(ndcg)) / n_users
-    #     return cf_scores, precision_k, recall_k  # , ndcg_k
-
-    # def cf_score(self, g, user_ids, item_ids):
-    #     """
-    #     user_ids:   number of users to evaluate   (n_eval_users)
-    #     item_ids:   number of items to evaluate   (n_eval_items)
-    #     """
-    #     g.x.weight = nn.Parameter(g.x.weight.to(self.device))
-    #     g = g.to(self.device)
-    #     all_embed = g.x(g.node_idx)  # (n_users + n_entities, cf_concat_dim)
-    #     user_embed = all_embed[user_ids]  # (n_eval_users, cf_concat_dim)
-    #     item_embed = all_embed[item_ids]  # (n_eval_items, cf_concat_dim)
-    #
-    #     # Equation (12)
-    #     cf_score = torch.matmul(user_embed, item_embed.transpose(0, 1))  # (n_eval_users, n_eval_items)
-    #     return cf_score
 
     def metrics(self, batch_pos, batch_nega, training=True):
         hit_num1 = 0.0

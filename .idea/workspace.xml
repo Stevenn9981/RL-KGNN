@@ -3,6 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="76ad616a-53fc-4fcf-9bcc-98573cd886aa" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KGDataLoader.py" beforeDir="false" afterPath="$PROJECT_DIR$/KGDataLoader.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/env/HERec.py" beforeDir="false" afterPath="$PROJECT_DIR$/env/HERec.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/env/hgnn.py" beforeDir="false" afterPath="$PROJECT_DIR$/env/hgnn.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/train_fm.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_fm.py" afterDir="false" />
     </list>
@@ -13,7 +15,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="CoverageDataManager">
-    <SUITE FILE_PATH="coverage/Policy_GNN$train_fm.coverage" NAME="train_fm Coverage Results" MODIFIED="1626948124599" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Policy_GNN$train_fm.coverage" NAME="train_fm Coverage Results" MODIFIED="1628516527403" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Policy_GNN$train_with_agent.coverage" NAME="train_with_agent Coverage Results" MODIFIED="1625557188576" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Policy_GNN$preprocess_data.coverage" NAME="preprocess_data Coverage Results" MODIFIED="1626515792355" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/theano-BPR" />
     <SUITE FILE_PATH="coverage/Policy_GNN$train_acm_clas.coverage" NAME="train_acm_clas Coverage Results" MODIFIED="1625560668171" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
@@ -29,11 +31,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/env/hgnn.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="508">
-              <caret line="167" column="32" selection-start-line="167" selection-start-column="32" selection-end-line="167" selection-end-column="32" />
+            <state relative-caret-position="172">
+              <caret line="125" column="33" selection-start-line="125" selection-start-column="33" selection-end-line="125" selection-end-column="33" />
               <folding>
                 <element signature="e#0#21#0" expanded="true" />
               </folding>
@@ -41,15 +43,13 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/env/HERec.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="645">
-              <caret line="43" column="58" lean-forward="true" selection-start-line="43" selection-start-column="58" selection-end-line="43" selection-end-column="58" />
+            <state relative-caret-position="516">
+              <caret line="87" column="22" selection-start-line="87" selection-start-column="22" selection-end-line="87" selection-end-column="22" />
               <folding>
                 <element signature="e#1#19#0" expanded="true" />
-                <element signature="e#9658#10952#0" />
-                <element signature="e#10899#14323#0" />
               </folding>
             </state>
           </provider>
@@ -58,8 +58,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/train_with_agent.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-907">
-              <caret line="57" selection-start-line="57" selection-end-line="57" />
+            <state relative-caret-position="265">
+              <caret line="144" column="55" selection-start-line="144" selection-start-column="55" selection-end-line="144" selection-end-column="55" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -70,8 +70,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/KGDataLoader.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="375">
-              <caret line="25" column="35" selection-start-line="25" selection-start-column="27" selection-end-line="25" selection-end-column="35" />
+            <state relative-caret-position="469">
+              <caret line="32" column="97" selection-start-line="32" selection-start-column="97" selection-end-line="32" selection-end-column="97" />
               <folding>
                 <element signature="e#0#9#0" expanded="true" />
               </folding>
@@ -80,10 +80,22 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/env/HAN.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="346">
+              <caret line="91" column="66" selection-start-line="91" selection-start-column="24" selection-end-line="91" selection-end-column="66" />
+              <folding>
+                <element signature="e#404#415#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/train_fm.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-945">
-              <caret line="72" column="23" selection-start-line="72" selection-start-column="23" selection-end-line="72" selection-end-column="23" />
+            <state relative-caret-position="2695">
+              <caret line="223" column="18" selection-start-line="223" selection-start-column="18" selection-end-line="223" selection-end-column="18" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -115,8 +127,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/dqn_agent_pytorch.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="251">
-              <caret line="450" column="8" selection-start-line="450" selection-start-column="8" selection-end-line="450" selection-end-column="8" />
+            <state relative-caret-position="266">
+              <caret line="194" column="36" selection-start-line="194" selection-start-column="31" selection-end-line="194" selection-end-column="41" />
             </state>
           </provider>
         </entry>
@@ -132,12 +144,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>e_n</find>
-      <find>e_n_d</find>
-      <find>6193</find>
-      <find>6195</find>
-      <find>e_n_</find>
-      <find>create_gr</find>
       <find>create</find>
       <find>4</find>
       <find>0</find>
@@ -162,6 +168,12 @@
       <find>print</find>
       <find>past</find>
       <find>Eval ste</find>
+      <find>user_useless_act</find>
+      <find>useless_act</find>
+      <find>optimizer</find>
+      <find>self.model.reset()</find>
+      <find>task</find>
+      <find>HERec</find>
     </findStrings>
     <replaceStrings>
       <replace>print</replace>
@@ -217,11 +229,11 @@
         <option value="$PROJECT_DIR$/train_with_agent.py" />
         <option value="$PROJECT_DIR$/env/HAN.py" />
         <option value="$PROJECT_DIR$/train_gat.py" />
-        <option value="$PROJECT_DIR$/KGDataLoader.py" />
         <option value="$PROJECT_DIR$/dqn_agent_pytorch.py" />
+        <option value="$PROJECT_DIR$/KGDataLoader.py" />
         <option value="$PROJECT_DIR$/train_fm.py" />
-        <option value="$PROJECT_DIR$/env/hgnn.py" />
         <option value="$PROJECT_DIR$/env/HERec.py" />
+        <option value="$PROJECT_DIR$/env/hgnn.py" />
       </list>
     </option>
   </component>
@@ -253,7 +265,7 @@
               <item name="Policy-GNN" type="b2602c69:ProjectViewProjectNode" />
               <item name="Policy-GNN" type="462c0819:PsiDirectoryNode" />
               <item name="data" type="462c0819:PsiDirectoryNode" />
-              <item name="yelp_data" type="462c0819:PsiDirectoryNode" />
+              <item name="douban_movie" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="Policy-GNN" type="b2602c69:ProjectViewProjectNode" />
@@ -403,7 +415,7 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/train_fm.py" />
-      <option name="PARAMETERS" value="--data_name douban_movie" />
+      <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
@@ -479,21 +491,7 @@
       <workItem from="1627012851631" duration="22941000" />
       <workItem from="1627541221514" duration="2000" />
       <workItem from="1627568103353" duration="11111000" />
-      <workItem from="1627895900465" duration="12886000" />
-    </task>
-    <task id="LOCAL-00837" summary="add files">
-      <created>1627659125424</created>
-      <option name="number" value="00837" />
-      <option name="presentableId" value="LOCAL-00837" />
-      <option name="project" value="LOCAL" />
-      <updated>1627659125424</updated>
-    </task>
-    <task id="LOCAL-00838" summary="add files">
-      <created>1627659755508</created>
-      <option name="number" value="00838" />
-      <option name="presentableId" value="LOCAL-00838" />
-      <option name="project" value="LOCAL" />
-      <updated>1627659755508</updated>
+      <workItem from="1627895900465" duration="19136000" />
     </task>
     <task id="LOCAL-00839" summary="add files">
       <created>1627659872225</created>
@@ -824,11 +822,25 @@
       <option name="project" value="LOCAL" />
       <updated>1628507578704</updated>
     </task>
-    <option name="localTasksCounter" value="886" />
+    <task id="LOCAL-00886" summary="add files">
+      <created>1628508982088</created>
+      <option name="number" value="00886" />
+      <option name="presentableId" value="LOCAL-00886" />
+      <option name="project" value="LOCAL" />
+      <updated>1628508982088</updated>
+    </task>
+    <task id="LOCAL-00887" summary="add files">
+      <created>1628511061985</created>
+      <option name="number" value="00887" />
+      <option name="presentableId" value="LOCAL-00887" />
+      <option name="project" value="LOCAL" />
+      <updated>1628511061985</updated>
+    </task>
+    <option name="localTasksCounter" value="888" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="663487000" />
+    <option name="totallyTimeSpent" value="669737000" />
   </component>
   <component name="TodoView" selected-index="4">
     <todo-panel id="selected-file">
@@ -843,12 +855,12 @@
     <frame x="0" y="0" width="1440" height="900" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.4626506" visible="true" weight="0.32331902" />
-      <window_info id="Structure" order="1" sideWeight="0.5373494" side_tool="true" visible="true" weight="0.32331902" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.46165645" visible="true" weight="0.32331902" />
+      <window_info id="Structure" order="1" sideWeight="0.53834355" side_tool="true" visible="true" weight="0.32331902" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.14216867" />
-      <window_info anchor="bottom" id="Run" order="2" weight="0.21445782" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.21445782" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4795181" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -1068,9 +1080,6 @@
         <state relative-caret-position="-813" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/preprocess_test_file.py">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
     <entry file="file://$PROJECT_DIR$/logger2_10wna_0.001_net_0.0005_32.log" />
     <entry file="file://$PROJECT_DIR$/logger2_10wna_0.01_net_0.0005_5000.log">
       <provider selected="true" editor-type-id="LogFileEditorProvider" />
@@ -1189,23 +1198,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/env/HAN.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1080">
-          <caret line="80" selection-start-line="80" selection-end-line="80" />
-          <folding>
-            <element signature="e#404#415#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/dqn_agent_pytorch.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="251">
-          <caret line="450" column="8" selection-start-line="450" selection-start-column="8" selection-end-line="450" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/data/yelp_data/test.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-10972">
@@ -1237,57 +1229,79 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/train_fm.py">
+    <entry file="file://$PROJECT_DIR$/data/yelp_data/ub_0.8.test">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/preprocess_test_file.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-945">
-          <caret line="72" column="23" selection-start-line="72" selection-start-column="23" selection-end-line="72" selection-end-column="23" />
+        <state relative-caret-position="150">
+          <caret line="10" lean-forward="true" selection-start-line="10" selection-end-line="10" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dqn_agent_pytorch.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="266">
+          <caret line="194" column="36" selection-start-line="194" selection-start-column="31" selection-end-line="194" selection-end-column="41" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/env/HAN.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="346">
+          <caret line="91" column="66" selection-start-line="91" selection-start-column="24" selection-end-line="91" selection-end-column="66" />
           <folding>
-            <element signature="e#0#18#0" expanded="true" />
+            <element signature="e#404#415#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/train_with_agent.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-907">
-          <caret line="57" selection-start-line="57" selection-end-line="57" />
+        <state relative-caret-position="265">
+          <caret line="144" column="55" selection-start-line="144" selection-start-column="55" selection-end-line="144" selection-end-column="55" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/data/yelp_data/ub_0.8.test">
-      <provider selected="true" editor-type-id="text-editor" />
+    <entry file="file://$PROJECT_DIR$/train_fm.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2695">
+          <caret line="223" column="18" selection-start-line="223" selection-start-column="18" selection-end-line="223" selection-end-column="18" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/KGDataLoader.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="375">
-          <caret line="25" column="35" selection-start-line="25" selection-start-column="27" selection-end-line="25" selection-end-column="35" />
+        <state relative-caret-position="469">
+          <caret line="32" column="97" selection-start-line="32" selection-start-column="97" selection-end-line="32" selection-end-column="97" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/env/hgnn.py">
+    <entry file="file://$PROJECT_DIR$/env/HERec.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="508">
-          <caret line="167" column="32" selection-start-line="167" selection-start-column="32" selection-end-line="167" selection-end-column="32" />
+        <state relative-caret-position="516">
+          <caret line="87" column="22" selection-start-line="87" selection-start-column="22" selection-end-line="87" selection-end-column="22" />
           <folding>
-            <element signature="e#0#21#0" expanded="true" />
+            <element signature="e#1#19#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/env/HERec.py">
+    <entry file="file://$PROJECT_DIR$/env/hgnn.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="645">
-          <caret line="43" column="58" lean-forward="true" selection-start-line="43" selection-start-column="58" selection-end-line="43" selection-end-column="58" />
+        <state relative-caret-position="172">
+          <caret line="125" column="33" selection-start-line="125" selection-start-column="33" selection-end-line="125" selection-end-column="33" />
           <folding>
-            <element signature="e#1#19#0" expanded="true" />
-            <element signature="e#9658#10952#0" />
-            <element signature="e#10899#14323#0" />
+            <element signature="e#0#21#0" expanded="true" />
           </folding>
         </state>
       </provider>

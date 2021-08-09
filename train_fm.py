@@ -67,7 +67,7 @@ def main():
     args = parse_args()
     dataset = args.data_name
 
-    infor = 'rl_' + str(args.data_name) + '_' + str(args.log)
+    infor = 'rl_' + str(args.data_name) + '_' + str(args.task) + '_' + str(args.log)
     model_name = 'model_' + infor + '.pth'
 
     u_max_episodes = 15
@@ -224,24 +224,28 @@ def main():
     test_env.etypes_lists = mp_set
     use_pretrain(test_env, dataset)
 
-    best = 0
-    best_i = 0
-    for i in range(150):
-        print('Current epoch: ', i)
-        if i % 1 == 0:
-            acc = test_env.test_batch(logger2)
-            if acc > best:
-                best = acc
-                best_i = i
-                if os.path.exists(model_name):
-                    os.remove(model_name)
-                torch.save({'state_dict': test_env.model.state_dict(),
-                            'optimizer': test_env.optimizer.state_dict(),
-                            'Embedding': test_env.train_data.x},
-                           model_name)
-            logger2.info('Best Accuracy: %.5f\tBest_i : %d' % (best, best_i))
-            print('Best: ', best, 'Best_i: ', best_i)
-        test_env.train_GNN()
+    if args.task != 'herec':
+        best = 0
+        best_i = 0
+        for i in range(150):
+            print('Current epoch: ', i)
+            if i % 1 == 0:
+                acc = test_env.test_batch(logger2)
+                if acc > best:
+                    best = acc
+                    best_i = i
+                    if os.path.exists(model_name):
+                        os.remove(model_name)
+                    torch.save({'state_dict': test_env.model.state_dict(),
+                                'optimizer': test_env.optimizer.state_dict(),
+                                'Embedding': test_env.train_data.x},
+                               model_name)
+                logger2.info('Best Accuracy: %.5f\tBest_i : %d' % (best, best_i))
+                print('Best: ', best, 'Best_i: ', best_i)
+            test_env.train_GNN()
+    else:
+        test_env.model.steps = 100
+        test_env.model.recommend()
 
     logger2.info("---------------------------------------------------\nStart the performance testing on test dataset:")
     model_checkpoint = torch.load(model_name)

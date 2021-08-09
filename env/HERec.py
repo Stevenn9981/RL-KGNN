@@ -5,14 +5,16 @@ import os
 from math import sqrt, fabs, log, exp
 import sys
 import collections
+import dgl
 
 import torch
 
 
 class HERec:
-    def __init__(self, unum, inum, metapaths, args, steps):
-        self.unum = unum
-        self.inum = inum
+    def __init__(self, data, metapaths, args, steps):
+        self.unum = data.n_users
+        self.inum = data.n_items
+        self.graph = data.train_graph
         self.ratedim = 10
         self.userdim = 30
         self.itemdim = 10
@@ -26,6 +28,7 @@ class HERec:
         self.reg_u = 1
         self.reg_v = 1
         self.optimal_i = 0
+        self.dataset = args.data_name
 
         user_metapaths = metapaths[0]
         item_metapaths = metapaths[1]
@@ -36,10 +39,10 @@ class HERec:
         self.train_user_dict = collections.defaultdict(list)
         self.test_user_dict = collections.defaultdict(list)
 
-        self.X, self.user_metapathdims = self.load_embedding(user_metapaths, unum)
+        self.X, self.user_metapathdims = self.load_embedding(user_metapaths, self.unum)
         print('Load user embeddings finished.')
 
-        self.Y, self.item_metapathdims = self.load_embedding(item_metapaths, inum)
+        self.Y, self.item_metapathdims = self.load_embedding(item_metapaths, self.inum)
         print('Load user embeddings finished.')
 
         data_dir = os.path.join(args.data_dir, args.data_name)
@@ -56,15 +59,42 @@ class HERec:
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
         self.initialize()
-        self.recommend()
+
+    def write_graph(self, graph, metapath, mpfile):
+        if not os.path.exists('data/' + self.dataset + '/metapaths/'):
+            os.mkdir('data/' + self.dataset + '/metapaths')
+        U, V = graph.edges()
+        U = U.tolist()
+        V = V.tolist()
+        with open(mpfile, 'w') as infile:
+            for i in range(len(U)):
+                infile.write(str(U[i]) + '\t' + str(V[i]) + '\n')
+        infile.close()
+
 
     def load_embedding(self, metapaths, num):
-        X = np.zeros((num, len(metapaths), 128))
+        train_rate = 0.8
+        dim = 64
+        walk_len = 5
+        win_size = 3
+        num_walk = 10
+
+        X = np.zeros((num, len(metapaths), 64))
         metapathdims = []
 
         ctn = 0
         for metapath in metapaths:
-            sourcefile = '../data/embeddings/' + ''.join(metapath)
+            sourcefile = 'data/' + self.dataset + '/embedding/' + ''.join(metapath) + '.embedding'
+            mpfile = 'data/' + self.dataset + '/metapaths/' + ''.join(metapath) + '.txt'
+            if not os.path.exists(sourcefile):
+                subgraph = dgl.metapath_reachable_graph(self.graph, metapath)
+                self.write_graph(subgraph, metapath, mpfile)
+
+                cmd = 'deepwalk --format edgelist --input ' + mpfile + ' --output ' + sourcefile + \
+                      ' --walk-length ' + str(walk_len) + ' --window-size ' + str(win_size) + ' --number-walks ' \
+                      + str(num_walk) + ' --representation-size ' + str(dim)
+                os.system(cmd)
+                print('Metapath ' + str(metapath) + ' Embedding Finish')
             # print sourcefile
             with open(sourcefile) as infile:
 

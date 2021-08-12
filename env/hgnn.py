@@ -279,6 +279,10 @@ class hgnn_env(object):
             self.optimizer.zero_grad()
         else:
             self.model = HERec(self.data, self.etypes_lists, self.args, 1)
+            if len(self.eval_neg_dict) != 0:
+                self.model.eval_neg_dict = self.eval_neg_dict
+            if len(self.test_neg_dict) != 0:
+                self.model.test_neg_dict = self.test_neg_dict
         tmpmp = copy.deepcopy(self.etypes_lists)
         done_list = [False] * len(actions)
         next_state, reward, val_acc = [], [], []
@@ -342,6 +346,11 @@ class hgnn_env(object):
             logger1.info("-----------------------------------------------------------------------")
         r = np.mean(np.array(reward))
         val_acc = np.mean(val_acc)
+
+        if len(self.model.eval_neg_dict) != 0 and len(self.eval_neg_dict) == 0:
+            self.eval_neg_dict = self.model.eval_neg_dict
+        if len(self.model.test_neg_dict) != 0 and len(self.test_neg_dict) == 0:
+            self.test_neg_dict = self.model.test_neg_dict
 
         if actions[0] != STOP and self.meta_path_equal(tmpmp):
             r, reward = -1, [-1]

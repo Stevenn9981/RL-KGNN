@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="76ad616a-53fc-4fcf-9bcc-98573cd886aa" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/env/HERec.py" beforeDir="false" afterPath="$PROJECT_DIR$/env/HERec.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/env/hgnn.py" beforeDir="false" afterPath="$PROJECT_DIR$/env/hgnn.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -27,11 +28,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/env/hgnn.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-461">
-              <caret line="125" column="33" selection-start-line="125" selection-start-column="33" selection-end-line="125" selection-end-column="33" />
+            <state relative-caret-position="303">
+              <caret line="350" column="52" lean-forward="true" selection-start-line="350" selection-start-column="52" selection-end-line="350" selection-end-column="52" />
               <folding>
                 <element signature="e#0#21#0" expanded="true" />
               </folding>
@@ -39,11 +40,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/env/HERec.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="49">
-              <caret line="63" column="34" selection-start-line="63" selection-start-column="34" selection-end-line="63" selection-end-column="34" />
+            <state relative-caret-position="561">
+              <caret line="333" column="38" selection-start-line="333" selection-start-column="25" selection-end-line="333" selection-end-column="38" />
               <folding>
                 <element signature="e#1#19#0" expanded="true" />
               </folding>
@@ -90,8 +91,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/train_fm.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="306">
-              <caret line="72" column="23" selection-start-line="72" selection-start-column="23" selection-end-line="72" selection-end-column="23" />
+            <state relative-caret-position="101">
+              <caret line="68" selection-start-line="68" selection-end-line="68" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -140,7 +141,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>create</find>
       <find>4</find>
       <find>0</find>
       <find>1</find>
@@ -169,6 +169,7 @@
       <find>optimizer</find>
       <find>self.model.reset()</find>
       <find>task</find>
+      <find>model.reset()</find>
       <find>HERec</find>
     </findStrings>
     <replaceStrings>
@@ -226,10 +227,10 @@
         <option value="$PROJECT_DIR$/env/HAN.py" />
         <option value="$PROJECT_DIR$/train_gat.py" />
         <option value="$PROJECT_DIR$/dqn_agent_pytorch.py" />
-        <option value="$PROJECT_DIR$/env/hgnn.py" />
-        <option value="$PROJECT_DIR$/train_fm.py" />
         <option value="$PROJECT_DIR$/KGDataLoader.py" />
         <option value="$PROJECT_DIR$/env/HERec.py" />
+        <option value="$PROJECT_DIR$/train_fm.py" />
+        <option value="$PROJECT_DIR$/env/hgnn.py" />
       </list>
     </option>
   </component>
@@ -487,28 +488,7 @@
       <workItem from="1627012851631" duration="22941000" />
       <workItem from="1627541221514" duration="2000" />
       <workItem from="1627568103353" duration="11111000" />
-      <workItem from="1627895900465" duration="19595000" />
-    </task>
-    <task id="LOCAL-00842" summary="add files">
-      <created>1627660214908</created>
-      <option name="number" value="00842" />
-      <option name="presentableId" value="LOCAL-00842" />
-      <option name="project" value="LOCAL" />
-      <updated>1627660214908</updated>
-    </task>
-    <task id="LOCAL-00843" summary="add files">
-      <created>1627664809586</created>
-      <option name="number" value="00843" />
-      <option name="presentableId" value="LOCAL-00843" />
-      <option name="project" value="LOCAL" />
-      <updated>1627664809586</updated>
-    </task>
-    <task id="LOCAL-00844" summary="add files">
-      <created>1627665575094</created>
-      <option name="number" value="00844" />
-      <option name="presentableId" value="LOCAL-00844" />
-      <option name="project" value="LOCAL" />
-      <updated>1627665575094</updated>
+      <workItem from="1627895900465" duration="20762000" />
     </task>
     <task id="LOCAL-00845" summary="add files">
       <created>1627665691791</created>
@@ -832,11 +812,32 @@
       <option name="project" value="LOCAL" />
       <updated>1628517283707</updated>
     </task>
-    <option name="localTasksCounter" value="891" />
+    <task id="LOCAL-00891" summary="add files">
+      <created>1628517550695</created>
+      <option name="number" value="00891" />
+      <option name="presentableId" value="LOCAL-00891" />
+      <option name="project" value="LOCAL" />
+      <updated>1628517550695</updated>
+    </task>
+    <task id="LOCAL-00892" summary="add files">
+      <created>1628517652490</created>
+      <option name="number" value="00892" />
+      <option name="presentableId" value="LOCAL-00892" />
+      <option name="project" value="LOCAL" />
+      <updated>1628517652491</updated>
+    </task>
+    <task id="LOCAL-00893" summary="add files">
+      <created>1628737714255</created>
+      <option name="number" value="00893" />
+      <option name="presentableId" value="LOCAL-00893" />
+      <option name="project" value="LOCAL" />
+      <updated>1628737714255</updated>
+    </task>
+    <option name="localTasksCounter" value="894" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="670196000" />
+    <option name="totallyTimeSpent" value="671363000" />
   </component>
   <component name="TodoView" selected-index="4">
     <todo-panel id="selected-file">
@@ -852,11 +853,11 @@
     <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" sideWeight="0.46165645" visible="true" weight="0.32331902" />
-      <window_info id="Structure" order="1" sideWeight="0.53834355" side_tool="true" visible="true" weight="0.32331902" />
+      <window_info active="true" id="Structure" order="1" sideWeight="0.53834355" side_tool="true" visible="true" weight="0.32331902" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.14216867" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.21445782" />
+      <window_info anchor="bottom" id="Run" order="2" visible="true" weight="0.21445782" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4795181" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -1262,26 +1263,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/env/hgnn.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-461">
-          <caret line="125" column="33" selection-start-line="125" selection-start-column="33" selection-end-line="125" selection-end-column="33" />
-          <folding>
-            <element signature="e#0#21#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/train_fm.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="306">
-          <caret line="72" column="23" selection-start-line="72" selection-start-column="23" selection-end-line="72" selection-end-column="23" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/KGDataLoader.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="334">
@@ -1292,12 +1273,32 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/train_fm.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="101">
+          <caret line="68" selection-start-line="68" selection-end-line="68" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/env/HERec.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="49">
-          <caret line="63" column="34" selection-start-line="63" selection-start-column="34" selection-end-line="63" selection-end-column="34" />
+        <state relative-caret-position="561">
+          <caret line="333" column="38" selection-start-line="333" selection-start-column="25" selection-end-line="333" selection-end-column="38" />
           <folding>
             <element signature="e#1#19#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/env/hgnn.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="303">
+          <caret line="350" column="52" lean-forward="true" selection-start-line="350" selection-start-column="52" selection-end-line="350" selection-end-column="52" />
+          <folding>
+            <element signature="e#0#21#0" expanded="true" />
           </folding>
         </state>
       </provider>

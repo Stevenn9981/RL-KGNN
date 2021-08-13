@@ -148,8 +148,8 @@ def main():
     # del env
 
     # Testing: Apply meta-policy to train a new GNN
-    logger2.info("Training GNNs with learned meta-policy")
-    print("Training GNNs with learned meta-policy")
+    logger2.info("Training GNNs with learned meta-policy. Evaluate NDCG10")
+    print("Training GNNs with learned meta-policy. Evaluate NDCG10")
     # new_env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset)
     # use_pretrain(new_env)
 
@@ -245,14 +245,15 @@ def main():
                 print('Best: ', best, 'Best_i: ', best_i)
             test_env.train_GNN()
     else:
-        test_env.model.steps = 100
+        test_env.model.steps = 20
         test_env.model.recommend()
 
-    logger2.info("---------------------------------------------------\nStart the performance testing on test dataset:")
-    model_checkpoint = torch.load(model_name)
-    test_env.model.load_state_dict(model_checkpoint['state_dict'])
-    test_env.train_data.x = model_checkpoint['Embedding']
-    test_env.test_batch(logger2)
+    if args.task != 'herec':
+        logger2.info("---------------------------------------------------\nStart the performance testing on test dataset:")
+        model_checkpoint = torch.load(model_name)
+        test_env.model.load_state_dict(model_checkpoint['state_dict'])
+        test_env.train_data.x = model_checkpoint['Embedding']
+        test_env.test_batch(logger2)
 
 
 if __name__ == '__main__':

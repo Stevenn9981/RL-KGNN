@@ -40,19 +40,19 @@ class HERec:
         self.test_user_dict = collections.defaultdict(list)
 
         self.X, self.user_metapathdims = self.load_embedding(user_metapaths, self.unum)
-        print('Load user embeddings finished.')
+        # print('Load user embeddings finished.')
 
         self.Y, self.item_metapathdims = self.load_embedding(item_metapaths, self.inum)
-        print('Load user embeddings finished.')
+        # print('Load user embeddings finished.')
 
         data_dir = os.path.join(args.data_dir, args.data_name)
         trainfile = os.path.join(data_dir, 'ub_0.8.train')
         testfile = os.path.join(data_dir, 'ub_0.8.test')
 
         self.R, self.T, self.ba = self.load_rating(trainfile, testfile)
-        print('Load rating finished.')
-        print('train size : ', len(self.R))
-        print('test size : ', len(self.T))
+        # print('Load rating finished.')
+        # print('train size : ', len(self.R))
+        # print('test size : ', len(self.T))
 
         self.eval_neg_dict = collections.defaultdict(list)
         self.test_neg_dict = collections.defaultdict(list)
@@ -93,7 +93,7 @@ class HERec:
                       ' --walk-length ' + str(walk_len) + ' --window-size ' + str(win_size) + ' --number-walks ' \
                       + str(num_walk) + ' --representation-size ' + str(dim)
                 os.system(cmd)
-                print('Metapath ' + str(metapath) + ' Embedding Finish')
+                # print('Metapath ' + str(metapath) + ' Embedding Finish')
             # print sourcefile
             with open(sourcefile) as infile:
 
@@ -107,7 +107,7 @@ class HERec:
                     i = int(arr[0]) - 1
                     for j in range(k):
                         X[i][ctn][j] = float(arr[j + 1])
-                print('metapath: ', metapath, 'numbers: ', n)
+                # print('metapath: ', metapath, 'numbers: ', n)
             ctn += 1
         return X, metapathdims
 
@@ -287,7 +287,7 @@ class HERec:
             else:
                 NDCG = self.test_batch()
             ndcg.append(NDCG)
-            print('NDCG@10: ', NDCG)
+            # print('NDCG@10: ', NDCG)
             endtime = time.time()
             print('time: ', endtime - starttime, 's')
         # print('MAE: ', min(mae), ' RMSE: ', min(rmse))

@@ -306,7 +306,7 @@ class HERec:
         for u in user_ids_batch:
             if u not in self.eval_neg_dict:
                 for _ in self.train_user_dict[u]:
-                    nl = self.sample_neg_items_for_u_test(self.train_user_dict, self.train_user_dict, u, 10)
+                    nl = self.sample_neg_items_for_u_test(self.train_user_dict, self.train_user_dict, u, 15)
                     self.eval_neg_dict[u].extend(nl)
 
         pos_logits = torch.tensor([])

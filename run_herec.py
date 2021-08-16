@@ -26,6 +26,8 @@ if __name__ == '__main__':
 
     mp_set = eval(args.mpset)
 
+    print("Meta-path Set: ", str(mp_set))
+
     infor = 'herec_' + str(args.data_name) + '_spec_' + str(args.log)
     model_name = 'model_' + infor + '.pth'
 

@@ -47,14 +47,13 @@ with open('data/douban_movie/test.txt', 'r') as infile:
             test.append([str(user - 24227), str(item + 1), '5'])
             test_dict[user - 24227].append(item + 1)
 
-user_ids_batch = list(test_dict.keys())
+user_ids_batch = list(train_dict.keys())
 neg_dict = collections.defaultdict(list)
 
 for u in user_ids_batch:
-    for _ in test_dict[u]:
-        nl = sample_neg_items_for_u_test(train_dict, test_dict, u, 1)
-        for l in nl:
-            train.append([str(u), str(l), '0'])
+    nl = sample_neg_items_for_u_test(train_dict, test_dict, u, len(train_dict[u]))
+    for l in nl:
+        train.append([str(u), str(l), '0'])
 
 random.shuffle(train)
 random.shuffle(test)

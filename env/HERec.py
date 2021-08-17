@@ -29,6 +29,7 @@ class HERec:
         self.reg_v = 1
         self.optimal_i = 0
         self.dataset = args.data_name
+        self.metapaths = metapaths
 
         user_metapaths = metapaths[0]
         item_metapaths = metapaths[1]
@@ -212,6 +213,7 @@ class HERec:
         return mae, rmse
 
     def recommend(self):
+        print("Current Metapath: ", str(self.metapaths))
         mae = []
         rmse = []
         ndcg = []

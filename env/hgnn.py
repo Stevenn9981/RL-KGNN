@@ -278,7 +278,7 @@ class hgnn_env(object):
             self.model.train()
             self.optimizer.zero_grad()
         else:
-            self.model = HERec(self.data, self.etypes_lists, self.args, 1)
+            self.model = HERec(self.data, self.etypes_lists, self.args, steps=1)
             if len(self.eval_neg_dict) != 0:
                 self.model.eval_neg_dict = self.eval_neg_dict
             if len(self.test_neg_dict) != 0:

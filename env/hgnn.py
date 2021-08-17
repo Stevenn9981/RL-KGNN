@@ -48,7 +48,6 @@ def score(logits, labels):
 class hgnn_env(object):
     def __init__(self, logger1, logger2, model_name, args, dataset='yelp_data', weight_decay=1e-5):
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        self.model_name = model_name
         self.cur_best = 0
         self.args = args
         self.cf_l2loss_lambda = args.cf_l2loss_lambda

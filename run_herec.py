@@ -24,9 +24,9 @@ if __name__ == '__main__':
     args = parse_args()
     dataset = args.data_name
 
-    mp_set = eval(args.mpset)
+    # mp_set = eval(args.mpset)
 
-    print("Meta-path Set: ", str(mp_set))
+    print("Meta-path Set: ", args.mpset)
 
     infor = 'herec_' + str(args.data_name) + '_spec_' + str(args.log)
     model_name = 'model_' + infor + '.pth'
@@ -37,7 +37,7 @@ if __name__ == '__main__':
     logger2 = get_logger('log2', 'logger2_' + infor + '.log')
 
     test_env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset)
-    test_env.etypes_lists = mp_set
+    # test_env.etypes_lists = mp_set
 
     test_env.model.steps = 25
     test_env.model.recommend()

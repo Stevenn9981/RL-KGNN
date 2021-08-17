@@ -400,7 +400,7 @@ class HERec:
         while True:
             if len(sample_neg_items) == n_sample_neg_items:
                 break
-            neg_item_id = np.random.randint(low=0, high=14284, size=1)[0]
+            neg_item_id = np.random.randint(low=0, high=self.inum, size=1)[0]
             if neg_item_id not in pos_items and neg_item_id not in pos_items_2 and neg_item_id not in sample_neg_items:
                 sample_neg_items.append(neg_item_id)
         return sample_neg_items

@@ -39,5 +39,5 @@ if __name__ == '__main__':
     test_env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset)
     test_env.etypes_lists = mp_set
 
-    test_env.model.steps = 20
+    test_env.model.steps = 25
     test_env.model.recommend()

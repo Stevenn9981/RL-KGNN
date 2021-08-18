@@ -312,7 +312,6 @@ class DQNAgent(object):
 
         # Perform gradient descent update
         state_batch = np.array(state_batch)
-        print("action_batch, target_batch: ", action_batch, target_batch)
         loss = self.q_estimator.update(state_batch, action_batch, target_batch)
 
         # Update the target estimator
@@ -428,9 +427,6 @@ class Estimator(object):
 
         # (batch, action_num) -> (batch, )
         Q = torch.gather(q_as, dim=-1, index=a.unsqueeze(-1)).squeeze(-1)
-
-        print(Q)
-        print(y)
 
         # update model
         batch_loss = self.mse_loss(Q, y)

@@ -297,7 +297,7 @@ class HERec:
             ndcg.append(NDCG)
             # print('NDCG@10: ', NDCG)
             endtime = time.time()
-            print('time: ', endtime - starttime, 's')
+            print('Recommend time: ', endtime - starttime, 's')
         # print('MAE: ', min(mae), ' RMSE: ', min(rmse))
         if self.steps != 1:
             print('NDCG@10: ', max(ndcg), "index: ", ndcg.index(max(ndcg)))

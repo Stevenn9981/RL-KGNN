@@ -289,7 +289,7 @@ class HERec:
 
             if (abs(perror - cerror) < 0.0001):
                 break
-            print('step ', step, 'crror : ', sqrt(cerror))
+            # print('step ', step, 'crror : ', sqrt(cerror))
             if self.steps == 1:
                 NDCG = self.eval_batch()
             else:

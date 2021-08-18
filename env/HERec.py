@@ -222,7 +222,7 @@ class HERec:
         cerror = 9999
 
         if self.steps == 1:
-            train_R = random.sample(self.R, min(len(self.R), 100000))
+            train_R = random.sample(self.R, min(len(self.R), 50000))
         else:
             train_R = random.sample(self.R, min(len(self.R), 300000))
 

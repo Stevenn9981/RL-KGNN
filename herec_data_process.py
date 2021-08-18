@@ -51,7 +51,7 @@ user_ids_batch = list(train_dict.keys())
 neg_dict = collections.defaultdict(list)
 
 for u in user_ids_batch:
-    nl = sample_neg_items_for_u_test(train_dict, test_dict, u, 1)
+    nl = sample_neg_items_for_u_test(train_dict, test_dict, u, len(train_dict[u]))
     for l in nl:
         train.append([str(u), str(l), '0'])
 

@@ -220,12 +220,18 @@ class HERec:
         starttime = time.time()
         perror = 99999
         cerror = 9999
-        n = len(self.R)
+
+        if self.steps == 1:
+            train_R = random.sample(self.R, min(len(self.R), 100000))
+        else:
+            train_R = random.sample(self.R, min(len(self.R), 300000))
+
+        n = len(train_R)
         min_mae = 9999999
 
         for step in range(self.steps):
             total_error = 0.0
-            for t in self.R:
+            for t in train_R:
                 i = t[0]
                 j = t[1]
                 rij = t[2]

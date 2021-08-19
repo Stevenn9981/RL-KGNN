@@ -220,11 +220,14 @@ class HERec:
         starttime = time.time()
         perror = 99999
         cerror = 9999
-
-        if self.steps == 1:
-            train_R = random.sample(self.R, min(len(self.R), 50000))
+        if self.dataset == 'douban_movie':
+            # Since dataset is too large, we must use sampling.
+            if self.steps == 1:
+                train_R = random.sample(self.R, min(len(self.R), 30000))
+            else:
+                train_R = random.sample(self.R, min(len(self.R), 100000))
         else:
-            train_R = random.sample(self.R, min(len(self.R), 300000))
+            train_R = self.R
 
         n = len(train_R)
         min_mae = 9999999

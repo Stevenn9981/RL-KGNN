@@ -73,7 +73,7 @@ def main():
     HAN.DEGREE_THERSHOLD = 80000
     dataset = args.data_name
 
-    infor = 'pretrain_' + str(args.data_name)
+    infor = 'pretrain_' + str(args.data_name) + '_' + str(args.task) + '_' + str(args.log)
     model_name = 'model_' + infor + '.pth'
 
     max_episodes = 150 if dataset == 'douban_movie' else 100

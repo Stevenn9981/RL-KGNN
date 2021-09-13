@@ -126,6 +126,9 @@ def main():
         env.seed(0)
         best = 0
         best_mpset = None
+        if args.task == 'rec':
+            for gnn in env.model.layers:
+                gnn.threshold = 0.8
         for inx in range(80):
             mpset = [[], []]
             mpset[0] = random.sample(u_set, random.randint(1, 4))
@@ -145,8 +148,9 @@ def main():
         env = hgnn_env(logger1, logger2, model_name, args)
         env.seed(0)
         use_pretrain(env, dataset)
-        for gnn in env.model.layers:
-            gnn.threshold = 80000
+        if args.task == 'rec':
+            for gnn in env.model.layers:
+                gnn.threshold = 0.8
 
         for inx in range(3):
             u_s = random.sample(u_set, sample_num)

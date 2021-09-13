@@ -70,7 +70,7 @@ def main():
     # dataset = 'ACMRaw'
 
     args = parse_args()
-    HAN.DEGREE_THERSHOLD = 80000
+    # HAN.DEGREE_THERSHOLD = 80000
     dataset = args.data_name
 
     infor = 'pretrain_' + str(args.data_name) + '_' + str(args.task) + '_' + str(args.log)
@@ -137,7 +137,7 @@ def main():
             if acc > best:
                 best = acc
                 best_mpset = deepcopy(mpset)
-            if time.time() - tim1 > 200 * 60 if args.data_name == 'yelp_data' else 10 * 60 * 60:
+            if time.time() - tim1 > (200 * 60 if args.data_name == 'yelp_data' else 10 * 60 * 60):
                 break
         del env
         train_and_test(1, max_episodes, tim1, logger1, logger2, model_name, args, best_mpset)
@@ -225,7 +225,8 @@ def train_and_eval(env, inx, max_episodes, tim1, logger1, logger2, model_name, a
     env.etypes_lists = mpset
     env.train_GNN()
     acc = env.eval_batch()
-    env.model.reset()
+    if args.task == 'rec':
+        env.model.reset()
     print("Current test: ", inx, ' Metapath Set: ', str(env.etypes_lists)
           , '.\n Acc: ', acc
           , ". This test time: ", (time.time() - tim2) / 60, "min"
@@ -238,8 +239,9 @@ def train_and_test(inx, max_episodes, tim1, logger1, logger2, model_name, args, 
     env = hgnn_env(logger1, logger2, model_name, args)
     env.seed(0)
     use_pretrain(env, args.data_name)
-    for gnn in env.model.layers:
-        gnn.threshold = 70000
+    if args.task == 'rec':
+        for gnn in env.model.layers:
+            gnn.threshold = 0.8
     env.etypes_lists = mpset
     best = 0
     best_i = 0

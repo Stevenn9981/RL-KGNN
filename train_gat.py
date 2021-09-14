@@ -129,7 +129,7 @@ def main():
         best_mpset = None
         if args.task == 'rec':
             for gnn in env.model.layers:
-                gnn.threshold = 0.8
+                gnn.threshold = 1
         for inx in range(120):
             mpset = [[], []]
             mpset[0] = random.sample(u_set, random.randint(1, 4))
@@ -224,6 +224,9 @@ def main():
 def train_and_eval(env, inx, max_episodes, tim1, logger1, logger2, model_name, args, mpset):
     tim2 = time.time()
     env.etypes_lists = mpset
+    if args.task == 'rec':
+        for gnn in env.model.layers:
+            gnn.threshold = 1
     env.train_GNN()
     acc = env.eval_batch()
     if args.task == 'rec':
@@ -242,7 +245,7 @@ def train_and_test(inx, max_episodes, tim1, logger1, logger2, model_name, args, 
     use_pretrain(env, args.data_name)
     if args.task == 'rec':
         for gnn in env.model.layers:
-            gnn.threshold = 0.8
+            gnn.threshold = 1
     env.etypes_lists = mpset
     best = 0
     best_i = 0

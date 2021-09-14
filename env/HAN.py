@@ -106,7 +106,7 @@ class HANLayer(nn.Module):
                 self.gat_layers.update(gatconv)
                 self.rest_layers.update(copy.deepcopy(gatconv))
                 optimizer.add_param_group({'params': gatconv.parameters()})
-                print("Prepare meta-path graph: ", time.time() - tim1)
+                print("Prepare meta-path graph (s): ", time.time() - tim1)
             elif ''.join(mp) in self.large_graph:
                 self.useless_flag = True
                 meta_pathset.remove(list(meta_path))
@@ -136,6 +136,8 @@ class HANLayer(nn.Module):
                     c[output_nodes] = emb
                     emb = c[b_ids]
                 semantic_embeddings.append(emb)
+        if len(semantic_embeddings) == 0:
+            semantic_embeddings.append(torch.rand((h.shape[0], self.out_size * self.layer_num_heads)).to(device))
         semantic_embeddings = torch.stack(semantic_embeddings, dim=1)  # (N, M, D * K)
 
         return self.semantic_attention(semantic_embeddings)  # (N, D * K)

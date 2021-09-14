@@ -126,7 +126,7 @@ class HANLayer(nn.Module):
             #     continue
             sampler = dgl.dataloading.MultiLayerNeighborSampler([500])
             dataloader = dgl.dataloading.NodeDataLoader(
-                graph, torch.LongTensor(list(set(b_ids.tolist()))), sampler, torch.device(device),
+                graph, torch.LongTensor(list(set(b_ids.tolist()))), sampler, device=torch.device(device),
                 batch_size=len(b_ids),
                 drop_last=False)
             for input_nodes, output_nodes, blocks in dataloader:

@@ -346,10 +346,11 @@ class hgnn_env(object):
         r = np.mean(np.array(reward))
         val_acc = np.mean(val_acc)
 
-        if len(self.model.eval_neg_dict) != 0 and len(self.eval_neg_dict) == 0:
-            self.eval_neg_dict = self.model.eval_neg_dict
-        if len(self.model.test_neg_dict) != 0 and len(self.test_neg_dict) == 0:
-            self.test_neg_dict = self.model.test_neg_dict
+        if not self.optimizer:
+            if len(self.model.eval_neg_dict) != 0 and len(self.eval_neg_dict) == 0:
+                self.eval_neg_dict = self.model.eval_neg_dict
+            if len(self.model.test_neg_dict) != 0 and len(self.test_neg_dict) == 0:
+                self.test_neg_dict = self.model.test_neg_dict
 
         if actions[0] != STOP and self.meta_path_equal(tmpmp):
             r, reward = -1, [-1]

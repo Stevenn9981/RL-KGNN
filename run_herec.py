@@ -7,7 +7,6 @@ import logging
 from env.hgnn import hgnn_env
 
 
-
 def get_logger(logger_name, log_file, level=logging.INFO):
     l = logging.getLogger(logger_name)
     formatter = logging.Formatter('%(asctime)s : %(message)s', "%Y-%m-%d %H:%M:%S")

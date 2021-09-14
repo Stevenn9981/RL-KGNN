@@ -224,6 +224,8 @@ def main():
 def train_and_eval(env, inx, max_episodes, tim1, logger1, logger2, model_name, args, mpset):
     tim2 = time.time()
     env.etypes_lists = mpset
+    if args.task == 'herec':
+        env.model = HERec(data, mpset, args, 1)
     if args.task == 'rec':
         for gnn in env.model.layers:
             gnn.threshold = 1
@@ -243,7 +245,10 @@ def train_and_test(inx, max_episodes, tim1, logger1, logger2, model_name, args, 
     env = hgnn_env(logger1, logger2, model_name, args)
     env.seed(0)
     use_pretrain(env, args.data_name)
-    if args.task == 'rec':
+    if args.task == 'herec':
+        env.model = HERec(data, mpset, args, 20)
+        max_episodes = 1
+    elif args.task == 'rec':
         for gnn in env.model.layers:
             gnn.threshold = 1
     env.etypes_lists = mpset

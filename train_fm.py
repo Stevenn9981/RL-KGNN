@@ -72,8 +72,8 @@ def main():
     infor = 'rl_' + str(args.data_name) + '_' + str(args.task) + '_' + str(args.log)
     model_name = 'model_' + infor + '.pth'
 
-    u_max_episodes = 15
-    i_max_episodes = 20
+    u_max_episodes = 20
+    i_max_episodes = 30
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     logger1 = get_logger('log', 'log/logger_' + infor + '.log')
@@ -90,7 +90,7 @@ def main():
                           norm_step=1,
                           batch_size=1,
                           state_shape=env.obs.shape,
-                          mlp_layers=[32, 64, 32],
+                          mlp_layers=[32, 64, 128, 64, 32],
                           learning_rate=0.005,
                           device=torch.device(device)
                           )
@@ -102,7 +102,7 @@ def main():
                           norm_step=2,
                           batch_size=1,
                           state_shape=env.obs.shape,
-                          mlp_layers=[32, 64, 32],
+                          mlp_layers=[32, 64, 128, 64, 32],
                           learning_rate=0.005,
                           device=torch.device(device)
                           )
@@ -234,7 +234,7 @@ def main():
     args.mpset = str(mp_set)
     test_env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset)
     use_pretrain(test_env, dataset)
-    self.etypes_lists = mp_set
+    test_env.etypes_lists = mp_set
     if args.task != 'herec':
         best = 0
         best_i = 0

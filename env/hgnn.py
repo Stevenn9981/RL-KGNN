@@ -330,7 +330,7 @@ class hgnn_env(object):
                 self.past_performance.append(val_precision)
 
             baseline = np.mean(np.array(self.past_performance[-self.baseline_experience:]))
-            rew = 15 * (val_precision - baseline)
+            rew = 10 * (val_precision - baseline)
             if rew > 1:
                 rew = 1
             elif rew < -1:

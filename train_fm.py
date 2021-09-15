@@ -74,8 +74,8 @@ def main():
     i_max_episodes = 20
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-    logger1 = get_logger('log', 'logger_' + infor + '.log')
-    logger2 = get_logger('log2', 'logger2_' + infor + '.log')
+    logger1 = get_logger('log', 'log/logger_' + infor + '.log')
+    logger2 = get_logger('log2', 'log/logger2_' + infor + '.log')
 
     env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset)
     env.seed(0)

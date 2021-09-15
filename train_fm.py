@@ -14,6 +14,7 @@ import torch.nn as nn
 
 from env.hgnn import hgnn_env
 
+
 # os.environ['CUDA_VISIBLE_DEVICES'] = '0,1,2'
 
 
@@ -63,7 +64,7 @@ def use_pretrain(env, dataset='yelp_data'):
 def main():
     tim1 = time.time()
     torch.backends.cudnn.deterministic = True
-    max_timesteps = 3
+    max_timesteps = 4
 
     args = parse_args()
     dataset = args.data_name
@@ -71,7 +72,7 @@ def main():
     infor = 'rl_' + str(args.data_name) + '_' + str(args.task) + '_' + str(args.log)
     model_name = 'model_' + infor + '.pth'
 
-    u_max_episodes = 20
+    u_max_episodes = 15
     i_max_episodes = 20
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -145,7 +146,6 @@ def main():
         logger2.info("Training Meta-policy: %d    Val_Acc: %.5f    Avg_reward: %.5f    Best_Acc:  %.5f    Best_i: %d "
                      % (i_episode, val_acc, reward, best_user_val, best_user_i))
 
-
     # del env
     tim2 = time.time()
 
@@ -205,7 +205,7 @@ def main():
         logger2.info("Meta-path set: %s" % (str(env.etypes_lists)))
         print("Meta-path set: %s" % (str(env.etypes_lists)))
         logger2.info("Evaluating GNN %d:   Val_Acc: %.5f  Reward: %.5f  best_val_i: %d" % (
-        i_episode, val_acc, reward, best_val_i))
+            i_episode, val_acc, reward, best_val_i))
 
         # env.model.reset()
         item_state, _, item_done, (val_acc, _) = env.item_step(logger1, logger2, item_action, True)
@@ -217,7 +217,7 @@ def main():
             mp_set = deepcopy(env.etypes_lists)
             best_val_acc = val_acc
         logger2.info("Evaluating GNN %d:   Val_Acc: %.5f  Reward: %.5f  best_val_i: %d" % (
-        i_episode, val_acc, reward, best_val_i))
+            i_episode, val_acc, reward, best_val_i))
 
     del env
 
@@ -234,7 +234,7 @@ def main():
     args.mpset = str(mp_set)
     test_env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset)
     use_pretrain(test_env, dataset)
-
+    self.etypes_lists = mp_set
     if args.task != 'herec':
         best = 0
         best_i = 0
@@ -259,7 +259,8 @@ def main():
         test_env.model.recommend()
 
     if args.task != 'herec':
-        logger2.info("---------------------------------------------------\nStart the performance testing on test dataset:")
+        logger2.info(
+            "---------------------------------------------------\nStart the performance testing on test dataset:")
         model_checkpoint = torch.load(model_name)
         test_env.model.load_state_dict(model_checkpoint['state_dict'])
         test_env.train_data.x = model_checkpoint['Embedding']

@@ -139,8 +139,6 @@ def main():
             if acc > best:
                 best = acc
                 best_mpset = deepcopy(mpset)
-            if time.time() - tim1 > (200 * 60 if args.data_name == 'yelp_data' else 10 * 60 * 60):
-                break
         del env
         train_and_test(1, max_episodes, tim1, logger1, logger2, model_name, args, best_mpset)
 

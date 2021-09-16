@@ -229,7 +229,7 @@ class hgnn_env(object):
         return np.array(state)
 
     def get_user_state(self):
-        nodes = range(self.train_data.x[self.data.node_type_list == USER_TYPE].shape[0])
+        # nodes = range(self.train_data.x[self.data.node_type_list == USER_TYPE].shape[0])
         # user_embeds = self.get_all_user_embedding()
         # return self.sample_state(user_embeds, nodes)
         return self.cal_user_state()
@@ -244,7 +244,7 @@ class hgnn_env(object):
         return state
 
     def get_item_state(self):
-        nodes = range(self.train_data.x[self.data.node_type_list == ITEM_TYPE].shape[0])
+        # nodes = range(self.train_data.x[self.data.node_type_list == ITEM_TYPE].shape[0])
         # item_embeds = self.get_all_item_embedding()
         # return self.sample_state(item_embeds, nodes)
         return self.cal_item_state()
@@ -291,7 +291,7 @@ class hgnn_env(object):
             if act == STOP:
                 done_list[i] = True
                 if test:
-                    self.train_GNN(True)
+                    self.train_GNN(test=True)
                 else:
                     self.train_GNN()
             else:
@@ -316,7 +316,7 @@ class hgnn_env(object):
                     map(lambda x: list(x), set(map(lambda x: tuple(x), self.etypes_lists[type[0]]))))
 
                 if str(self.etypes_lists) not in self.mpset_eval_dict:
-                    self.train_GNN(act)
+                    self.train_GNN(act, test)
             if not test:
                 if str(self.etypes_lists) not in self.mpset_eval_dict:
                     val_precision = self.eval_batch()
@@ -324,7 +324,8 @@ class hgnn_env(object):
                 else:
                     val_precision = self.mpset_eval_dict[str(self.etypes_lists)]
             else:
-                val_precision = self.eval_batch(NEG_SIZE_EVAL)
+                # val_precision = self.eval_batch(NEG_SIZE_EVAL)
+                val_precision = 0
 
             if len(self.past_performance) == 0:
                 self.past_performance.append(val_precision)
@@ -438,6 +439,8 @@ class hgnn_env(object):
         n_cf_batch = 2 * self.data.n_cf_train // self.data.cf_batch_size + 1
         # n_cf_batch = 1
         cf_total_loss = 0
+        if test:
+            n_cf_batch = 0
         for iter in range(1, n_cf_batch + 1):
             #     print("current iter: ", iter, " ", n_cf_batch)
             time1 = time.time()

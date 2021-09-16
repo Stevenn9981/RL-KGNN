@@ -193,31 +193,31 @@ def main():
         # item_action = np.random.choice(np.arange(len(A)), p=A, size=item_state.shape[0])
         user_action = env.user_policy.eval_step(user_state)
         item_action = env.item_policy.eval_step(item_state)
-        if env.optimizer:
-            env.model.reset()
+        # if env.optimizer:
+        #     env.model.reset()
         user_state, _, user_done, (val_acc, _) = env.user_step(logger1, logger2, user_action, True)
 
         # val_acc = new_env.eval_batch(100)
-        val_list.append(val_acc)
-        if val_acc > best_val_acc:
-            mp_set = deepcopy(env.etypes_lists)
-            best_val_acc = val_acc
+        # val_list.append(val_acc)
+        # if val_acc > best_val_acc:
+        #     mp_set = deepcopy(env.etypes_lists)
+        #     best_val_acc = val_acc
         logger2.info("Meta-path set: %s" % (str(env.etypes_lists)))
         print("Meta-path set: %s" % (str(env.etypes_lists)))
-        logger2.info("Evaluating GNN %d:   Val_Acc: %.5f  Reward: %.5f  best_val_i: %d" % (
-            i_episode, val_acc, reward, best_val_i))
+        # logger2.info("Evaluating GNN %d:   Val_Acc: %.5f  Reward: %.5f  best_val_i: %d" % (
+        #     i_episode, val_acc, reward, best_val_i))
 
         # env.model.reset()
         item_state, _, item_done, (val_acc, _) = env.item_step(logger1, logger2, item_action, True)
         logger2.info("Meta-path set: %s" % (str(env.etypes_lists)))
         print("Meta-path set: %s" % (str(env.etypes_lists)))
         # val_acc = new_env.eval_batch(100)
-        val_list.append(val_acc)
-        if val_acc > best_val_acc:
-            mp_set = deepcopy(env.etypes_lists)
-            best_val_acc = val_acc
-        logger2.info("Evaluating GNN %d:   Val_Acc: %.5f  Reward: %.5f  best_val_i: %d" % (
-            i_episode, val_acc, reward, best_val_i))
+        # val_list.append(val_acc)
+        # if val_acc > best_val_acc:
+        #     mp_set = deepcopy(env.etypes_lists)
+        #     best_val_acc = val_acc
+        # logger2.info("Evaluating GNN %d:   Val_Acc: %.5f  Reward: %.5f  best_val_i: %d" % (
+        #     i_episode, val_acc, reward, best_val_i))
 
     del env
 

@@ -152,7 +152,7 @@ def main():
             for gnn in env.model.layers:
                 gnn.threshold = 0.8
 
-        for inx in range(4):
+        for inx in range(3):
             u_s = random.sample(u_set, sample_num)
             i_s = random.sample(i_set, sample_num)
 

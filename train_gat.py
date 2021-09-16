@@ -131,7 +131,7 @@ def main():
         if args.task == 'rec':
             for gnn in env.model.layers:
                 gnn.threshold = 0.8
-        for inx in range(120):
+        for inx in range(160):
             mpset = [[], []]
             mpset[0] = random.sample(u_set, random.randint(1, 4))
             mpset[1] = random.sample(i_set, random.randint(1, 4))
@@ -152,7 +152,7 @@ def main():
             for gnn in env.model.layers:
                 gnn.threshold = 0.8
 
-        for inx in range(3):
+        for inx in range(4):
             u_s = random.sample(u_set, sample_num)
             i_s = random.sample(i_set, sample_num)
 

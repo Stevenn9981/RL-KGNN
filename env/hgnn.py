@@ -330,7 +330,7 @@ class hgnn_env(object):
                 self.past_performance.append(val_precision)
 
             baseline = np.mean(np.array(self.past_performance[-self.baseline_experience:]))
-            rew = 10 * (val_precision - baseline)
+            rew = 5 * (val_precision - baseline)
             if rew > 1:
                 rew = 1
             elif rew < -1:
@@ -353,7 +353,7 @@ class hgnn_env(object):
                 self.test_neg_dict = self.model.test_neg_dict
 
         if actions[0] != STOP and self.meta_path_equal(tmpmp):
-            r, reward = -1, [-1]
+            r, reward = -0.5, [-0.5]
         logger2.info("Action: %d  Val acc: %.5f  reward: %.5f" % (actions[0], val_acc, r))
         logger2.info("Meta-path Set: %s" % str(self.etypes_lists))
         return done_list, r, reward, val_acc
@@ -435,7 +435,7 @@ class hgnn_env(object):
             self.model.recommend()
 
     def train_recommender(self, test, act=STOP):
-        n_cf_batch = self.data.n_cf_train // self.data.cf_batch_size + 1
+        n_cf_batch = 2 * self.data.n_cf_train // self.data.cf_batch_size + 1
         # n_cf_batch = 1
         cf_total_loss = 0
         for iter in range(1, n_cf_batch + 1):

@@ -99,7 +99,7 @@ def main():
                           action_num=env.action_num,
                           replay_memory_size=int(1e4),
                           replay_memory_init_size=500,
-                          norm_step=2,
+                          norm_step=1,
                           batch_size=1,
                           state_shape=env.obs.shape,
                           mlp_layers=[32, 32],

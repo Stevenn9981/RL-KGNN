@@ -130,7 +130,7 @@ def main():
         best_mpset = None
         if args.task == 'rec':
             for gnn in env.model.layers:
-                gnn.threshold = 0.8
+                gnn.threshold = 0.9
         for inx in range(160):
             mpset = [[], []]
             mpset[0] = random.sample(u_set, random.randint(1, 4))
@@ -150,7 +150,7 @@ def main():
         use_pretrain(env, dataset)
         if args.task == 'rec':
             for gnn in env.model.layers:
-                gnn.threshold = 0.8
+                gnn.threshold = 0.9
 
         for inx in range(3):
             u_s = random.sample(u_set, sample_num)
@@ -227,12 +227,12 @@ def train_and_eval(env, inx, max_episodes, tim1, logger1, logger2, model_name, a
         env.model = HERec(env.data, mpset, args, 1)
     if args.task == 'rec':
         for gnn in env.model.layers:
-            gnn.threshold = 0.8
+            gnn.threshold = 0.9
     env.train_GNN()
     acc = env.eval_batch()
     if args.task == 'rec':
         env.model.reset()
-    print("Current test: ", inx, ' Metapath Set: ', str(env.etypes_lists)
+    print("Current test: ", inx, ' Metapath Set: ', mpset
           , '.\n Acc: ', acc
           , ". This test time: ", (time.time() - tim2) / 60, "min"
           , ". Current time: ", (time.time() - tim1) / 60, "min")

@@ -165,16 +165,16 @@ def main():
     if env.optimizer:
         env.model.reset()
 
-    torch.save({'q_estimator_qnet_state_dict': best_user_policy.q_estimator.qnet.state_dict(),
-                'target_estimator_qnet_state_dict': best_user_policy.target_estimator.qnet.state_dict(),
+    torch.save({'q_estimator_qnet_state_dict': env.user_policy.q_estimator.qnet.state_dict(),
+                'target_estimator_qnet_state_dict': env.user_policy.target_estimator.qnet.state_dict(),
                 'Val': best_user_val},
-               'model/agentpoints/a-best-user-' + str(best_user_val) + '-' + time.strftime("%Y-%m-%d %H:%M:%S",
+               'model/a-best-user-' + str(best_user_val) + '-' + time.strftime("%Y-%m-%d %H:%M:%S",
                                                                                            time.localtime()) + '.pth.tar')
 
-    torch.save({'q_estimator_qnet_state_dict': best_item_policy.q_estimator.qnet.state_dict(),
-                'target_estimator_qnet_state_dict': best_item_policy.target_estimator.qnet.state_dict(),
+    torch.save({'q_estimator_qnet_state_dict': env.item_policy.q_estimator.qnet.state_dict(),
+                'target_estimator_qnet_state_dict': env.item_policy.target_estimator.qnet.state_dict(),
                 'Val': best_item_val},
-               'model/agentpoints/a-best-item-' + str(best_item_val) + '-' + time.strftime("%Y-%m-%d %H:%M:%S",
+               'model/a-best-item-' + str(best_item_val) + '-' + time.strftime("%Y-%m-%d %H:%M:%S",
                                                                                            time.localtime()) + '.pth.tar')
 
     b_i = 0
@@ -191,8 +191,8 @@ def main():
         # user_action = np.random.choice(np.arange(len(A)), p=A, size=user_state.shape[0])
         # A = best_user_policy.predict_batch(item_state)
         # item_action = np.random.choice(np.arange(len(A)), p=A, size=item_state.shape[0])
-        user_action = best_user_policy.eval_step(user_state)
-        item_action = best_item_policy.eval_step(item_state)
+        user_action = env.user_policy.eval_step(user_state)
+        item_action = env.item_policy.eval_step(item_state)
         if env.optimizer:
             env.model.reset()
         user_state, _, user_done, (val_acc, _) = env.user_step(logger1, logger2, user_action, True)

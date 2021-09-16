@@ -72,8 +72,8 @@ def main():
     infor = 'rl_' + str(args.data_name) + '_' + str(args.task) + '_' + str(args.log)
     model_name = 'model_' + infor + '.pth'
 
-    u_max_episodes = 10
-    i_max_episodes = 30
+    u_max_episodes = 20
+    i_max_episodes = 20
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     logger1 = get_logger('log', 'log/logger_' + infor + '.log')
@@ -160,8 +160,8 @@ def main():
     best_user_policy = user_agent
     best_item_policy = item_agent
 
-    env.user_policy = best_user_policy
-    env.item_policy = best_item_policy
+    env.user_policy = user_agent
+    env.item_policy = item_agent
     if env.optimizer:
         env.model.reset()
 

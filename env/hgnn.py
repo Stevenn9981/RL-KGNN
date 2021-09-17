@@ -440,7 +440,7 @@ class hgnn_env(object):
         # n_cf_batch = 1
         cf_total_loss = 0
         if test:
-            n_cf_batch = 0
+            n_cf_batch = 1
         for iter in range(1, n_cf_batch + 1):
             #     print("current iter: ", iter, " ", n_cf_batch)
             time1 = time.time()

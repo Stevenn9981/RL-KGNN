@@ -218,7 +218,7 @@ def main():
         #     best_val_acc = val_acc
         # logger2.info("Evaluating GNN %d:   Val_Acc: %.5f  Reward: %.5f  best_val_i: %d" % (
         #     i_episode, val_acc, reward, best_val_i))
-
+    mp_set = deepcopy(env.etypes_lists)
     del env
 
     tim3 = time.time()

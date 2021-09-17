@@ -94,8 +94,8 @@ def main():
                           norm_step=1,
                           batch_size=1,
                           state_shape=env.obs.shape,
-                          mlp_layers=[32, 32],
-                          learning_rate=0.01,
+                          mlp_layers=[32, 64, 32],
+                          learning_rate=0.03,
                           device=torch.device(device)
                           )
 

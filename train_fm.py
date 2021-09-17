@@ -17,6 +17,10 @@ from env.hgnn import hgnn_env
 
 # os.environ['CUDA_VISIBLE_DEVICES'] = '0,1,2'
 
+def seed(random_seed):
+    torch.manual_seed(random_seed)
+    random.seed(random_seed)
+    np.random.seed(random_seed)
 
 def get_logger(logger_name, log_file, level=logging.INFO):
     l = logging.getLogger(logger_name)
@@ -62,6 +66,7 @@ def use_pretrain(env, dataset='yelp_data'):
 
 
 def main():
+    seed(0)
     tim1 = time.time()
     torch.backends.cudnn.deterministic = True
     max_timesteps = 4
@@ -80,7 +85,6 @@ def main():
     logger2 = get_logger('log2', 'log/logger2_' + infor + '.log')
 
     env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset)
-    env.seed(0)
     use_pretrain(env, dataset)
 
     user_agent = DQNAgent(scope='dqn',

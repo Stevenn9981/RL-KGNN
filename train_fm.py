@@ -22,6 +22,7 @@ def seed(random_seed):
     random.seed(random_seed)
     np.random.seed(random_seed)
 
+
 def get_logger(logger_name, log_file, level=logging.INFO):
     l = logging.getLogger(logger_name)
     formatter = logging.Formatter('%(asctime)s : %(message)s', "%Y-%m-%d %H:%M:%S")
@@ -150,6 +151,12 @@ def main():
         logger2.info("Training Meta-policy: %d    Val_Acc: %.5f    Avg_reward: %.5f    Best_Acc:  %.5f    Best_i: %d "
                      % (i_episode, val_acc, reward, best_user_val, best_user_i))
 
+    tim_1 = time.time()
+    for i in range(10):
+        user_agent.train()
+        item_agent.train()
+    print('Reinforced training time: ', (time.time() - tim_1) / 60, 'min')
+
     # del env
     tim2 = time.time()
 
@@ -160,11 +167,6 @@ def main():
     print("Training GNNs with learned meta-policy. Evaluate NDCG10")
     # new_env = hgnn_env(logger1, logger2, model_name, args, dataset=dataset)
     # use_pretrain(new_env)
-    tim_1 = time.time()
-    for i in range(10):
-        user_agent.train()
-        item_agent.train()
-    print('Reinforced training time: ', (time.time() - tim_1) /60, 'min')
 
     best_user_policy = user_agent
     best_item_policy = item_agent
@@ -178,13 +180,13 @@ def main():
                 'target_estimator_qnet_state_dict': env.user_policy.target_estimator.qnet.state_dict(),
                 'Val': best_user_val},
                'model/a-best-user-' + str(best_user_val) + '-' + time.strftime("%Y-%m-%d %H:%M:%S",
-                                                                                           time.localtime()) + '.pth.tar')
+                                                                               time.localtime()) + '.pth.tar')
 
     torch.save({'q_estimator_qnet_state_dict': env.item_policy.q_estimator.qnet.state_dict(),
                 'target_estimator_qnet_state_dict': env.item_policy.target_estimator.qnet.state_dict(),
                 'Val': best_item_val},
                'model/a-best-item-' + str(best_item_val) + '-' + time.strftime("%Y-%m-%d %H:%M:%S",
-                                                                                           time.localtime()) + '.pth.tar')
+                                                                               time.localtime()) + '.pth.tar')
 
     b_i = 0
     best_val_i = 0

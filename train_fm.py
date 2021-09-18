@@ -95,7 +95,7 @@ def main():
                           norm_step=1,
                           batch_size=1,
                           state_shape=env.obs.shape,
-                          mlp_layers=[32, 64, 32],
+                          mlp_layers=[32, 32],
                           learning_rate=0.01,
                           device=torch.device(device)
                           )
@@ -107,7 +107,7 @@ def main():
                           norm_step=1,
                           batch_size=1,
                           state_shape=env.obs.shape,
-                          mlp_layers=[32, 64, 32],
+                          mlp_layers=[32, 32],
                           learning_rate=0.01,
                           device=torch.device(device)
                           )
@@ -153,8 +153,9 @@ def main():
 
     tim_1 = time.time()
     for i in range(40):
-        user_agent.train()
         item_agent.train()
+    for i in range(20):
+        user_agent.train()
     print('Reinforced training time: ', (time.time() - tim_1) / 60, 'min')
 
     # del env

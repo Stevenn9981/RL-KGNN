@@ -137,6 +137,8 @@ def main():
             best_item_i = i_episode
         logger2.info("Training Item Meta-policy: %d    Val_Acc: %.5f    Avg_reward: %.5f    Best_Acc:  %.5f    Best_i: %d "
                      % (i_episode, val_acc, reward, best_item_val, best_item_i))
+        for i in range(4):
+            item_agent.train()
 
     for i_episode in range(1, u_max_episodes + 1):
         env.reset_past_performance()
@@ -150,6 +152,8 @@ def main():
             best_user_i = i_episode
         logger2.info("Training User Meta-policy: %d    Val_Acc: %.5f    Avg_reward: %.5f    Best_Acc:  %.5f    Best_i: %d "
                      % (i_episode, val_acc, reward, best_user_val, best_user_i))
+        for i in range(4):
+            user_agent.train()
 
     tim_1 = time.time()
     for i in range(40):

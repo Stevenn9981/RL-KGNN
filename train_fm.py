@@ -95,8 +95,8 @@ def main():
                           norm_step=1,
                           batch_size=1,
                           state_shape=env.obs.shape,
-                          mlp_layers=[32, 32],
-                          learning_rate=0.01,
+                          mlp_layers=[32, 64, 32],
+                          learning_rate=0.001,
                           device=torch.device(device)
                           )
 
@@ -107,8 +107,8 @@ def main():
                           norm_step=1,
                           batch_size=1,
                           state_shape=env.obs.shape,
-                          mlp_layers=[32, 32],
-                          learning_rate=0.01,
+                          mlp_layers=[32, 64, 32],
+                          learning_rate=0.001,
                           device=torch.device(device)
                           )
 
@@ -152,7 +152,7 @@ def main():
                      % (i_episode, val_acc, reward, best_user_val, best_user_i))
 
     tim_1 = time.time()
-    for i in range(10):
+    for i in range(80):
         user_agent.train()
         item_agent.train()
     print('Reinforced training time: ', (time.time() - tim_1) / 60, 'min')

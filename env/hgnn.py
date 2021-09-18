@@ -433,7 +433,7 @@ class hgnn_env(object):
         elif self.task == 'classification':
             self.train_classifier(test)
         elif self.task == 'herec':
-            self.model.recommend()
+            self.model.recommend(test)
 
     def train_recommender(self, test, act=STOP):
         n_cf_batch = 2 * self.data.n_cf_train // self.data.cf_batch_size + 1

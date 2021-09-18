@@ -131,6 +131,7 @@ def main():
         env.seed(0)
         best = 0
         best_mpset = None
+        accs = []
         if args.task == 'rec':
             for gnn in env.model.layers:
                 gnn.threshold = 0.9
@@ -139,10 +140,12 @@ def main():
             mpset[0] = random.sample(u_set, random.randint(1, 4))
             mpset[1] = random.sample(i_set, random.randint(1, 4))
             acc = train_and_eval(env, inx, max_episodes, tim1, logger1, logger2, model_name, args, mpset)
+            accs.append(acc)
             if acc > best:
                 best = acc
                 best_mpset = deepcopy(mpset)
         del env
+        print(accs)
         train_and_test(1, max_episodes, tim1, logger1, logger2, model_name, args, best_mpset)
 
     if init_method == 'greedy':

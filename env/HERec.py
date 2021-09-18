@@ -212,8 +212,11 @@ class HERec:
         rmse = sqrt(rmse * 1.0 / n)
         return mae, rmse
 
-    def recommend(self):
+    def recommend(self, test=False):
         print("Current Metapath: ", str(self.metapaths))
+        if test:
+            print("Predicting meta-path set. Return now.")
+            return
         mae = []
         rmse = []
         ndcg = []

@@ -96,7 +96,7 @@ def main():
                           batch_size=1,
                           state_shape=env.obs.shape,
                           mlp_layers=[32, 64, 32],
-                          learning_rate=0.001,
+                          learning_rate=0.01,
                           device=torch.device(device)
                           )
 
@@ -108,7 +108,7 @@ def main():
                           batch_size=1,
                           state_shape=env.obs.shape,
                           mlp_layers=[32, 64, 32],
-                          learning_rate=0.001,
+                          learning_rate=0.01,
                           device=torch.device(device)
                           )
 

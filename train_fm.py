@@ -156,7 +156,7 @@ def main():
             user_agent.train()
 
     tim_1 = time.time()
-    for i in range(20):
+    for i in range(50):
         item_agent.train()
         user_agent.train()
     print('Reinforced training time: ', time.time() - tim_1, 's')

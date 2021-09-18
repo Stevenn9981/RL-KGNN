@@ -255,7 +255,7 @@ def main():
     if args.task != 'herec':
         best = 0
         best_i = 0
-        m_episode = 150 if dataset == 'douban_movie' else 100
+        m_episode = 150 if dataset == 'douban_movie' else 80
         for i in range(m_episode):
             print('Current epoch: ', i)
             if i % 1 == 0:

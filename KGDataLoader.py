@@ -83,6 +83,9 @@ def parse_args():
     parser.add_argument('--K', type=int, default=20,
                         help='Calculate metric@K when evaluating.')
 
+    parser.add_argument('--episode', type=int, default=20,
+                        help='episode')
+
     parser.add_argument('--feats-type', type=int, default=2,
                         help='Type of the node features used. ' +
                              '0 - loaded features; ' +

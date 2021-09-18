@@ -226,9 +226,9 @@ class HERec:
         if self.dataset == 'douban_movie':
             # Since dataset is too large, we must use sampling.
             if self.steps == 1:
-                train_R = random.sample(self.R, min(len(self.R), 30000))
+                train_R = random.sample(self.R, min(len(self.R), 50000))
             else:
-                train_R = random.sample(self.R, min(len(self.R), 100000))
+                train_R = random.sample(self.R, min(len(self.R), 150000))
         else:
             train_R = self.R
 

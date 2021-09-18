@@ -160,7 +160,7 @@ def main():
         item_agent.train()
     for i in range(20):
         user_agent.train()
-    print('Reinforced training time: ', (time.time() - tim_1) / 60, 'min')
+    print('Reinforced training time: ', time.time() - tim_1, 's')
 
     # del env
     tim2 = time.time()

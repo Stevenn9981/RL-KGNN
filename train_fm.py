@@ -135,7 +135,7 @@ def main():
             best_item_policy = deepcopy(item_agent)  # save the best policy
             best_item_val = val_acc
             best_item_i = i_episode
-        logger2.info("Training Meta-policy: %d    Val_Acc: %.5f    Avg_reward: %.5f    Best_Acc:  %.5f    Best_i: %d "
+        logger2.info("Training Item Meta-policy: %d    Val_Acc: %.5f    Avg_reward: %.5f    Best_Acc:  %.5f    Best_i: %d "
                      % (i_episode, val_acc, reward, best_item_val, best_item_i))
 
     for i_episode in range(1, u_max_episodes + 1):
@@ -148,11 +148,11 @@ def main():
             best_user_policy = deepcopy(user_agent)  # save the best policy
             best_user_val = val_acc
             best_user_i = i_episode
-        logger2.info("Training Meta-policy: %d    Val_Acc: %.5f    Avg_reward: %.5f    Best_Acc:  %.5f    Best_i: %d "
+        logger2.info("Training User Meta-policy: %d    Val_Acc: %.5f    Avg_reward: %.5f    Best_Acc:  %.5f    Best_i: %d "
                      % (i_episode, val_acc, reward, best_user_val, best_user_i))
 
     tim_1 = time.time()
-    for i in range(80):
+    for i in range(40):
         user_agent.train()
         item_agent.train()
     print('Reinforced training time: ', (time.time() - tim_1) / 60, 'min')

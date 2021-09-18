@@ -255,7 +255,8 @@ def main():
     if args.task != 'herec':
         best = 0
         best_i = 0
-        for i in range(150):
+        m_episode = 150 if dataset == 'douban_movie' else 100
+        for i in range(m_episode):
             print('Current epoch: ', i)
             if i % 1 == 0:
                 acc = test_env.test_batch(logger2)

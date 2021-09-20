@@ -255,7 +255,7 @@ def train_and_test(inx, max_episodes, tim1, logger1, logger2, model_name, args, 
         max_episodes = 1
     elif args.task == 'rec':
         for gnn in env.model.layers:
-            gnn.threshold = 0.8
+            gnn.threshold = 0.9
     env.etypes_lists = mpset
     best = 0
     best_i = 0

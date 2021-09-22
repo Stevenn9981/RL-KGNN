@@ -123,6 +123,8 @@ def main():
 
     init_method = args.init
 
+    timelimit = args.limit
+
     print("u_set: ", len(u_set), " i_set: ", len(i_set))
 
     if init_method == 'random':
@@ -144,12 +146,14 @@ def main():
             if acc > best:
                 best = acc
                 best_mpset = deepcopy(mpset)
+            if (time.time() - tim1) / 60 > timelimit:
+                break
         del env
         print(accs)
         train_and_test(1, max_episodes, tim1, logger1, logger2, model_name, args, best_mpset)
 
     if init_method == 'greedy':
-        sample_num = 20
+        sample_num = 20 if args.task == 'rec' else 5
         best_mpset = [[['2', '1']], [['1', '2']]]
         env = hgnn_env(logger1, logger2, model_name, args)
         env.seed(0)
@@ -175,9 +179,16 @@ def main():
                 if acc > u_best_acc:
                     u_best_acc = acc
                     cur_best_mpset = deepcopy(mpset)
+
+                if (time.time() - tim1) / 60 > timelimit:
+                    break
             if cur_best_mpset is not None:
                 best_mpset = cur_best_mpset
             print("Current Best Meta_path set: ", str(best_mpset))
+
+
+            if (time.time() - tim1) / 60 > timelimit:
+                break
 
             # item_meta_path
             u_best_acc = 0
@@ -192,9 +203,16 @@ def main():
                 if acc > u_best_acc:
                     u_best_acc = acc
                     cur_best_mpset = deepcopy(mpset)
+
+                if (time.time() - tim1) / 60 > timelimit:
+                    break
+
             if cur_best_mpset is not None:
                 best_mpset = cur_best_mpset
             print("Current Best Meta_path set: ", str(best_mpset))
+
+            if (time.time() - tim1) / 60 > timelimit:
+                break
 
         train_and_test(1, max_episodes, tim1, logger1, logger2, model_name, args, best_mpset)
 

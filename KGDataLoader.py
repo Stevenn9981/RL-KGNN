@@ -73,6 +73,9 @@ def parse_args():
     parser.add_argument('--stopping_steps', type=int, default=10,
                         help='Number of epoch for early stopping')
 
+    parser.add_argument('--limit', type=float, default=10000,
+                        help='Time Limit.')
+
     parser.add_argument('--cf_print_every', type=int, default=1,
                         help='Iter interval of printing CF loss.')
     parser.add_argument('--kg_print_every', type=int, default=1,
